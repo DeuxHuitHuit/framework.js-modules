@@ -130,7 +130,7 @@ module.exports = function fxGruntConfig(grunt) {
 		grunt.registerTask('dev',      ['jshint', 'complexity']);
 		grunt.registerTask('build',    ['jshint', 'concat', 'uglify']);
 	};
-
+	
 	var load = function (grunt) {
 		loadGruntTasks(grunt);
 		
