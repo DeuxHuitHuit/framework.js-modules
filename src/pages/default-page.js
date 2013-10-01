@@ -2,9 +2,8 @@
  * @author Deux Huit Huit
  *
  * Default page implementation
+ *
  */
- 
- 
 (function ($, undefined) {
 
 	"use strict";

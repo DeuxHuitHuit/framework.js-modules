@@ -1,38 +1,29 @@
 /**
  * @author Deux Huit Huit
  * 
- * Links modules
- * 
- * - Makes all external links added into the dom load in a new page 
- * - Makes all internal links mapped to the mediator
- *
- * Listens to
- * 
- * - pages.loaded
+ * Default page transition
  *
  */
 (function ($, undefined) {
 	
 	"use strict";
 	
-	var 
-	win = $(window),
-	body = $('body'),
+	var win = $(window);
+	var body = $('body');
+	var sitePages = $('#site-pages');
 	
-	defaultTransition = function(data,callback) {
+	var defaultTransition = function(data,callback) {
 		
-		var 
-		leavingPage = data.currentPage,
-		enteringPage = data.nextPage,
+		var leavingPage = data.currentPage;
+		var enteringPage = data.nextPage;
 		
-		domEnteringPage = $(enteringPage.key()),
-		domLeavingPage = $(leavingPage.key()),
+		var domEnteringPage = $(enteringPage.key());
+		var domLeavingPage = $(leavingPage.key());
 		
-		sitePages = $('#site-pages'),
-		enterPageAnimation = function() {
+		var enterPageAnimation = function () {
 		
 			//Notify intering page
-			App.modules.notify('page.entering',{page: enteringPage, route: data.route});
+			App.modules.notify('page.entering', {page: enteringPage, route: data.route});
 			
 			//Animate leaving and start entering after leaving animation
 			//Need a delay for get all Loaded
@@ -43,33 +34,29 @@
 				enteringPage.enter(data.enterNext);
 			});
 			
-			
-			
 		};
 		
 		body.removeClass(leavingPage.key().substring(1));
+		
 		sitePages.animate({opacity: 0},1000,function() {
 			//notify all module
-			App.modules.notify('page.leaving',{page: leavingPage});
+			App.modules.notify('page.leaving', {page: leavingPage});
 			
 			//Leave the current page
 			leavingPage.leave(data.leaveCurrent);
 		
 			domLeavingPage.hide();
 			enterPageAnimation();
-
+			
 		});
 	};
 	
-		
-	//from Accueil to Article
-	App.transitions.exports({
-		transition : defaultTransition
-		/*canAnimate : function(data) {
-			return $(data.currentPage.key()).hasClass('page-transition-modal');
-		}*/
-	});
 	
-
+	App.transitions.exports({
+		transition: defaultTransition
+		canAnimate: function(data) {
+			return true;
+		}
+	});
 	
 })(jQuery);

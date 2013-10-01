@@ -1,8 +1,8 @@
-
 /**
-
  * @author Deux Huit Huit
-
+ *
+ * Url Changer
+ *
  */
 
 (function ($, undefined) {

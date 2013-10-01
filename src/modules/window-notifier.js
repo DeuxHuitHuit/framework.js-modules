@@ -1,6 +1,7 @@
 /**
  * @author Deux Huit Huit
  * 
+ * Window Notifier
  */
 (function ($, undefined) {
 	

@@ -1,12 +1,14 @@
 /**
  * @author Deux Huit Huit
+ *
+ * Share This
  * 
  */
 (function ($, undefined) {
 	
 	"use strict";
-	var 
-	win = $(window);
+	
+	var win = $(window);
 	var site = $('#site');
 	
 	var onApplyButton = function(key, options, e) {
@@ -20,7 +22,7 @@
 		
 		var o = $.extend(defaultShareThisOption, options);
 		
-		if (o.element && window.stWidget) {
+		if (!!o.element && !!window.stWidget) {
 			//init share this if we found
 			window.stWidget.addEntry(o);
 		}

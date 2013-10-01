@@ -1,6 +1,8 @@
 /**
  * @author Deux Huit Huit
  * 
+ * oEmbed module
+ * Supports Youtube and Vimeo APIs
  * 
  */
 (function ($, undefined) {

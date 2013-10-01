@@ -1,10 +1,13 @@
 /**
  * @author Deux Huit Huit
  * 
+ * Title Updater
+ *
  */
 (function ($, undefined) {
 	
 	"use strict";
+	
 	var 
 	win = $(window),
 	metaTitle = $('title',document),
