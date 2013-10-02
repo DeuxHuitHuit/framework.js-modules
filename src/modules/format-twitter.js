@@ -29,7 +29,7 @@
 	window.formatTwitter = function() {
 		
 		var t = $(this);
-		var text = t.text();
+		var text = t.html(); // keep the existing html
 		
 		if (t.attr('data-formattwitter') !== 'true') {
 		
