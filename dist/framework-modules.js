@@ -1,17 +1,14 @@
-/*! framework.js-modules - v1.0.0 - 2013-10-01
+/*! framework.js-modules - v1.0.0 - 2013-10-09
 * https://github.com/DeuxHuitHuit/framework.js-modules
 * Copyright (c) 2013 Deux Huit Huit; Licensed MIT */
 /**
  * @author Deux Huit Huit
  * 
- * Links modules
- * 
- * - Makes all external links added into the dom load in a new page 
- * - Makes all internal links mapped to the mediator
+ * Blank link targets
  *
  * Listens to
  * 
- * - pages.loaded
+ * - 
  *
  */
 (function ($, undefined) {
@@ -67,40 +64,40 @@
 	});
 	
 })(jQuery);
-/******************************
- * @author Deux Huit Huit
- ******************************/
-
 /**
- * Globals
+ * @author Deux Huit Huit
+ *
+ * Format Tweets
+ *
  */
 (function ($, undefined) {
-	"use strict"; // Yeah, we are that crazy
 	
+	"use strict";
 	
 	var twitterlink = function(t) {
-        return t.replace(/[a-z]+:\/\/([a-z0-9-_]+\.[a-z0-9-_:~\+#%&\?\/.=]+[^:\.,\)\s*$])/ig, function(m, link) {
-          return '<a title="' + m + '" href="' + m + '" target="_blank">' + ((link.length > 36) ? link.substr(0, 35) + '&hellip;' : link) + '</a>';
-        });
-    };
+		return t.replace(/[a-z]+:\/\/([a-z0-9-_]+\.[a-z0-9-_:~\+#%&\?\/.=]+[^:\.,\)\s*$])/ig, function(m, link) {
+			return '<a title="' + m + '" href="' + m + '" target="_blank">' + ((link.length > 36) ? link.substr(0, 35) + '&hellip;' : link) + '</a>';
+		});
+	};
 	
-   var twitterat = function(t) {
-        return t.replace(/(^|[^\w]+)\@([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]{1,15}(\/[a-zA-Z0-9-_]+)*)/g, function(m, m1, m2) {
-          return m1 + '<a href="http://twitter.com/' + m2 + '" target="_blank">@' + m2 + '</a>';
-        });
-    };
-    
-   var twitterhash = function(t) {
-        return t.replace(/(^|[^&\w'"]+)\#([a-zA-Z0-9_^"^<àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)/g, function(m, m1, m2) {
-          return m.substr(-1) === '"' || m.substr(-1) == '<' ? m : m1 + '<a href="https://twitter.com/search?q=%23' + m2 + '&src=hash" target="_blank">#' + m2 + '</a>';
-        });
-    };
+	var twitterat = function(t) {
+		return t.replace(/(^|[^\w]+)\@([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]{1,15}(\/[a-zA-Z0-9-_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)*)/g, function(m, m1, m2) {
+			return m1 + '<a href="http://twitter.com/' + m2 + '" target="_blank">@' + m2 + '</a>';
+		});
+	};
+	
+	var twitterhash = function(t) {
+		return t.replace(/(^|[^&\w'"]+)\#([a-zA-Z0-9_^"^<àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)/g, function(m, m1, m2) {
+			return m.substr(-1) === '"' || m.substr(-1) == '<' ? m : m1 + '<a href="https://twitter.com/search?q=%23' + m2 + '&src=hash" target="_blank">#' + m2 + '</a>';
+		});
+	};
 	 
-    window.formatTwitter = function() {
+	window.formatTwitter = function() {
 		
-		var t = $(this),
-			text = t.text();
-		if(t.attr('data-formattwitter') !== 'applyed') {
+		var t = $(this);
+		var text = t.html(); // keep the existing html
+		
+		if (t.attr('data-formattwitter') !== 'true') {
 		
 			text = twitterlink(text);
 			text = twitterat(text);
@@ -108,28 +105,9 @@
 			
 			t.html(text);
 		
-			t.attr('data-formattwitter','applyed');
+			t.attr('data-formattwitter','true');
 		}
-    };
-	
-	/*if($('html').attr('lang') == 'fr') {
-		jQuery.timeago.settings.strings = {
-			// environ ~= about, it's optional
-			prefixAgo: "il y a",
-			prefixFromNow: "d'ici",
-			seconds: "moins d'une minute",
-			minute: "environ une minute",
-			minutes: "environ %d minutes",
-			hour: "environ une heure",
-			hours: "environ %d heures",
-			day: "environ un jour",
-			days: "environ %d jours",
-			month: "environ un mois",
-			months: "environ %d mois",
-			year: "un an",
-			years: "%d ans"
-		};
-	}*/
+	};
 	
 })(jQuery);
 
@@ -137,6 +115,64 @@
 /**
  * @author Deux Huit Huit
  * 
+ * Links modules
+ * 
+ * - Makes all external links added into the dom load in a new page 
+ * - Makes all internal links mapped to the mediator
+ *
+ * Listens to
+ * 
+ * - pages.loaded
+ *
+ */
+(function ($, undefined) {
+	
+	"use strict";
+	
+	var 
+	
+	onClickGoto = function (e) {
+		var t = $(this),
+			href = t.attr('href');
+			
+		if(!e.ctrlKey) {
+			App.mediator.goto(href);
+			return window.pd(e);
+		}
+	},
+	
+	onClickToggle = function(e) {
+		var t = $(this),
+			href = t.attr('href');
+		
+		App.mediator.toggle(href);
+		
+		return window.pd(e);
+	},
+	
+	actions = function () {
+		return {};
+	},
+	
+	init = function () {
+		// capture all click in #site: delegate to the link or in any ui-dialog (jquery.ui)
+		$('#site').on('click', 'a[href^="/"]:not([href^="/workspace"]):not([data-action^="full"]):not([data-action^="toggle"]):not([data-action^="none"])', onClickGoto);
+		
+		$('#site').on('click', 'a[href^="/"][data-action^="toggle"]', onClickToggle);
+	},
+	
+	Links = App.modules.exports('links', {
+		init: init,
+		actions: actions
+	});
+	
+})(jQuery);
+
+/**
+ * @author Deux Huit Huit
+ * 
+ * oEmbed module
+ * Supports Youtube and Vimeo APIs
  * 
  */
 (function ($, undefined) {
@@ -279,13 +315,15 @@
 
 /**
  * @author Deux Huit Huit
+ *
+ * Share This
  * 
  */
 (function ($, undefined) {
 	
 	"use strict";
-	var 
-	win = $(window);
+	
+	var win = $(window);
 	var site = $('#site');
 	
 	var onApplyButton = function(key, options, e) {
@@ -299,7 +337,7 @@
 		
 		var o = $.extend(defaultShareThisOption, options);
 		
-		if (o.element && window.stWidget) {
+		if (!!o.element && !!window.stWidget) {
 			//init share this if we found
 			window.stWidget.addEntry(o);
 		}
@@ -328,10 +366,13 @@
 /**
  * @author Deux Huit Huit
  * 
+ * Title Updater
+ *
  */
 (function ($, undefined) {
 	
 	"use strict";
+	
 	var 
 	win = $(window),
 	metaTitle = $('title',document),
@@ -386,11 +427,187 @@
 	
 })(jQuery);
 
+/**
+ * @author Deux Huit Huit
+ * 
+ * Toggle when no previous url are present
+ *
+ */
+(function ($, undefined) {
+	
+	"use strict";
+	
+	var isMultiLangue = true;
+	
+	var getHomePageUrl = function() {
+		if(isMultiLangue) {
+			return '/' + $('html').attr('lang') + '/';
+		}
+		return '/';
+	};
+	
+	var onToggleNoPreviousUrl = function(key,data,e) {
+		App.mediator.goto(getHomePageUrl());
+	};
+	
+	var actions = function () {
+		return {
+			page : {
+				toggleNoPreviousUrl : onToggleNoPreviousUrl
+			}
+		};
+	},
+	
+	init = function () {
+		
+	},
+	
+	Links = App.modules.exports('toggleNoPreviousUrl', {
+		init: init,
+		actions: actions
+	});
+	
+})(jQuery);
 
 /**
-
  * @author Deux Huit Huit
+ * 
+ * Transition Modules
+ *
+ * Listens to
+ * 
+ * - 
+ *
+ */
+(function ($, undefined) {
+	
+	"use strict";
+	
+	var 
+	
+	transitionList = [],
+	
+	defaultTransition = function(data,callback) {
+			
+		var leavingPage = data.currentPage;
+		var enteringPage = data.nextPage;
+		var domEnteringPage = $(enteringPage.key());
+		var domLeavingPage = $(leavingPage.key());
+			
+		var enterPageAnimation = function() {
+			//Notify intering page
+			App.modules.notify('page.entering', {page: enteringPage, route: data.route});
+			
+			domEnteringPage.css({opacity: 1, display: 'block'});
+			
+			//Animate leaving and start entering after leaving animation
+			domLeavingPage.css({display: 'none'});
+			
+			enteringPage.enter(data.enterNext);
+			
+			App.callback(callback);
+		};
+		
+		//Default Behavior
+		
+		//notify all module
+		App.modules.notify('page.leaving',{page: leavingPage});
+		
+		//Leave the current page
+		leavingPage.leave(data.leaveCurrent);
 
+		enterPageAnimation();
+	},
+	
+	animatingTo = '',
+	
+	onRequestPageTransition = function(key, data,e) {
+		var 
+		animation = defaultTransition,
+		c;
+		
+		for (c = 0; c < transitionList.length; c++) {
+			var 
+			it = transitionList[c];
+			if( (it.from === data.currentPage.key().substring(1) || it.from === '*') &&	(it.to === data.nextPage.key().substring(1) || it.to === '*')) {
+				if(it.canAnimate(data)) {
+					animation = it.transition;
+					break;
+				}
+			}
+		}
+		animatingTo = data.nextPage.key().substring(1);
+		animation(data,function() {
+			animatingTo = '';
+		});
+		
+		//mark as handled
+		data.isHandled = true;
+	},
+	
+	actions = function () {
+		return {
+			pages: {
+				requestPageTransition: onRequestPageTransition
+			},
+			pageTransitionAnimation : {
+				getTargetPage : function(key,data,e) {
+					if(!data) {
+						data = {
+							result : {}
+						};
+					}
+					if(!data.result) { data.result = {};}
+					data.result.pageTransitionAnimation = {};
+					data.result.pageTransitionAnimation.target = animatingTo;
+				}
+			}
+		};
+	},
+	
+	init = function () {
+		// append 
+		$(App.root()).append($('<div id="bg-transition" ></div>'));
+	},
+	
+	exportsTransition = function(options) {
+		var o = $.extend({
+			from : '*',
+			to : '*',
+			transition : defaultTransition,
+			canAnimate : function() {return true;}
+		},options);
+		
+		if (o.from === '*' && o.to === '*') {
+			defaultTransition = o.transition;
+		} else {
+			transitionList.push(o);	
+		}
+	},
+	
+	PageTransitionAnimation = App.modules.exports('pageTransitionAnimation', {
+		init: init,
+		actions: actions
+	});
+	
+	//register App.transitions
+	
+	/** Public Interfaces **/
+	window.App = $.extend(window.App, {
+		
+		transitions : {
+			exports : exportsTransition
+		}
+		
+	});
+	
+})(jQuery);
+
+/**
+ * @author Deux Huit Huit
+ *
+ * Url Changer
+ *
  */
 
 (function ($, undefined) {
@@ -413,8 +630,9 @@
 		return {
 			urlChanged : function() {
 				if(!_isInternalFragChange) {
-					var
-					nextPage = App.pages.page(document.location.hash.substring(1));
+					var h = document.location.hash;
+					
+					var	nextPage = App.pages.page(h.length > 1 ? h.substring(1) : document.location.pathname);
 
 					//if we found a page for this route
 					if(nextPage) {
@@ -424,7 +642,7 @@
 							var 
 							_cur = _currentPageUrl,
 							pageFragment = document.location.hash.substring(_cur.length);
-							if(_currentPageFragment != pageFragment) {
+							if(_currentPageFragment != pageFragment || _triggerFirstHashChange) {
 								App.mediator.notify("page.fragmentChanged",pageFragment );
 								_currentPageFragment = pageFragment;
 							}
@@ -705,6 +923,7 @@
 /**
  * @author Deux Huit Huit
  * 
+ * Window Notifier
  */
 (function ($, undefined) {
 	
@@ -735,38 +954,29 @@
 /**
  * @author Deux Huit Huit
  * 
- * Links modules
- * 
- * - Makes all external links added into the dom load in a new page 
- * - Makes all internal links mapped to the mediator
- *
- * Listens to
- * 
- * - pages.loaded
+ * Default page transition
  *
  */
 (function ($, undefined) {
 	
 	"use strict";
 	
-	var 
-	win = $(window),
-	body = $('body'),
+	var win = $(window);
+	var body = $('body');
+	var sitePages = $('#site-pages');
 	
-	defaultTransition = function(data,callback) {
+	var defaultTransition = function(data,callback) {
 		
-		var 
-		leavingPage = data.currentPage,
-		enteringPage = data.nextPage,
+		var leavingPage = data.currentPage;
+		var enteringPage = data.nextPage;
 		
-		domEnteringPage = $(enteringPage.key()),
-		domLeavingPage = $(leavingPage.key()),
+		var domEnteringPage = $(enteringPage.key());
+		var domLeavingPage = $(leavingPage.key());
 		
-		sitePages = $('#site-pages'),
-		enterPageAnimation = function() {
+		var enterPageAnimation = function () {
 		
 			//Notify intering page
-			App.modules.notify('page.entering',{page: enteringPage, route: data.route});
+			App.modules.notify('page.entering', {page: enteringPage, route: data.route});
 			
 			//Animate leaving and start entering after leaving animation
 			//Need a delay for get all Loaded
@@ -777,33 +987,29 @@
 				enteringPage.enter(data.enterNext);
 			});
 			
-			
-			
 		};
 		
 		body.removeClass(leavingPage.key().substring(1));
+		
 		sitePages.animate({opacity: 0},1000,function() {
 			//notify all module
-			App.modules.notify('page.leaving',{page: leavingPage});
+			App.modules.notify('page.leaving', {page: leavingPage});
 			
 			//Leave the current page
 			leavingPage.leave(data.leaveCurrent);
 		
 			domLeavingPage.hide();
 			enterPageAnimation();
-
+			
 		});
 	};
 	
-		
-	//from Accueil to Article
-	App.transitions.exports({
-		transition : defaultTransition
-		/*canAnimate : function(data) {
-			return $(data.currentPage.key()).hasClass('page-transition-modal');
-		}*/
-	});
 	
-
+	App.transitions.exports({
+		transition: defaultTransition,
+		canAnimate: function(data) {
+			return true;
+		}
+	});
 	
 })(jQuery);
