@@ -8,8 +8,17 @@
 	
 	"use strict";
 	
-	var onToggleNoPreviousUrl = function() {
-		App.mediator.goto('/');
+	var isMultiLangue = true;
+	
+	var getHomePageUrl = function() {
+		if(isMultiLangue) {
+			return '/' + $('html').attr('lang') + '/';
+		}
+		return '/';
+	};
+	
+	var onToggleNoPreviousUrl = function(key,data,e) {
+		App.mediator.goto(getHomePageUrl());
 	};
 	
 	var actions = function () {
