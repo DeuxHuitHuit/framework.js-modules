@@ -25,8 +25,9 @@
 		return {
 			urlChanged : function() {
 				if(!_isInternalFragChange) {
-					var
-					nextPage = App.pages.page(document.location.hash.substring(1));
+					var h = document.location.hash;
+					
+					var	nextPage = App.pages.page(h.length > 1 ? h.substring(1) : document.location.pathname);
 
 					//if we found a page for this route
 					if(nextPage) {
@@ -36,7 +37,7 @@
 							var 
 							_cur = _currentPageUrl,
 							pageFragment = document.location.hash.substring(_cur.length);
-							if(_currentPageFragment != pageFragment) {
+							if(_currentPageFragment != pageFragment || _triggerFirstHashChange) {
 								App.mediator.notify("page.fragmentChanged",pageFragment );
 								_currentPageFragment = pageFragment;
 							}
