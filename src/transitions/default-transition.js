@@ -53,7 +53,7 @@
 	
 	
 	App.transitions.exports({
-		transition: defaultTransition
+		transition: defaultTransition,
 		canAnimate: function(data) {
 			return true;
 		}
