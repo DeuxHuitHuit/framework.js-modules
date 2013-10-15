@@ -14,7 +14,7 @@
 	abstractProvider = {
 		embed : function(container,id) {
 			var 
-			iframe = this.getIframe(id,container.data('autoPlay'));
+			iframe = this.getIframe(id, parseInt(container.attr('data-autoplay'), 10));
 			
 			iframe.attr('width','100%');
 			iframe.attr('height','100%');
@@ -33,7 +33,7 @@
 	vimeoProvider = $.extend({}, abstractProvider, 
 		{
 			getIframe : function(id, autoplay) {
-				autoplay = autoplay ? autoplay : 1;
+				autoplay = autoplay !== undefined ? autoplay : 1;
 				return $('<iframe src="http://player.vimeo.com/video/' + id + '?autoplay=' + autoplay + '&api=1&html5=1' + '"/>');
 			},
 			
@@ -55,7 +55,7 @@
 			getIframe : function(url,autoplay) {
 			
 				var id = url.indexOf('v=') > 0 ? url.substring(url.indexOf('v=') + 2) : url.substring(url.lastIndexOf("/"));
-				autoplay = autoplay ? autoplay : 1;
+				autoplay = autoplay !== undefined ? autoplay : 1;
 				var iframe = $('<iframe id="youtube-player-' + id + '" src="http://www.youtube.com/embed/' + id + '?feature=oembed&autoplay='+autoplay+'&enablejsapi=1&version=3&html5=1' + '"/>');
 				this._player = new window.YT.Player(iframe.get(0));
 				return iframe;
