@@ -95,7 +95,7 @@
 
 				//if we found a page for this route
 				if(nextPage) {
-					_isPopingState = true;
+					
 					//Detect if we change page
 					if(nextPage.key() == _currentPageKey) {
 						var 
@@ -106,9 +106,10 @@
 							_currentPageFragment = pageFragment;
 						}
 					} else {
+						_isPopingState = true;
 						App.mediator.goto(document.location.pathname + document.location.search);
 					}
-					_isPopingState = false;
+					
 				}
 			},
 			pageEntering : function(newRoute) {
@@ -122,6 +123,7 @@
 					if(!_isPopingState){
 						history.pushState({}, document.title, newRoute + _currentPageFragment );
 					}
+					_isPopingState = false;
 				}
 				
 			},
