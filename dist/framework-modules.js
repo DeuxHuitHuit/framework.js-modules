@@ -1,6 +1,77 @@
-/*! framework.js-modules - v1.0.0 - 2013-10-09
+/*! framework.js-modules - v1.0.0 - 2013-12-10
 * https://github.com/DeuxHuitHuit/framework.js-modules
 * Copyright (c) 2013 Deux Huit Huit; Licensed MIT */
+/**
+ * @author Deux Huit Huit
+ * 
+ */
+(function ($, undefined) {
+	
+	"use strict";
+	var linkSelector = '#site a.js-alt-lg-link';
+	
+	var win = $(window);
+	var linkList = {};
+	
+	var init = function () {
+		
+		//Create initial value
+		var data ={};
+		$('link[rel=alternate][hreflang]',document).each(function() {
+			var t = $(this);
+			data[t.attr('hreflang')] = t.attr('href');
+		});
+	
+		linkList[document.location.pathname] = data;
+	};
+	
+	var onPageLoaded = function(key,data,e) {
+		var linkData = {};
+		$(data.data).each(function (i, e) {  
+			if($(e).is('link')) {
+				var t = $(e);
+				if(t.attr('hreflang')) {
+					linkData[t.attr('hreflang')] = t.attr('href');
+				}
+			}
+			if($(e).is('body')) {
+				return true;
+			}
+		});
+		linkList[data.url] = linkData;
+	};
+	
+	var onEnter = function(key,data,e) {
+		if(linkList[document.location.pathname]) {
+			
+			//Update links
+			$(linkSelector).each(function(){
+				var t = $(this);
+				if(linkList[document.location.pathname][t.data('lg')]) {
+					t.attr('href',linkList[document.location.pathname][t.data('lg')]);
+				}
+			});
+		}
+	};
+	
+	var actions = {
+		pages : {
+			loaded : onPageLoaded
+		},
+		page : {
+			enter : onEnter
+		}
+	};
+	
+	var AltLanguageLinkUpdater = App.modules.exports('altLanguageLinkUpdater', {
+		init: init,
+		actions : function() {
+			return actions;
+		}
+	});
+	
+})(jQuery);
+
 /**
  * @author Deux Huit Huit
  * 
@@ -75,19 +146,19 @@
 	"use strict";
 	
 	var twitterlink = function(t) {
-		return t.replace(/[a-z]+:\/\/([a-z0-9-_]+\.[a-z0-9-_:~\+#%&\?\/.=]+[^:\.,\)\s*$])/ig, function(m, link) {
+		return t.replace(/[a-z]+:\/\/([a-z0-9-_]+\.[a-z0-9-_:~\+#%&\?\/.=^>^<]+[^:\.,\)\s*$])/gi, function(m, link) {
 			return '<a title="' + m + '" href="' + m + '" target="_blank">' + ((link.length > 36) ? link.substr(0, 35) + '&hellip;' : link) + '</a>';
 		});
 	};
 	
 	var twitterat = function(t) {
-		return t.replace(/(^|[^\w]+)\@([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]{1,15}(\/[a-zA-Z0-9-_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)*)/g, function(m, m1, m2) {
+		return t.replace(/(^|[^\w]+)\@([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]{1,15}(\/[a-zA-Z0-9-_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)*)/gi, function(m, m1, m2) {
 			return m1 + '<a href="http://twitter.com/' + m2 + '" target="_blank">@' + m2 + '</a>';
 		});
 	};
 	
 	var twitterhash = function(t) {
-		return t.replace(/(^|[^&\w'"]+)\#([a-zA-Z0-9_^"^<àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)/g, function(m, m1, m2) {
+		return t.replace(/(^|[^&\w'"]+)\#([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ^"^<^>]+)/gi, function(m, m1, m2) {
 			return m.substr(-1) === '"' || m.substr(-1) == '<' ? m : m1 + '<a href="https://twitter.com/search?q=%23' + m2 + '&src=hash" target="_blank">#' + m2 + '</a>';
 		});
 	};
@@ -184,7 +255,7 @@
 	abstractProvider = {
 		embed : function(container,id) {
 			var 
-			iframe = this.getIframe(id,container.data('autoPlay'));
+			iframe = this.getIframe(id, parseInt(container.attr('data-autoplay'), 10));
 			
 			iframe.attr('width','100%');
 			iframe.attr('height','100%');
@@ -202,8 +273,9 @@
 	
 	vimeoProvider = $.extend({}, abstractProvider, 
 		{
-			getIframe : function(id) {
-				return $('<iframe src="http://player.vimeo.com/video/' + id + '?autoplay=1&api=1' + '"/>');
+			getIframe : function(id, autoplay) {
+				autoplay = autoplay !== undefined ? autoplay : 1;
+				return $('<iframe src="http://player.vimeo.com/video/' + id + '?autoplay=' + autoplay + '&api=1&html5=1' + '"/>');
 			},
 			
 			play : function(container) {
@@ -224,8 +296,8 @@
 			getIframe : function(url,autoplay) {
 			
 				var id = url.indexOf('v=') > 0 ? url.substring(url.indexOf('v=') + 2) : url.substring(url.lastIndexOf("/"));
-				autoplay = autoplay ? autoplay : 1;
-				var iframe = $('<iframe id="youtube-player-' + id + '" src="http://www.youtube.com/embed/' + id + '?feature=oembed&autoplay='+autoplay+'&enablejsapi=1&version=3' + '"/>');
+				autoplay = autoplay !== undefined ? autoplay : 1;
+				var iframe = $('<iframe id="youtube-player-' + id + '" src="http://www.youtube.com/embed/' + id + '?feature=oembed&autoplay='+autoplay+'&enablejsapi=1&version=3&html5=1' + '"/>');
 				this._player = new window.YT.Player(iframe.get(0));
 				return iframe;
 			},
@@ -700,7 +772,7 @@
 
 				//if we found a page for this route
 				if(nextPage) {
-					_isPopingState = true;
+					
 					//Detect if we change page
 					if(nextPage.key() == _currentPageKey) {
 						var 
@@ -711,9 +783,10 @@
 							_currentPageFragment = pageFragment;
 						}
 					} else {
+						_isPopingState = true;
 						App.mediator.goto(document.location.pathname + document.location.search);
 					}
-					_isPopingState = false;
+					
 				}
 			},
 			pageEntering : function(newRoute) {
@@ -727,6 +800,7 @@
 					if(!_isPopingState){
 						history.pushState({}, document.title, newRoute + _currentPageFragment );
 					}
+					_isPopingState = false;
 				}
 				
 			},
