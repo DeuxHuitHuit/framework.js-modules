@@ -6,17 +6,17 @@
  */
 (function ($, undefined) {
 
-	"use strict";
+	'use strict';
 	
-	var onEnter = function(next) {
+	var onEnter = function (next) {
 		App.callback(next);
 	};
 	
-	var init = function() {
+	var init = function () {
 		
 	};
 	
-	App.pages.exports("defaultPage", {
+	App.pages.exports('defaultPage', {
 		init: init,
 		enter : onEnter
 	});

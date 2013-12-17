@@ -6,34 +6,33 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	
-	var 
-	win = $(window),
-	metaTitle = $('title',document),
-	titleList = {};
+	var win = $(window);
+	var metaTitle = $('title', document);
+	var titleList = {};
 	
 	
 	var init = function () {
 		titleList[document.location.pathname] = $('title').text();
 	};
 	
-	var onPageLoaded = function(key,data,e) {
-		var title = "";
+	var onPageLoaded = function (key, data, e) {
+		var title = '';
 		$(data.data).each(function (i, e) {  
-			if($(e).is('title')) {
+			if ($(e).is('title')) {
 				title = $(e).text();
 				return true;
 			}
 		});
-		if(!!!data.url) {
+		if (!!!data.url) {
 			data.url = document.location.pathname;
 		}
 		titleList[data.url] = title;
 	};
 	
-	var onEnter = function(key,data,e) {
-		if(titleList[document.location.pathname]) {
+	var onEnter = function (key, data, e) {
+		if (titleList[document.location.pathname]) {
 			document.title = titleList[document.location.pathname];
 		}
 	};
@@ -55,7 +54,7 @@
 	
 	var TitleUpdater = App.modules.exports('titleUpdater', {
 		init: init,
-		actions : function() {
+		actions : function () {
 			return actions;
 		}
 	});

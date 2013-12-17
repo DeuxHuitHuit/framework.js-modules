@@ -6,18 +6,19 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	
 	var win = $(window);
 	var site = $('#site');
 	
-	var onApplyButton = function(key, options, e) {
-		
+	var onApplyButton = function (key, options, e) {
+		var docLoc = document.location;
+		var url = docLoc.protocol + '//' + docLoc.host + docLoc.pathname;
 		var defaultShareThisOption = {
-			service: "sharethis",
+			service: 'sharethis',
 			title: document.title,
-			url: document.location.protocol + '//' + document.location.host + document.location.pathname,
-			type: "large"
+			url: url,
+			type: 'large'
 		};
 		
 		var o = $.extend(defaultShareThisOption, options);
@@ -27,7 +28,6 @@
 			window.stWidget.addEntry(o);
 		}
 	};
-	
 	
 	var init = function () {
 		
@@ -41,7 +41,7 @@
 	
 	var Menu = App.modules.exports('shareThis', {
 		init: init,
-		actions : function(){
+		actions : function () {
 			return actions;
 		}
 	});

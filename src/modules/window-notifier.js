@@ -5,25 +5,23 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
-	var 
+	'use strict';
+	var win = $(window);
 	
-	win = $(window),
-	
-	resizeHandler = function(e) {
+	var resizeHandler = function (e) {
 		App.mediator.notify('site.resize', null, e);
-	},
+	};
 	
-	scrollHandler = function (e) {
+	var scrollHandler = function (e) {
 		App.mediator.notify('site.scroll', null, e);
-	},
+	};
 	
-	init = function () {
+	var init = function () {
 		//Trigger resize
 		win.resize(resizeHandler).scroll(scrollHandler);
-	},
+	};
 	
-	Links = App.modules.exports('windowNotifier', {
+	var WindowNotifier = App.modules.exports('windowNotifier', {
 		init: init
 	});
 	

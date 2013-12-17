@@ -10,7 +10,7 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	
 	/**
 	 * @author Deux Huit Huit
@@ -20,11 +20,11 @@
 	$.fn.extend({
 		blankLink: function () {
 			/* link target */
-			$(this).each(function _eachTarget () {
+			$(this).each(function _eachTarget() {
 				var t = $(this);
 				var href = t.attr('href');
 				
-				if (!!href && (/^https?:\/\//.test(href) || /^\/workspace/.test(href) )) {
+				if (!!href && (/^https?:\/\//.test(href) || /^\/workspace/.test(href))) {
 					if (t.attr('target') != '_blank') {
 						// must not be in
 						if (! /^:\/\//.test(href)) {
@@ -34,13 +34,12 @@
 					}
 				}
 			});
-			
 		}
 	});
 	
 	
-	var onPageEnter = function (key,data,e) {
-		$('a',$(data.page.key())).blankLink();
+	var onPageEnter = function (key, data, e) {
+		$('a', $(data.page.key())).blankLink();
 	};
 	
 	var init = function () {

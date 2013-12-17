@@ -10,22 +10,22 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	
-	var 
+	var transitionList = [];
+	var animatingTo = '';
 	
-	transitionList = [],
-	
-	defaultTransition = function(data,callback) {
+	var defaultTransition = function (data, callback) {
 			
 		var leavingPage = data.currentPage;
 		var enteringPage = data.nextPage;
 		var domEnteringPage = $(enteringPage.key());
 		var domLeavingPage = $(leavingPage.key());
 			
-		var enterPageAnimation = function() {
+		var enterPageAnimation = function () {
 			//Notify intering page
-			App.modules.notify('page.entering', {page: enteringPage, route: data.route});
+			App.modules.notify('page.entering', 
+				{page: enteringPage, route: data.route});
 			
 			domEnteringPage.css({opacity: 1, display: 'block'});
 			
@@ -40,81 +40,85 @@
 		//Default Behavior
 		
 		//notify all module
-		App.modules.notify('page.leaving',{page: leavingPage});
+		App.modules.notify('page.leaving', {page: leavingPage});
 		
 		//Leave the current page
 		leavingPage.leave(data.leaveCurrent);
 
 		enterPageAnimation();
-	},
+	};
 	
-	animatingTo = '',
-	
-	onRequestPageTransition = function(key, data,e) {
-		var 
-		animation = defaultTransition,
-		c;
+	var onRequestPageTransition = function (key, data, e) {
+		var animation = defaultTransition;
+		var c = 0;
 		
-		for (c = 0; c < transitionList.length; c++) {
-			var 
-			it = transitionList[c];
-			if( (it.from === data.currentPage.key().substring(1) || it.from === '*') &&	(it.to === data.nextPage.key().substring(1) || it.to === '*')) {
-				if(it.canAnimate(data)) {
+		for (; c < transitionList.length; c++) {
+			var it = transitionList[c];
+			
+			if ((it.from === data.currentPage.key().substring(1) || it.from === '*') &&
+				(it.to === data.nextPage.key().substring(1) || it.to === '*')) {
+				if (it.canAnimate(data)) {
 					animation = it.transition;
 					break;
 				}
 			}
 		}
+		
 		animatingTo = data.nextPage.key().substring(1);
-		animation(data,function() {
+		animation(data, function () {
 			animatingTo = '';
 		});
 		
 		//mark as handled
 		data.isHandled = true;
-	},
+	};
 	
-	actions = function () {
+	var actions = function () {
 		return {
 			pages: {
 				requestPageTransition: onRequestPageTransition
 			},
 			pageTransitionAnimation : {
-				getTargetPage : function(key,data,e) {
-					if(!data) {
+				getTargetPage : function (key, data, e) {
+					if (!data) {
 						data = {
 							result : {}
 						};
 					}
-					if(!data.result) { data.result = {};}
+					if (!data.result) {
+						data.result = {};
+					}
+					
 					data.result.pageTransitionAnimation = {};
 					data.result.pageTransitionAnimation.target = animatingTo;
 				}
 			}
 		};
-	},
+	};
 	
-	init = function () {
+	var init = function () {
 		// append 
 		$(App.root()).append($('<div id="bg-transition" ></div>'));
-	},
+	};
 	
-	exportsTransition = function(options) {
+	var exportsTransition = function (options) {
 		var o = $.extend({
 			from : '*',
 			to : '*',
 			transition : defaultTransition,
-			canAnimate : function() {return true;}
-		},options);
+			canAnimate : function () {
+				return true;
+			}
+		}, options);
 		
 		if (o.from === '*' && o.to === '*') {
 			defaultTransition = o.transition;
 		} else {
 			transitionList.push(o);	
 		}
-	},
+	};
 	
-	PageTransitionAnimation = App.modules.exports('pageTransitionAnimation', {
+	var PageTransitionAnimation = App.modules.exports('pageTransitionAnimation', {
 		init: init,
 		actions: actions
 	});

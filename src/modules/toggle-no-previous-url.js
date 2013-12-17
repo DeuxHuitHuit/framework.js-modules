@@ -6,18 +6,18 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	
 	var isMultiLangue = true;
 	
-	var getHomePageUrl = function() {
-		if(isMultiLangue) {
+	var getHomePageUrl = function () {
+		if (isMultiLangue) {
 			return '/' + $('html').attr('lang') + '/';
 		}
 		return '/';
 	};
 	
-	var onToggleNoPreviousUrl = function(key,data,e) {
+	var onToggleNoPreviousUrl = function (key, data, e) {
 		App.mediator.goto(getHomePageUrl());
 	};
 	
@@ -27,13 +27,13 @@
 				toggleNoPreviousUrl : onToggleNoPreviousUrl
 			}
 		};
-	},
+	};
 	
-	init = function () {
+	var init = function () {
 		
-	},
+	};
 	
-	Links = App.modules.exports('toggleNoPreviousUrl', {
+	var Links = App.modules.exports('toggleNoPreviousUrl', {
 		init: init,
 		actions: actions
 	});

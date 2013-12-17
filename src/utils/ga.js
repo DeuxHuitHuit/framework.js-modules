@@ -1,5 +1,5 @@
 (function ($) {
-	"use strict";
+	'use strict';
 	
 	// ga facilitator
 	$.sendPageView = function (opts) {

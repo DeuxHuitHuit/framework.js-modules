@@ -6,13 +6,13 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	
 	var win = $(window);
 	var body = $('body');
 	var sitePages = $('#site-pages');
 	
-	var defaultTransition = function(data,callback) {
+	var defaultTransition = function (data, callback) {
 		
 		var leavingPage = data.currentPage;
 		var enteringPage = data.nextPage;
@@ -27,10 +27,10 @@
 			
 			//Animate leaving and start entering after leaving animation
 			//Need a delay for get all Loaded
-			domEnteringPage.ready(function() {
-				domEnteringPage.css({opacity: 1, display : 'block'});
+			domEnteringPage.ready(function () {
+				domEnteringPage.css({opacity: 1, display: 'block'});
 				body.addClass(enteringPage.key().substring(1));
-				sitePages.animate({opacity: 1},500);
+				sitePages.animate({opacity: 1}, 500);
 				enteringPage.enter(data.enterNext);
 			});
 			
@@ -38,7 +38,7 @@
 		
 		body.removeClass(leavingPage.key().substring(1));
 		
-		sitePages.animate({opacity: 0},1000,function() {
+		sitePages.animate({opacity: 0}, 1000, function () {
 			//notify all module
 			App.modules.notify('page.leaving', {page: leavingPage});
 			
@@ -54,7 +54,7 @@
 	
 	App.transitions.exports({
 		transition: defaultTransition,
-		canAnimate: function(data) {
+		canAnimate: function (data) {
 			return true;
 		}
 	});

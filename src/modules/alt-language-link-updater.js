@@ -4,17 +4,16 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	var linkSelector = '#site a.js-alt-lg-link';
-	
 	var win = $(window);
 	var linkList = {};
 	
 	var init = function () {
 		
 		//Create initial value
-		var data ={};
-		$('link[rel=alternate][hreflang]',document).each(function() {
+		var data = {};
+		$('link[rel=alternate][hreflang]', document).each(function () {
 			var t = $(this);
 			data[t.attr('hreflang')] = t.attr('href');
 		});
@@ -22,30 +21,30 @@
 		linkList[document.location.pathname] = data;
 	};
 	
-	var onPageLoaded = function(key,data,e) {
+	var onPageLoaded = function (key, data, e) {
 		var linkData = {};
 		$(data.data).each(function (i, e) {  
-			if($(e).is('link')) {
+			if ($(e).is('link')) {
 				var t = $(e);
-				if(t.attr('hreflang')) {
+				if (t.attr('hreflang')) {
 					linkData[t.attr('hreflang')] = t.attr('href');
 				}
 			}
-			if($(e).is('body')) {
+			if ($(e).is('body')) {
 				return true;
 			}
 		});
 		linkList[data.url] = linkData;
 	};
 	
-	var onEnter = function(key,data,e) {
-		if(linkList[document.location.pathname]) {
+	var onEnter = function (key, data, e) {
+		if (linkList[document.location.pathname]) {
 			
 			//Update links
-			$(linkSelector).each(function(){
+			$(linkSelector).each(function () {
 				var t = $(this);
-				if(linkList[document.location.pathname][t.data('lg')]) {
-					t.attr('href',linkList[document.location.pathname][t.data('lg')]);
+				if (linkList[document.location.pathname][t.data('lg')]) {
+					t.attr('href', linkList[document.location.pathname][t.data('lg')]);
 				}
 			});
 		}
@@ -62,7 +61,7 @@
 	
 	var AltLanguageLinkUpdater = App.modules.exports('altLanguageLinkUpdater', {
 		init: init,
-		actions : function() {
+		actions : function () {
 			return actions;
 		}
 	});
