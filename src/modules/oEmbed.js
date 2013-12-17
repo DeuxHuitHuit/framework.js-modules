@@ -4,6 +4,13 @@
  * oEmbed module
  * Supports Youtube and Vimeo APIs
  * 
+ * APIS for supported players
+ * <!-- Vimeo - Froogaloop -->
+ * <script src="//a.vimeocdn.com/js/froogaloop2.min.js"></script>
+ * <!-- Youtube iframe api -->
+ * <script src="//www.youtube.com/iframe_api"></script>
+ * <!-- Player api for dailymotion -->
+ * <script src="//api.dmcdn.net/all.js"></script>
  */
 (function ($, undefined) {
 
