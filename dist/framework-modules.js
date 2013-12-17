@@ -1,4 +1,4 @@
-/*! framework.js-modules - v1.0.0 - 2013-12-10
+/*! framework.js-modules - v1.0.0 - 2013-12-17
 * https://github.com/DeuxHuitHuit/framework.js-modules
 * Copyright (c) 2013 Deux Huit Huit; Licensed MIT */
 /**
@@ -7,17 +7,16 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	var linkSelector = '#site a.js-alt-lg-link';
-	
 	var win = $(window);
 	var linkList = {};
 	
 	var init = function () {
 		
 		//Create initial value
-		var data ={};
-		$('link[rel=alternate][hreflang]',document).each(function() {
+		var data = {};
+		$('link[rel=alternate][hreflang]', document).each(function () {
 			var t = $(this);
 			data[t.attr('hreflang')] = t.attr('href');
 		});
@@ -25,30 +24,30 @@
 		linkList[document.location.pathname] = data;
 	};
 	
-	var onPageLoaded = function(key,data,e) {
+	var onPageLoaded = function (key, data, e) {
 		var linkData = {};
 		$(data.data).each(function (i, e) {  
-			if($(e).is('link')) {
+			if ($(e).is('link')) {
 				var t = $(e);
-				if(t.attr('hreflang')) {
+				if (t.attr('hreflang')) {
 					linkData[t.attr('hreflang')] = t.attr('href');
 				}
 			}
-			if($(e).is('body')) {
+			if ($(e).is('body')) {
 				return true;
 			}
 		});
 		linkList[data.url] = linkData;
 	};
 	
-	var onEnter = function(key,data,e) {
-		if(linkList[document.location.pathname]) {
+	var onEnter = function (key, data, e) {
+		if (linkList[document.location.pathname]) {
 			
 			//Update links
-			$(linkSelector).each(function(){
+			$(linkSelector).each(function () {
 				var t = $(this);
-				if(linkList[document.location.pathname][t.data('lg')]) {
-					t.attr('href',linkList[document.location.pathname][t.data('lg')]);
+				if (linkList[document.location.pathname][t.data('lg')]) {
+					t.attr('href', linkList[document.location.pathname][t.data('lg')]);
 				}
 			});
 		}
@@ -65,7 +64,7 @@
 	
 	var AltLanguageLinkUpdater = App.modules.exports('altLanguageLinkUpdater', {
 		init: init,
-		actions : function() {
+		actions : function () {
 			return actions;
 		}
 	});
@@ -84,7 +83,7 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	
 	/**
 	 * @author Deux Huit Huit
@@ -94,11 +93,11 @@
 	$.fn.extend({
 		blankLink: function () {
 			/* link target */
-			$(this).each(function _eachTarget () {
+			$(this).each(function _eachTarget() {
 				var t = $(this);
 				var href = t.attr('href');
 				
-				if (!!href && (/^https?:\/\//.test(href) || /^\/workspace/.test(href) )) {
+				if (!!href && (/^https?:\/\//.test(href) || /^\/workspace/.test(href))) {
 					if (t.attr('target') != '_blank') {
 						// must not be in
 						if (! /^:\/\//.test(href)) {
@@ -108,13 +107,12 @@
 					}
 				}
 			});
-			
 		}
 	});
 	
 	
-	var onPageEnter = function (key,data,e) {
-		$('a',$(data.page.key())).blankLink();
+	var onPageEnter = function (key, data, e) {
+		$('a', $(data.page.key())).blankLink();
 	};
 	
 	var init = function () {
@@ -143,40 +141,49 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	
-	var twitterlink = function(t) {
-		return t.replace(/[a-z]+:\/\/([a-z0-9-_]+\.[a-z0-9-_:~\+#%&\?\/.=^>^<]+[^:\.,\)\s*$])/gi, function(m, link) {
-			return '<a title="' + m + '" href="' + m + '" target="_blank">' + ((link.length > 36) ? link.substr(0, 35) + '&hellip;' : link) + '</a>';
-		});
+	var twitterlink = function (t) {
+		return t.replace(/[a-z]+:\/\/([a-z0-9-_]+\.[a-z0-9-_:~\+#%&\?\/.=^>^<]+[^:\.,\)\s*$])/gi, 
+			function (m, link) {
+				return '<a title="' + m + '" href="' + m + '" target="_blank">' + 
+					((link.length > 36) ? link.substr(0, 35) + '&hellip;' : link) + '</a>';
+			}
+		);
 	};
 	
-	var twitterat = function(t) {
-		return t.replace(/(^|[^\w]+)\@([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]{1,15}(\/[a-zA-Z0-9-_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)*)/gi, function(m, m1, m2) {
-			return m1 + '<a href="http://twitter.com/' + m2 + '" target="_blank">@' + m2 + '</a>';
-		});
+	var twitterat = function (t) {
+		return t.replace(
+/(^|[^\w]+)\@([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]{1,15}(\/[a-zA-Z0-9-_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)*)/gi,
+			function (m, m1, m2) {
+				return m1 + '<a href="http://twitter.com/' + m2 +
+					'" target="_blank">@' + m2 + '</a>';
+			}
+		);
 	};
 	
-	var twitterhash = function(t) {
-		return t.replace(/(^|[^&\w'"]+)\#([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ^"^<^>]+)/gi, function(m, m1, m2) {
-			return m.substr(-1) === '"' || m.substr(-1) == '<' ? m : m1 + '<a href="https://twitter.com/search?q=%23' + m2 + '&src=hash" target="_blank">#' + m2 + '</a>';
-		});
+	var twitterhash = function (t) {
+		return t.replace(/(^|[^&\w'"]+)\#([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ^"^<^>]+)/gi, 
+			function (m, m1, m2) {
+				return m.substr(-1) === '"' || m.substr(-1) == '<' ? 
+					m : m1 + '<a href="https://twitter.com/search?q=%23' + m2 +
+						'&src=hash" target="_blank">#' + m2 + '</a>';
+			}
+		);
 	};
 	 
-	window.formatTwitter = function() {
-		
+	window.formatTwitter = function () {
 		var t = $(this);
 		var text = t.html(); // keep the existing html
 		
 		if (t.attr('data-formattwitter') !== 'true') {
-		
 			text = twitterlink(text);
 			text = twitterat(text);
 			text = twitterhash(text);
 			
 			t.html(text);
 		
-			t.attr('data-formattwitter','true');
+			t.attr('data-formattwitter', 'true');
 		}
 	};
 	
@@ -198,41 +205,44 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	
-	var 
-	
-	onClickGoto = function (e) {
-		var t = $(this),
-			href = t.attr('href');
+	var onClickGoto = function (e) {
+		var t = $(this);
+		var href = t.attr('href');
 			
-		if(!e.ctrlKey) {
+		if (!e.ctrlKey) {
 			App.mediator.goto(href);
 			return window.pd(e);
 		}
-	},
+	};
 	
-	onClickToggle = function(e) {
-		var t = $(this),
-			href = t.attr('href');
+	var onClickToggle = function (e) {
+		var t = $(this);
+		var href = t.attr('href');
 		
 		App.mediator.toggle(href);
 		
 		return window.pd(e);
-	},
+	};
 	
-	actions = function () {
+	var actions = function () {
 		return {};
-	},
+	};
 	
-	init = function () {
+	var init = function () {
 		// capture all click in #site: delegate to the link or in any ui-dialog (jquery.ui)
-		$('#site').on('click', 'a[href^="/"]:not([href^="/workspace"]):not([data-action^="full"]):not([data-action^="toggle"]):not([data-action^="none"])', onClickGoto);
+		var sel = 'a[href^="/"]' + 
+			':not([href^="/workspace"])' +
+			':not([data-action^="full"])' +
+			':not([data-action^="toggle"])' +
+			':not([data-action^="none"])';
+		$('#site').on('click', sel, onClickGoto);
 		
 		$('#site').on('click', 'a[href^="/"][data-action^="toggle"]', onClickToggle);
-	},
+	};
 	
-	Links = App.modules.exports('links', {
+	var Links = App.modules.exports('links', {
 		init: init,
 		actions: actions
 	});
@@ -248,135 +258,130 @@
  */
 (function ($, undefined) {
 
-	"use strict";
+	'use strict';
 	
-	var
-	
-	abstractProvider = {
-		embed : function(container,id) {
-			var 
-			iframe = this.getIframe(id, parseInt(container.attr('data-autoplay'), 10));
+	var	abstractProvider = {
+		embed : function (container, id) {
+			var iAutoPlayParsed = parseInt(container.attr('data-autoplay'), 10);
+			var iframe = this.getIframe(id, iAutoPlayParsed, 10);
 			
-			iframe.attr('width','100%');
-			iframe.attr('height','100%');
+			iframe.attr('width', '100%');
+			iframe.attr('height', '100%');
 			container.append(iframe);
 			
 		},
 		
-		getIframe : function(id) {
+		getIframe : function (id) {
 			return $('<iframe/>');
 		},
 		
-		play : function(container){},
-		pause : function(container){}
-	},
+		play : function (container) {},
+		pause : function (container) {}
+	};
 	
-	vimeoProvider = $.extend({}, abstractProvider, 
-		{
-			getIframe : function(id, autoplay) {
-				autoplay = autoplay !== undefined ? autoplay : 1;
-				return $('<iframe src="http://player.vimeo.com/video/' + id + '?autoplay=' + autoplay + '&api=1&html5=1' + '"/>');
-			},
+	var vimeoProvider = $.extend({}, abstractProvider, {
+		getIframe : function (id, autoplay) {
+			autoplay = autoplay !== undefined ? autoplay : 1;
+			return $('<iframe src="http://player.vimeo.com/video/' + id +
+				'?autoplay=' + autoplay +
+				'&api=1&html5=1' + '"/>');
+		},
+		
+		play : function (container) {
+			var player = window.$f($('iframe', container).get(0));
 			
-			play : function(container) {
-				var player = window.$f($('iframe',container).get(0));
-				
-				player.api('play');
-			},
-			
-			pause : function(container) {
-				var player = window.$f($('iframe',container).get(0));
-				
-				player.api('pause');
-			}
-		}),
+			player.api('play');
+		},
+		
+		pause : function (container) {
+			var player = window.$f($('iframe', container).get(0));
+			player.api('pause');
+		}
+	});
 	
-	youtubeProvider = $.extend({}, abstractProvider, 
-		{
-			getIframe : function(url,autoplay) {
-			
-				var id = url.indexOf('v=') > 0 ? url.substring(url.indexOf('v=') + 2) : url.substring(url.lastIndexOf("/"));
-				autoplay = autoplay !== undefined ? autoplay : 1;
-				var iframe = $('<iframe id="youtube-player-' + id + '" src="http://www.youtube.com/embed/' + id + '?feature=oembed&autoplay='+autoplay+'&enablejsapi=1&version=3&html5=1' + '"/>');
-				this._player = new window.YT.Player(iframe.get(0));
-				return iframe;
-			},
-			
-			play : function(container) {
-				this._player.playVideo();
-			},
-			
-			pause : function(container) {
-				this._player.pauseVideo();
-			}
-		}),
-	
-	providers = {
+	var youtubeProvider = $.extend({}, abstractProvider, {
+		getIframe : function (url, autoplay) {
+			var id = url.indexOf('v=') > 0 ? 
+				url.substring(url.indexOf('v=') + 2) : url.substring(url.lastIndexOf('/'));
+			var autoPlay = autoplay !== undefined ? autoplay : 1;
+			var iframe = $('<iframe id="youtube-player-' + id +
+				'" src="http://www.youtube.com/embed/' + id +
+				'?feature=oembed&autoplay=' + autoPlay +
+				'&enablejsapi=1&version=3&html5=1' + '"/>');
+
+			this._player = new window.YT.Player(iframe.get(0));
+			return iframe;
+		},
+		
+		play : function (container) {
+			this._player.playVideo();
+		},
+		
+		pause : function (container) {
+			this._player.pauseVideo();
+		}
+	});
+
+	var providers = {
 		'Vimeo' : vimeoProvider,
 		'YouTube' : youtubeProvider
-	},
+	};
 	
-	loadVideo = function (key, videoContainer) {
-		var
-		videoId = videoContainer.data('videoId'),
-		videoProvider = providers[videoContainer.data('videoProvider')];
+	var loadVideo = function (key, videoContainer) {
+		var	videoId = videoContainer.data('videoId');
+		var videoProvider = providers[videoContainer.data('videoProvider')];
 		
 		videoProvider.embed(videoContainer, videoId);
-	},
+	};
 	
-	playVideo = function(key, videoContainer) {
-		var
-		videoId = videoContainer.data('videoId'),
-		videoProvider = providers[videoContainer.data('videoProvider')];
+	var playVideo = function (key, videoContainer) {
+		var	videoId = videoContainer.data('videoId');
+		var videoProvider = providers[videoContainer.data('videoProvider')];
 		
 		videoProvider.play(videoContainer);
-	},
+	};
 
-	pauseVideo = function(key, videoContainers) {
+	var pauseVideo = function (key, videoContainers) {
 		videoContainers.each(function eachVideoContainer(index, container) {
-			var
-			videoContainer = $(container),
-			videoId = videoContainer.data('videoId'),
-			videoProvider = providers[videoContainer.data('videoProvider')];
+			var videoContainer = $(container);
+			var videoId = videoContainer.data('videoId');
+			var videoProvider = providers[videoContainer.data('videoProvider')];
 			
-			if (!!videoProvider && !!videoId && !!videoContainer.find('iframe').length) {
+			if (!!videoProvider && 
+				!!videoId && 
+				!!videoContainer.find('iframe').length) {
 				videoProvider.pause(videoContainer);
 			}
 		});
-	},
+	};
 	
-	playBtnClicked = function(e) {
-		var 
-		btn = $(this),
-		item = btn.closest('.item-video'),
-		videoContainer = $('.item-video-container',item);
+	var playBtnClicked = function (e) {
+		var btn = $(this);
+		var item = btn.closest('.item-video');
+		var videoContainer = $('.item-video-container', item);
 		
 		loadVideo(null, videoContainer);
 		
 		btn.fadeOut();
-		$('.item-video-container',item).fadeIn();
+		$('.item-video-container', item).fadeIn();
 		
 		return window.pd(e);
-	},
+	};
 	
-	
-	init = function () {
+	var init = function () {
 		// capture all click in #site: delegate to the link
 		$('#site').on('click', 'a.play-button', playBtnClicked);
-	},
+	};
 	
-	// on ready, init the code
-	//$(init);
-	
-	actions = {
+	var actions = {
 		loadVideo: loadVideo,
 		playVideo: playVideo,
 		pauseVideo: pauseVideo
-	},
+	};
 	
-	oEmbed = App.modules.exports('oEmbed', {
+	var oEmbed = App.modules.exports('oEmbed', {
 		init: init,
-		actions : function(){
+		actions : function () {
 			return actions;
 		}
 	});
@@ -393,18 +398,19 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	
 	var win = $(window);
 	var site = $('#site');
 	
-	var onApplyButton = function(key, options, e) {
-		
+	var onApplyButton = function (key, options, e) {
+		var docLoc = document.location;
+		var url = docLoc.protocol + '//' + docLoc.host + docLoc.pathname;
 		var defaultShareThisOption = {
-			service: "sharethis",
+			service: 'sharethis',
 			title: document.title,
-			url: document.location.protocol + '//' + document.location.host + document.location.pathname,
-			type: "large"
+			url: url,
+			type: 'large'
 		};
 		
 		var o = $.extend(defaultShareThisOption, options);
@@ -414,7 +420,6 @@
 			window.stWidget.addEntry(o);
 		}
 	};
-	
 	
 	var init = function () {
 		
@@ -428,7 +433,7 @@
 	
 	var Menu = App.modules.exports('shareThis', {
 		init: init,
-		actions : function(){
+		actions : function () {
 			return actions;
 		}
 	});
@@ -443,34 +448,33 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	
-	var 
-	win = $(window),
-	metaTitle = $('title',document),
-	titleList = {};
+	var win = $(window);
+	var metaTitle = $('title', document);
+	var titleList = {};
 	
 	
 	var init = function () {
 		titleList[document.location.pathname] = $('title').text();
 	};
 	
-	var onPageLoaded = function(key,data,e) {
-		var title = "";
+	var onPageLoaded = function (key, data, e) {
+		var title = '';
 		$(data.data).each(function (i, e) {  
-			if($(e).is('title')) {
+			if ($(e).is('title')) {
 				title = $(e).text();
 				return true;
 			}
 		});
-		if(!!!data.url) {
+		if (!!!data.url) {
 			data.url = document.location.pathname;
 		}
 		titleList[data.url] = title;
 	};
 	
-	var onEnter = function(key,data,e) {
-		if(titleList[document.location.pathname]) {
+	var onEnter = function (key, data, e) {
+		if (titleList[document.location.pathname]) {
 			document.title = titleList[document.location.pathname];
 		}
 	};
@@ -492,7 +496,7 @@
 	
 	var TitleUpdater = App.modules.exports('titleUpdater', {
 		init: init,
-		actions : function() {
+		actions : function () {
 			return actions;
 		}
 	});
@@ -507,18 +511,18 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	
 	var isMultiLangue = true;
 	
-	var getHomePageUrl = function() {
-		if(isMultiLangue) {
+	var getHomePageUrl = function () {
+		if (isMultiLangue) {
 			return '/' + $('html').attr('lang') + '/';
 		}
 		return '/';
 	};
 	
-	var onToggleNoPreviousUrl = function(key,data,e) {
+	var onToggleNoPreviousUrl = function (key, data, e) {
 		App.mediator.goto(getHomePageUrl());
 	};
 	
@@ -528,13 +532,13 @@
 				toggleNoPreviousUrl : onToggleNoPreviousUrl
 			}
 		};
-	},
+	};
 	
-	init = function () {
+	var init = function () {
 		
-	},
+	};
 	
-	Links = App.modules.exports('toggleNoPreviousUrl', {
+	var Links = App.modules.exports('toggleNoPreviousUrl', {
 		init: init,
 		actions: actions
 	});
@@ -553,22 +557,22 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	
-	var 
+	var transitionList = [];
+	var animatingTo = '';
 	
-	transitionList = [],
-	
-	defaultTransition = function(data,callback) {
+	var defaultTransition = function (data, callback) {
 			
 		var leavingPage = data.currentPage;
 		var enteringPage = data.nextPage;
 		var domEnteringPage = $(enteringPage.key());
 		var domLeavingPage = $(leavingPage.key());
 			
-		var enterPageAnimation = function() {
+		var enterPageAnimation = function () {
 			//Notify intering page
-			App.modules.notify('page.entering', {page: enteringPage, route: data.route});
+			App.modules.notify('page.entering', 
+				{page: enteringPage, route: data.route});
 			
 			domEnteringPage.css({opacity: 1, display: 'block'});
 			
@@ -583,81 +587,85 @@
 		//Default Behavior
 		
 		//notify all module
-		App.modules.notify('page.leaving',{page: leavingPage});
+		App.modules.notify('page.leaving', {page: leavingPage});
 		
 		//Leave the current page
 		leavingPage.leave(data.leaveCurrent);
 
 		enterPageAnimation();
-	},
+	};
 	
-	animatingTo = '',
-	
-	onRequestPageTransition = function(key, data,e) {
-		var 
-		animation = defaultTransition,
-		c;
+	var onRequestPageTransition = function (key, data, e) {
+		var animation = defaultTransition;
+		var c = 0;
 		
-		for (c = 0; c < transitionList.length; c++) {
-			var 
-			it = transitionList[c];
-			if( (it.from === data.currentPage.key().substring(1) || it.from === '*') &&	(it.to === data.nextPage.key().substring(1) || it.to === '*')) {
-				if(it.canAnimate(data)) {
+		for (; c < transitionList.length; c++) {
+			var it = transitionList[c];
+			
+			if ((it.from === data.currentPage.key().substring(1) || it.from === '*') &&
+				(it.to === data.nextPage.key().substring(1) || it.to === '*')) {
+				if (it.canAnimate(data)) {
 					animation = it.transition;
 					break;
 				}
 			}
 		}
+		
 		animatingTo = data.nextPage.key().substring(1);
-		animation(data,function() {
+		animation(data, function () {
 			animatingTo = '';
 		});
 		
 		//mark as handled
 		data.isHandled = true;
-	},
+	};
 	
-	actions = function () {
+	var actions = function () {
 		return {
 			pages: {
 				requestPageTransition: onRequestPageTransition
 			},
 			pageTransitionAnimation : {
-				getTargetPage : function(key,data,e) {
-					if(!data) {
+				getTargetPage : function (key, data, e) {
+					if (!data) {
 						data = {
 							result : {}
 						};
 					}
-					if(!data.result) { data.result = {};}
+					if (!data.result) {
+						data.result = {};
+					}
+					
 					data.result.pageTransitionAnimation = {};
 					data.result.pageTransitionAnimation.target = animatingTo;
 				}
 			}
 		};
-	},
+	};
 	
-	init = function () {
+	var init = function () {
 		// append 
 		$(App.root()).append($('<div id="bg-transition" ></div>'));
-	},
+	};
 	
-	exportsTransition = function(options) {
+	var exportsTransition = function (options) {
 		var o = $.extend({
 			from : '*',
 			to : '*',
 			transition : defaultTransition,
-			canAnimate : function() {return true;}
-		},options);
+			canAnimate : function () {
+				return true;
+			}
+		}, options);
 		
 		if (o.from === '*' && o.to === '*') {
 			defaultTransition = o.transition;
 		} else {
 			transitionList.push(o);	
 		}
-	},
+	};
 	
-	PageTransitionAnimation = App.modules.exports('pageTransitionAnimation', {
+	var PageTransitionAnimation = App.modules.exports('pageTransitionAnimation', {
 		init: init,
 		actions: actions
 	});
@@ -684,296 +692,299 @@
 
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	
-	var 
+	var win = $(window);
+	var _currentPageKey = '';
+	var _currentPageUrl = '';
+	var _currentPageFragment = '';
+	var _currentQsFragment = {};
 	
-	win = $(window),
-	_currentPageKey = "",
-	_currentPageUrl = "",
-	_currentPageFragment = "",
-	_currentQsFragment = {},
-	
-	createHashStrategy = function() {
-		var 
-		_initialDocumentUrl = document.location.pathname,
-		_isInternalFragChange = false,
-		_triggerFirstHashChange = false;
+	var createHashStrategy = function () {
+		var _initialDocumentUrl = document.location.pathname;
+		var _isInternalFragChange = false;
+		var _triggerFirstHashChange = false;
+		
 		return {
-			urlChanged : function() {
-				if(!_isInternalFragChange) {
+			urlChanged : function () {
+				if (!_isInternalFragChange) {
 					var h = document.location.hash;
 					
-					var	nextPage = App.pages.page(h.length > 1 ? h.substring(1) : document.location.pathname);
+					var	nextPage = App.pages.page(h.length > 1 ? 
+						h.substring(1) : document.location.pathname);
 
 					//if we found a page for this route
-					if(nextPage) {
+					if (nextPage) {
 						
 						//Detect if we change page
-						if(nextPage.key() == _currentPageKey) {
-							var 
-							_cur = _currentPageUrl,
-							pageFragment = document.location.hash.substring(_cur.length);
-							if(_currentPageFragment != pageFragment || _triggerFirstHashChange) {
-								App.mediator.notify("page.fragmentChanged",pageFragment );
+						if (nextPage.key() == _currentPageKey) {
+							var _cur = _currentPageUrl;
+							var pageFragment = document.location.hash.substring(_cur.length);
+							
+							if (_currentPageFragment != pageFragment || _triggerFirstHashChange) {
+								App.mediator.notify('page.fragmentChanged', pageFragment);
 								_currentPageFragment = pageFragment;
 							}
 						} else {
 							App.mediator.goto(document.location.hash.substring(1));
 						}
 					}
-				}else {
+				} else {
 					_isInternalFragChange = false;
 				}
 			},
-			pageEntering : function(newRoute) {
+			pageEntering : function (newRoute) {
 				// Raise flag for the first time
-				if(_currentPageUrl === "") {
+				if (_currentPageUrl === '') {
 					_triggerFirstHashChange = true;
 				} else {
-					
 					//Raise flag for internal change
 					_isInternalFragChange = true;
-					if(newRoute != _initialDocumentUrl) {
+					if (newRoute != _initialDocumentUrl) {
 						$.bbq.pushState('#' + newRoute +  _currentPageFragment);
 					} else {
 						$.bbq.pushState('#');
 					}
 				}
-				
 			},
-			pageEntered : function() {
-				if(_triggerFirstHashChange) {
-					win.trigger("hashchange");
+			pageEntered : function () {
+				if (_triggerFirstHashChange) {
+					win.trigger('hashchange');
 				}
 			},
-			updateUrlFragment : function() {
+			updateUrlFragment : function () {
+				var newVal = _currentPageUrl + _currentPageFragment;
+				
 				//Raise flag for internal change
 				_isInternalFragChange = true;
-				var newVal = _currentPageUrl + _currentPageFragment;
-				if (_currentPageUrl[_currentPageUrl.length-1] == '/' && _currentPageFragment[0] == '/') {
+				
+				if (_currentPageUrl[_currentPageUrl.length - 1] == '/' && 
+					_currentPageFragment[0] == '/') {
 					newVal = _currentPageUrl + _currentPageFragment.substring(1);
 				}
+				
 				$.bbq.pushState('#' + newVal);
 				_isInternalFragChange = false;
 			}
 		};
-	},
+	};
 	
-	createHistoryStrategy = function() {
-		var
-		_isPopingState = false,
-		_triggerFirstFragmentChange = false;
+	var createHistoryStrategy = function () {
+		var _isPopingState = false;
+		var _triggerFirstFragmentChange = false;
 		
 		return {
-			urlChanged : function() {
-				var 
-				nextPage = App.pages.page(document.location.pathname);
+			urlChanged : function () {
+				var nextPage = App.pages.page(document.location.pathname);
 
 				//if we found a page for this route
-				if(nextPage) {
+				if (nextPage) {
 					
 					//Detect if we change page
-					if(nextPage.key() == _currentPageKey) {
-						var 
-						_cur = document.location.origin + _currentPageUrl,
-						pageFragment = document.location.href.substring(_cur.length);
-						if(_currentPageFragment != pageFragment) {
-							App.mediator.notify("page.fragmentChanged",pageFragment );
+					if (nextPage.key() == _currentPageKey) {
+						var _cur = document.location.origin + _currentPageUrl;
+						var pageFragment = document.location.href.substring(_cur.length);
+						
+						if (_currentPageFragment != pageFragment) {
+							App.mediator.notify('page.fragmentChanged', pageFragment);
 							_currentPageFragment = pageFragment;
 						}
 					} else {
 						_isPopingState = true;
 						App.mediator.goto(document.location.pathname + document.location.search);
 					}
-					
 				}
 			},
-			pageEntering : function(newRoute) {
+			pageEntering : function (newRoute) {
 				var url = newRoute;
-				if(_currentPageUrl === "") {
+				
+				if (_currentPageUrl === '') {
 					_triggerFirstFragmentChange = true;
 				}
-				if(_currentPageUrl !== "") {
+				if (_currentPageUrl !== '') {
 					url = url + _currentPageFragment;
 				
-					if(!_isPopingState){
-						history.pushState({}, document.title, newRoute + _currentPageFragment );
+					if (!_isPopingState) {
+						history.pushState({}, document.title, newRoute + _currentPageFragment);
 					}
 					_isPopingState = false;
 				}
 				
 			},
-			pageEntered : function() {
-				if(_triggerFirstFragmentChange) {
+			pageEntered : function () {
+				if (_triggerFirstFragmentChange) {
 					//Detect if we have a fragment
-					_currentPageFragment = document.location.href.substring((document.location.protocol + '//' + document.location.host + _currentPageUrl).length);
-					App.mediator.notify("page.fragmentChanged", _currentPageFragment);
+					var href = document.location.href;
+					var curPageHref = document.location.protocol + '//' + 
+						document.location.host + _currentPageUrl;
+					_currentPageFragment = href.substring(curPageHref.length);
+					App.mediator.notify('page.fragmentChanged', _currentPageFragment);
 				}
 			},
-			updateUrlFragment : function() {
-				history.pushState({}, document.title, _currentPageUrl + _currentPageFragment );
+			updateUrlFragment : function () {
+				history.pushState({}, document.title, _currentPageUrl + _currentPageFragment);
 			}
 		};
-	},
+	};
 	
-	_strategies = {
+	var _strategies = {
 		hash : createHashStrategy(),
 		history : createHistoryStrategy()
-	},
+	};
 	
-	_currentStrategy = _strategies.hash,
+	var _currentStrategy = _strategies.hash;
 	
-	_getLanguageIndex = function() {
-		return $('body').hasClass('fr')?0:1;
-	},
+	var _getLanguageIndex = function () {
+		return $('body').hasClass('fr') ? 0 : 1;
+	};
 	
-	_getNextRouteFromData = function(data) {
+	var _getNextRouteFromData = function (data) {
 		return data.page.routes()[_getLanguageIndex()];
-	},
+	};
 	
-	_extractFragmentFromRoute = function(nextRoute,reelRoute) {
-		var
-		starIndex = nextRoute.indexOf('*');
+	var _extractFragmentFromRoute = function (nextRoute, reelRoute) {
+		var	starIndex = nextRoute.indexOf('*');
 		
-		if(starIndex > -1) {
-			nextRoute = nextRoute.substring(0,starIndex);
+		if (starIndex > -1) {
+			nextRoute = nextRoute.substring(0, starIndex);
 			
 			//We got some fragment also
-			if(reelRoute.length > nextRoute.length) {
+			if (reelRoute.length > nextRoute.length) {
 				_currentPageFragment = reelRoute.substring(starIndex);
 				_extractQS();
-			}else {
+			} else {
 				//Clear fragment?
 				_currentPageFragment = '';
 				_currentQsFragment	= {};
 			}
 		}
 		return nextRoute;
-	},
+	};
 	
-	_extractQS = function() {
+	var _extractQS = function () {
 		var QSIndex = _currentPageFragment.indexOf('?');
-		if(QSIndex > -1) {
-			_currentQsFragment = window.QueryStringParser.parse(_currentPageFragment.substring(QSIndex));
-		}else {
+		if (QSIndex > -1) {
+			_currentQsFragment = window.QueryStringParser.parse(
+					_currentPageFragment.substring(QSIndex)
+				);
+		} else {
 			_currentQsFragment	= {};
 		}
-	},
+	};
 	
 	/** Module **/
-	onPageEntering = function(key,data,e) {
-		var 
-		nextRoute = _extractFragmentFromRoute(_getNextRouteFromData(data),data.route);
+	var onPageEntering = function (key, data, e) {
+		var nextRoute = _extractFragmentFromRoute(_getNextRouteFromData(data), data.route);
 		
 		//Update browser url if we change page route
-		if(_currentPageUrl != nextRoute) {
+		if (_currentPageUrl != nextRoute) {
 			//Keep a copy of the currentPage url
 			_currentStrategy.pageEntering(nextRoute);
 			_currentPageUrl = nextRoute;
 			_currentPageKey = data.page.key();
 			
-			$.sendPageView({page:data.route});
+			$.sendPageView({page: data.route});
 		}
-	},
+	};
 	
-	onPageEntered = function(key,data,e) {
+	var onPageEntered = function (key, data, e) {
 		_currentStrategy.pageEntered();
-	},
+	};
 	
-	onPageLeaving = function(key,data,e) {
+	var onPageLeaving = function (key, data, e) {
 		//clear the current page fragment
-		_currentPageFragment = "";
+		_currentPageFragment = '';
 		//Keep QS sync
 		_extractQS();
-	},
+	};
 	
-	onUpdateUrlFragment = function(key,data,e) {
+	var onUpdateUrlFragment = function (key, data, e) {
 		
 		//Dont do it if we dont have any page url
-		if(_currentPageUrl !== '') {
-			if(typeof data == "object") {
-				
-			}else {
+		if (_currentPageUrl !== '') {
+			if ($.type(data) != 'object') {
 				//Keep a copy of the fragment
 				_currentPageFragment = data;
 				//Keep QS sync
 				_extractQS();
-				
 			}
 			_currentStrategy.updateUrlFragment();
 		}
-	},
+	};
 	
-	_generateQsString = function() {
-		var result = "",
+	var _generateQsString = function () {
+		var result = '',
 		c = 0;
 		
-		for( var prop in _currentQsFragment) {
-			if(_currentQsFragment[prop] !== null) {
-				if(c > 0) {
-					result += "&";
+		for (var prop in _currentQsFragment) {
+			if (_currentQsFragment[prop] !== null) {
+				if (c > 0) {
+					result += '&';
 				}
-				result += prop + "=" + _currentQsFragment[prop];
+				result += prop + '=' + _currentQsFragment[prop];
 				c++;
 			}
 		}
 		return result;
-	},
+	};
 	
-	onUpdateQsFragment = function(key,data,e) {
-		if(typeof data == "object") {
+	var onUpdateQsFragment = function (key, data, e) {
+		if (typeof data == 'object') {
 			//Update _currentQsFragment
-			$.extend(_currentQsFragment,data);
+			$.extend(_currentQsFragment, data);
 			
 			var currentQsIndex = _currentPageFragment.indexOf('?'),
 			newQsString = _generateQsString();
 			
-			
 			//Generate new page fragment
-			if(currentQsIndex === -1) {
+			if (currentQsIndex === -1) {
 				_currentPageFragment += '?' + newQsString;
-			}else {
-				_currentPageFragment = _currentPageFragment.substring(0,currentQsIndex + 1) + newQsString;
+			} else {
+				_currentPageFragment = _currentPageFragment.substring(0, currentQsIndex + 1) + 
+					newQsString;
 			}
 			
 			//_currentPage
 			_currentStrategy.updateUrlFragment();
 		}
-	},
+	};
 	
-	onNavigateToCurrent = function(key,data,e) {
+	var onNavigateToCurrent = function (key, data, e) {
 		var _oldFragment = _currentPageFragment;
-		_extractFragmentFromRoute(_getNextRouteFromData(data),data.route);
+		
+		_extractFragmentFromRoute(_getNextRouteFromData(data), data.route);
 		_currentStrategy.updateUrlFragment();
 		
 		//Set back old fragment to trigger fragment changed
 		_currentPageFragment = _oldFragment;
 		_extractQS();
 		_currentStrategy.urlChanged();
-	},
+	};
 	
-	_urlChanged = function() {
+	var _urlChanged = function () {
 		_currentStrategy.urlChanged();
-	},
+	};
 	
-	init = function () {
+	var init = function () {
 		//Detect good strategy
 		if (window.history.pushState) {
 			_currentStrategy = _strategies.history;
-			win.on( "popstate", _urlChanged );
+			win.on('popstate', _urlChanged);
 			
-		}else if($.bbq) {
+		} else if ($.bbq) {
 			
 			_currentStrategy = _strategies.hash;
 			//Attach to hash change
-			win.on( "hashchange", _urlChanged );
-		}else {
-			App.log({fx:'error',msg:"Cannot update url : history api and bbq are not found"});
+			win.on('hashchange', _urlChanged);
+		} else {
+			App.log({
+				fx: 'error',
+				msg: 'Cannot update url : history api and bbq are not found'
+			});
 		}
-	},
+	};
 	
-	actions = function () {
+	var actions = function () {
 		return {
 			page: {
 				entering : onPageEntering,
@@ -986,9 +997,9 @@
 				navigateToCurrent : onNavigateToCurrent
 			}
 		};
-	},
+	};
 	
-	urlChanger = App.modules.exports('urlChanger', {
+	var urlChanger = App.modules.exports('urlChanger', {
 		init: init,
 		actions : actions
 	});
@@ -1001,25 +1012,23 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
-	var 
+	'use strict';
+	var win = $(window);
 	
-	win = $(window),
-	
-	resizeHandler = function(e) {
+	var resizeHandler = function (e) {
 		App.mediator.notify('site.resize', null, e);
-	},
+	};
 	
-	scrollHandler = function (e) {
+	var scrollHandler = function (e) {
 		App.mediator.notify('site.scroll', null, e);
-	},
+	};
 	
-	init = function () {
+	var init = function () {
 		//Trigger resize
 		win.resize(resizeHandler).scroll(scrollHandler);
-	},
+	};
 	
-	Links = App.modules.exports('windowNotifier', {
+	var WindowNotifier = App.modules.exports('windowNotifier', {
 		init: init
 	});
 	
@@ -1033,13 +1042,13 @@
  */
 (function ($, undefined) {
 	
-	"use strict";
+	'use strict';
 	
 	var win = $(window);
 	var body = $('body');
 	var sitePages = $('#site-pages');
 	
-	var defaultTransition = function(data,callback) {
+	var defaultTransition = function (data, callback) {
 		
 		var leavingPage = data.currentPage;
 		var enteringPage = data.nextPage;
@@ -1054,10 +1063,10 @@
 			
 			//Animate leaving and start entering after leaving animation
 			//Need a delay for get all Loaded
-			domEnteringPage.ready(function() {
-				domEnteringPage.css({opacity: 1, display : 'block'});
+			domEnteringPage.ready(function () {
+				domEnteringPage.css({opacity: 1, display: 'block'});
 				body.addClass(enteringPage.key().substring(1));
-				sitePages.animate({opacity: 1},500);
+				sitePages.animate({opacity: 1}, 500);
 				enteringPage.enter(data.enterNext);
 			});
 			
@@ -1065,7 +1074,7 @@
 		
 		body.removeClass(leavingPage.key().substring(1));
 		
-		sitePages.animate({opacity: 0},1000,function() {
+		sitePages.animate({opacity: 0}, 1000, function () {
 			//notify all module
 			App.modules.notify('page.leaving', {page: leavingPage});
 			
@@ -1081,9 +1090,52 @@
 	
 	App.transitions.exports({
 		transition: defaultTransition,
-		canAnimate: function(data) {
+		canAnimate: function (data) {
 			return true;
 		}
 	});
 	
+})(jQuery);
+
+/**
+ * @author Deux Huit Huit
+ *
+ * Default page implementation
+ *
+ */
+(function ($, undefined) {
+
+	'use strict';
+	
+	var onEnter = function (next) {
+		App.callback(next);
+	};
+	
+	var init = function () {
+		
+	};
+	
+	App.pages.exports('defaultPage', {
+		init: init,
+		enter : onEnter
+	});
+	
+})(jQuery);
+
+(function ($) {
+	'use strict';
+	
+	// ga facilitator
+	$.sendPageView = function (opts) {
+		if (!!window.ga) {
+			var defaults = {
+				page: window.location.pathname + window.location.search,
+				location: window.location.href,
+				hostname: window.location.hostname
+			};
+			var args = !opts ? defaults : $.extend(defaults, opts);
+			
+			window.ga('send', 'pageview', args);
+		}
+	};
 })(jQuery);
