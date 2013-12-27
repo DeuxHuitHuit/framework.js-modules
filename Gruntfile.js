@@ -59,7 +59,7 @@ module.exports = function fxGruntConfig(grunt) {
 		pkg: grunt.file.readJSON('package.json'),
 		build: 'auto',
 		meta: {
-			banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' ++
+			banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
 			'- build <%= build %> - ' +
 			'<%= grunt.template.today("yyyy-mm-dd") %>\n' +
 			'<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
