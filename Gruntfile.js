@@ -42,7 +42,7 @@ module.exports = function fxGruntConfig(grunt) {
 	};
 	
 	var getBuildNumber = function () {
-		var b = {}
+		var b = {};
 		
 		try {
 			b = grunt.file.readJSON(BUILD_FILE);
@@ -166,7 +166,7 @@ module.exports = function fxGruntConfig(grunt) {
 	
 	var init = function (grunt) {
 		// Project configuration.
-		grunt.initConfig();
+		grunt.initConfig(config);
 		
 		// Default task.
 		grunt.registerTask('default',  ['jshint', 'complexity', 'concat', 'uglify']);
