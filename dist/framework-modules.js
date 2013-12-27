@@ -1,4 +1,4 @@
-/*! framework.js-modules - v1.1.0 - - build 304 - 2013-12-27
+/*! framework.js-modules - v1.1.0 - - build 319 - 2013-12-27
 * https://github.com/DeuxHuitHuit/framework.js-modules
 * Copyright (c) 2013 Deux Huit Huit; Licensed MIT */
 /**

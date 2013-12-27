@@ -3,6 +3,7 @@
 var fs = module.require('fs');
 var path = module.require('path');
 var os = module.require('os');
+var md = module.require('matchdep');
 
 module.exports = function fxGruntConfig(grunt) {
 
@@ -13,33 +14,13 @@ module.exports = function fxGruntConfig(grunt) {
 	
 	var BUILD_FILE = './dist/build.json';
 	
-	var SRC_FOLDERS = [
-		'./src/com/',
-		'./src/modules/',
-		'./src/transitions/',
-		'./src/pages/',
-		'./src/utils/'
+	var SRC_FILES = [
+		'./src/com/*.js',
+		'./src/modules/*.js',
+		'./src/transitions/*.js',
+		'./src/pages/*.js',
+		'./src/utils/*.js'
 	];
-	var SRC_FILES = [];
-
-	// load grunt task
-	var loadGruntTasks = function (grunt) {
-		grunt.loadNpmTasks('grunt-contrib-uglify');
-		grunt.loadNpmTasks('grunt-contrib-jshint');
-		grunt.loadNpmTasks('grunt-contrib-concat');
-		grunt.loadNpmTasks('grunt-complexity');
-	};
-
-	var createSrcFiles = function () {
-		SRC_FOLDERS.forEach(function (folder) {
-			var p = path.normalize(folder);
-			var files = fs.readdirSync(p);
-			
-			files.forEach(function (file) {
-				SRC_FILES.push(path.normalize(p + file));
-			});
-		});
-	};
 	
 	var getBuildNumber = function () {
 		var b = {};
@@ -135,8 +116,8 @@ module.exports = function fxGruntConfig(grunt) {
 			},
 			options: {
 				banner: '<%= meta.banner %>',
-				sourceMap: 'dist/framework.map',
-				sourceMappingURL: 'framework.map',
+				sourceMap: 'dist/<%= pkg.name %>.map',
+				sourceMappingURL: '<%= pkg.name %>.map',
 				report: 'gzip',
 				mangle: true,
 				compress: {
@@ -171,13 +152,11 @@ module.exports = function fxGruntConfig(grunt) {
 		// Default task.
 		grunt.registerTask('default',  ['jshint', 'complexity', 'concat', 'uglify']);
 		grunt.registerTask('dev',      ['jshint', 'complexity']);
-		grunt.registerTask('build',    ['jshint', 'concat', 'uglify']);
+		grunt.registerTask('build',    ['concat', 'uglify']);
 	};
 	
 	var load = function (grunt) {
-		loadGruntTasks(grunt);
-		
-		createSrcFiles();
+		md.filterDev('grunt-*').forEach(grunt.loadNpmTasks);
 		
 		config.build = getBuildNumber();
 		
