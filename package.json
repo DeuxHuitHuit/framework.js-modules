@@ -2,7 +2,7 @@
   "name": "framework-modules",
   "title": "framework.js-modules",
   "description": "Collections of modules we frequently use with our framework",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "homepage": "https://github.com/DeuxHuitHuit/framework.js-modules",
   "author": {
     "name": "Deux Huit Huit",
@@ -25,7 +25,6 @@
   "keywords": [],
   "devDependencies": {
     "grunt": "~0.4.1",
-    "grunt-cli": "~0.1.9",
     "grunt-contrib-connect": "~0.3.0",
     "grunt-contrib-uglify": "~0.2.0",
     "grunt-contrib-jshint": "~0.4.3",
