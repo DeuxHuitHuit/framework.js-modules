@@ -87,14 +87,22 @@
 		var	videoId = videoContainer.data('videoId');
 		var videoProvider = providers[videoContainer.data('videoProvider')];
 		
-		videoProvider.embed(videoContainer, videoId);
+		if (!provider) {
+			App.log({args: ['Provider `%s` not found.', videoProvider], me: 'oEmbed', fx: 'warn'});
+		} else {
+			videoProvider.embed(videoContainer, videoId);
+		}
 	};
 	
 	var playVideo = function (key, videoContainer) {
 		var	videoId = videoContainer.data('videoId');
 		var videoProvider = providers[videoContainer.data('videoProvider')];
 		
-		videoProvider.play(videoContainer);
+		if (!provider) {
+			App.log({args: ['Provider `%s` not found.', videoProvider], me: 'oEmbed', fx: 'warn'});
+		} else {
+			videoProvider.play(videoContainer);
+		}
 	};
 
 	var pauseVideo = function (key, videoContainers) {
