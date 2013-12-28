@@ -87,7 +87,7 @@
 		var	videoId = videoContainer.data('videoId');
 		var videoProvider = providers[videoContainer.data('videoProvider')];
 		
-		if (!provider) {
+		if (!videoProvider) {
 			App.log({args: ['Provider `%s` not found.', videoProvider], me: 'oEmbed', fx: 'warn'});
 		} else {
 			videoProvider.embed(videoContainer, videoId);
@@ -98,7 +98,7 @@
 		var	videoId = videoContainer.data('videoId');
 		var videoProvider = providers[videoContainer.data('videoProvider')];
 		
-		if (!provider) {
+		if (!videoProvider) {
 			App.log({args: ['Provider `%s` not found.', videoProvider], me: 'oEmbed', fx: 'warn'});
 		} else {
 			videoProvider.play(videoContainer);
