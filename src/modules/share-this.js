@@ -27,6 +27,11 @@
 			//init share this if we found
 			window.stWidget.addEntry(o);
 		}
+		
+		// block clicks
+		$(o.element).click(function (e) {
+			return window.pd(e, false);
+		});
 	};
 	
 	var init = function () {
