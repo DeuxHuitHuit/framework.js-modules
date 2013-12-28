@@ -38,7 +38,7 @@
 	var vimeoProvider = $.extend({}, abstractProvider, {
 		getIframe : function (id, autoplay) {
 			autoplay = autoplay !== undefined ? autoplay : 1;
-			return $('<iframe src="http://player.vimeo.com/video/' + id +
+			return $('<iframe src="//player.vimeo.com/video/' + id +
 				'?autoplay=' + autoplay +
 				'&api=1&html5=1' + '"/>');
 		},
@@ -61,7 +61,7 @@
 				url.substring(url.indexOf('v=') + 2) : url.substring(url.lastIndexOf('/'));
 			var autoPlay = autoplay !== undefined ? autoplay : 1;
 			var iframe = $('<iframe id="youtube-player-' + id +
-				'" src="http://www.youtube.com/embed/' + id +
+				'" src="//www.youtube.com/embed/' + id +
 				'?feature=oembed&autoplay=' + autoPlay +
 				'&enablejsapi=1&version=3&html5=1' + '"/>');
 
