@@ -2,7 +2,7 @@
 
 #### Version 1.1
 
-##### Works with [Deux Huit Huit's framework version 1.3](https://github.com/DeuxHuitHuit/framework.js)
+##### Works with the latest version of [Deux Huit Huit's framework version 1.3.x](https://github.com/DeuxHuitHuit/framework.js).
 
 Collections of files we frequently use with our framework.
 
