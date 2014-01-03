@@ -1,6 +1,6 @@
-/*! framework.js-modules - v1.1.0 - - build 319 - 2013-12-27
+/*! framework.js-modules - v1.1.0 - - build 325 - 2014-01-03
 * https://github.com/DeuxHuitHuit/framework.js-modules
-* Copyright (c) 2013 Deux Huit Huit; Licensed MIT */
+* Copyright (c) 2014 Deux Huit Huit; Licensed MIT */
 /**
  * @author Deux Huit Huit
  *
@@ -371,7 +371,7 @@
 		},
 		
 		getIframe : function (id) {
-			return $('<iframe/>');
+			return $('<iframe allowfullscreen="" />');
 		},
 		
 		play : function (container) {},
@@ -381,9 +381,10 @@
 	var vimeoProvider = $.extend({}, abstractProvider, {
 		getIframe : function (id, autoplay) {
 			autoplay = autoplay !== undefined ? autoplay : 1;
-			return $('<iframe src="http://player.vimeo.com/video/' + id +
-				'?autoplay=' + autoplay +
-				'&api=1&html5=1' + '"/>');
+			return abstractProvider.getIframe()
+				.attr('src', '//player.vimeo.com/video/' + id +
+						'?autoplay=' + autoplay +
+						'&api=1&html5=1');
 		},
 		
 		play : function (container) {
@@ -403,10 +404,10 @@
 			var id = url.indexOf('v=') > 0 ? 
 				url.substring(url.indexOf('v=') + 2) : url.substring(url.lastIndexOf('/'));
 			var autoPlay = autoplay !== undefined ? autoplay : 1;
-			var iframe = $('<iframe id="youtube-player-' + id +
-				'" src="http://www.youtube.com/embed/' + id +
-				'?feature=oembed&autoplay=' + autoPlay +
-				'&enablejsapi=1&version=3&html5=1' + '"/>');
+			var iframe = abstractProvider.getIframe()
+				.attr('id', 'youtube-player-' + id)
+				.attr('src', '//www.youtube.com/embed/' + id +
+				'?feature=oembed&autoplay=' + autoPlay +'&enablejsapi=1&version=3&html5=1');
 
 			this._player = new window.YT.Player(iframe.get(0));
 			return iframe;
@@ -430,14 +431,22 @@
 		var	videoId = videoContainer.data('videoId');
 		var videoProvider = providers[videoContainer.data('videoProvider')];
 		
-		videoProvider.embed(videoContainer, videoId);
+		if (!videoProvider) {
+			App.log({args: ['Provider `%s` not found.', videoProvider], me: 'oEmbed', fx: 'warn'});
+		} else {
+			videoProvider.embed(videoContainer, videoId);
+		}
 	};
 	
 	var playVideo = function (key, videoContainer) {
 		var	videoId = videoContainer.data('videoId');
 		var videoProvider = providers[videoContainer.data('videoProvider')];
 		
-		videoProvider.play(videoContainer);
+		if (!videoProvider) {
+			App.log({args: ['Provider `%s` not found.', videoProvider], me: 'oEmbed', fx: 'warn'});
+		} else {
+			videoProvider.play(videoContainer);
+		}
 	};
 
 	var pauseVideo = function (key, videoContainers) {
@@ -489,6 +498,105 @@
 	
 })(jQuery);
 
+/******************************
+ * @author Deux Huit Huit
+ ******************************/
+
+/**
+ * Page loading handling
+ */
+(function ($, undefined) {
+
+	'use strict';
+	
+	var INITIAL_VALUE = 0.02; // 2%
+	var INCREMENT = 0.05; // 5%
+	var CLOSE_DELAY = 700; // ms
+	
+	var SHOW = 'show';
+	var START = 'start';
+	
+	var holder = $();
+	
+	var isStarted = false;
+	
+	var closeTimer = 0;
+	var currentValue = 0;
+	
+	var p = function (i) {
+		return (i * 100) + '%';
+	};
+	
+	var start = function () {
+		clearTimeout(closeTimer);
+		
+		currentValue = INITIAL_VALUE;
+
+		holder
+			.removeClass(START)
+			.width(p(currentValue))
+			.height();
+		holder
+			.addClass(START)
+			.addClass(SHOW);
+		
+		isStarted = true;
+		
+		App.log({args: 'Start', me: 'page-load'});
+	};
+	
+	var end = function () {
+		holder
+			.width('100%');
+		
+		closeTimer = setTimeout(function () {
+			holder.removeClass(SHOW);
+			isStarted = false;
+		}, CLOSE_DELAY);
+		
+		App.log({args: 'End', me: 'page-load'});
+	};
+	
+	var progress = function (percent) {
+		if (isStarted) {
+			var incVal = currentValue + INCREMENT;
+			currentValue = Math.max(incVal, percent);
+			holder.width(p(currentValue));
+		}
+		App.log({args: ['Progress %s', percent], me: 'page-load'});
+	};
+	
+	var loadprogress = function (key, data) {
+		progress(data.percent);
+	};
+	
+	var actions = function () {
+		return {
+			pageLoad: {
+				start: start,
+				progress: progress,
+				end: end
+			},
+			pages: {
+				loading: start,
+				loadfatalerror: end,
+				loadprogress: loadprogress,
+				loaded: end,
+				notfound: end
+			}
+		};
+	};
+	
+	var init = function () {
+		holder = $('#load-progress');
+	};
+	
+	var PageLoad = App.modules.exports('page-load', {
+		init: init,
+		actions : actions
+	});
+	
+})(jQuery);
 /**
  * @author Deux Huit Huit
  *
@@ -518,6 +626,11 @@
 			//init share this if we found
 			window.stWidget.addEntry(o);
 		}
+		
+		// block clicks
+		$(o.element).click(function (e) {
+			return window.pd(e, false);
+		});
 	};
 	
 	var init = function () {

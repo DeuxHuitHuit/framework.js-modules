@@ -22,26 +22,16 @@ module.exports = function fxGruntConfig(grunt) {
 		'./src/utils/*.js'
 	];
 	
-	var getBuildNumber = function () {
-		var b = {};
-		
-		try {
-			b = grunt.file.readJSON(BUILD_FILE);
-		} catch (e) {}
-		
-		b.lastBuild = b.lastBuild > 0 ? b.lastBuild + 1 : 1;
-		
-		grunt.file.write(BUILD_FILE, JSON.stringify(b));
-		
-		return b.lastBuild;
-	};
-	
 	var config = {
 		pkg: grunt.file.readJSON('package.json'),
-		build: 'auto',
+		buildnum: {
+			options: {
+				file: BUILD_FILE
+			}
+		},
 		meta: {
 			banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
-			'- build <%= build %> - ' +
+			'- build <%= buildnum.num %> - ' +
 			'<%= grunt.template.today("yyyy-mm-dd") %>\n' +
 			'<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
 			'* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
@@ -148,17 +138,38 @@ module.exports = function fxGruntConfig(grunt) {
 	var init = function (grunt) {
 		// Project configuration.
 		grunt.initConfig(config);
+
+		// generate build number
+		grunt.registerTask('buildnum', 
+			'Generates and updates the current build number', function () {
+			var options = this.options();
+			var getBuildNumber = function () {
+				var b = {};
+				
+				try {
+					b = grunt.file.readJSON(options.file);
+				} catch (e) {}
+				
+				b.lastBuild = b.lastBuild > 0 ? b.lastBuild + 1 : 1;
+				
+				grunt.file.write(options.file, JSON.stringify(b));
+				
+				return b.lastBuild;
+			};
+
+			var buildnum = getBuildNumber();
+			grunt.log.writeln('New build num: ', buildnum);
+			grunt.config.set('buildnum.num', buildnum);
+		});
 		
 		// Default task.
 		grunt.registerTask('default',  ['jshint', 'complexity', 'concat', 'uglify']);
 		grunt.registerTask('dev',      ['jshint', 'complexity']);
-		grunt.registerTask('build',    ['concat', 'uglify']);
+		grunt.registerTask('build',    ['buildnum', 'concat', 'uglify']);
 	};
 	
 	var load = function (grunt) {
 		md.filterDev('grunt-*').forEach(grunt.loadNpmTasks);
-		
-		config.build = getBuildNumber();
 		
 		init(grunt);
 		
