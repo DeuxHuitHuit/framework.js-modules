@@ -6,7 +6,7 @@
  * Facebook async parsing
  */
 (function ($, undefined) {
-	"use strict";
+	'use strict';
 	
 	var facebookParse = function () {
 		if (!!window.FB && !!window.FB.XFBML) {

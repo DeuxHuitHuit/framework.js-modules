@@ -123,7 +123,7 @@ module.exports = function fxGruntConfig(grunt) {
 		},
 		complexity: {
 			generic: {
-				src: SRC_FILES.concat(GRUNT_FILE),
+				src: SRC_FILES,
 				options: {
 					//jsLintXML: 'report.xml', // create XML JSLint-like report
 					errorsOnly: false, // show only maintainability errors

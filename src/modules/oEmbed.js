@@ -63,8 +63,8 @@
 			var autoPlay = autoplay !== undefined ? autoplay : 1;
 			var iframe = abstractProvider.getIframe()
 				.attr('id', 'youtube-player-' + id)
-				.attr('src', '//www.youtube.com/embed/' + id +
-				'?feature=oembed&autoplay=' + autoPlay +'&enablejsapi=1&version=3&html5=1');
+				.attr('src', '//www.youtube.com/embed/' + id + 
+				'?feature=oembed&autoplay=' + autoPlay + '&enablejsapi=1&version=3&html5=1');
 
 			this._player = new window.YT.Player(iframe.get(0));
 			return iframe;

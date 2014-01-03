@@ -1,4 +1,4 @@
-/*! framework.js-modules - v1.1.0 - - build 325 - 2014-01-03
+/*! framework.js-modules - v1.1.0 - - build  - 2014-01-03
 * https://github.com/DeuxHuitHuit/framework.js-modules
 * Copyright (c) 2014 Deux Huit Huit; Licensed MIT */
 /**
@@ -196,7 +196,7 @@
  * Facebook async parsing
  */
 (function ($, undefined) {
-	"use strict";
+	'use strict';
 	
 	var facebookParse = function () {
 		if (!!window.FB && !!window.FB.XFBML) {
@@ -406,8 +406,8 @@
 			var autoPlay = autoplay !== undefined ? autoplay : 1;
 			var iframe = abstractProvider.getIframe()
 				.attr('id', 'youtube-player-' + id)
-				.attr('src', '//www.youtube.com/embed/' + id +
-				'?feature=oembed&autoplay=' + autoPlay +'&enablejsapi=1&version=3&html5=1');
+				.attr('src', '//www.youtube.com/embed/' + id + 
+				'?feature=oembed&autoplay=' + autoPlay + '&enablejsapi=1&version=3&html5=1');
 
 			this._player = new window.YT.Player(iframe.get(0));
 			return iframe;
@@ -1352,9 +1352,9 @@
 	var HAS_3D =  ('WebKitCSSMatrix' in window && 'm11' in new window.WebKitCSSMatrix());
 	
 	var _getTranslation = function (x, y, z) {
-		x = !x || $.isNumeric(x) ? (x||0)+'px' : x;
-		y = !y || $.isNumeric(y) ? (y||0)+'px' : y;
-		z = !z || $.isNumeric(z) ? (z||0)+'px' : z;
+		x = !x || $.isNumeric(x) ? (x || 0) + 'px' : x;
+		y = !y || $.isNumeric(y) ? (y || 0) + 'px' : y;
+		z = !z || $.isNumeric(z) ? (z || 0) + 'px' : z;
 		
 		var prefix = (HAS_3D ? '3d(' : '(');
 		var suffix = (HAS_3D ? ',' + z + ')' : ')');
@@ -1363,10 +1363,10 @@
 	};
 	
 	var _getRotation = function (x, y, z, theta) {
-		x = !x || $.isNumeric(x) ? (x||0) : x;
-		y = !y || $.isNumeric(y) ? (y||0) : y;
-		z = !z || $.isNumeric(z) ? (z||0) : z;
-		theta = !theta || $.isNumeric(theta) ? (theta||0)+'deg' : theta;
+		x = !x || $.isNumeric(x) ? (x || 0) : x;
+		y = !y || $.isNumeric(y) ? (y || 0) : y;
+		z = !z || $.isNumeric(z) ? (z || 0) : z;
+		theta = !theta || $.isNumeric(theta) ? (theta || 0) + 'deg' : theta;
 		
 		var prefix = (HAS_3D ? '3d('  + x + ',' + y + ',' + z + ',' : 'Z(');
 		var suffix = (HAS_3D ? ')' : ')');
@@ -1380,10 +1380,10 @@
 		prefix: function (key, value) {
 			var c = {};
 			c[key] = value;
-			c['-webkit-'+key] = value;
-			c['-moz-'+key] = value;
-			c['-ms-'+key] = value;
-			c['-o-'+key] = value;
+			c['-webkit-' + key] = value;
+			c['-moz-' + key] = value;
+			c['-ms-' + key] = value;
+			c['-o-' + key] = value;
 			return c;
 		}
 	};
