@@ -12,7 +12,9 @@
 	
 	//var VENDOR_PREFIXES = ['', '-webkit-', '-moz-', '-o-', '-ms-'];
 	
+	/* jshint ignore:start */
 	// from https://github.com/DeuxHuitHuit/jQuery-Animate-Enhanced/blob/master/scripts/src/jquery.animate-enhanced.js
+	/* jshint ignore:end */
 	var HAS_3D =  ('WebKitCSSMatrix' in window && 'm11' in new window.WebKitCSSMatrix());
 	
 	var _getTranslation = function (x, y, z) {

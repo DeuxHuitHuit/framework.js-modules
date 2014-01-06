@@ -73,7 +73,7 @@ module.exports = function fxGruntConfig(grunt) {
 				maxparams: 5,
 				maxdepth: 5,
 				maxstatements: 30,
-				maxlen: 120,
+				maxlen: 100,
 				//maxcomplexity: 10,
 				
 				// relax options

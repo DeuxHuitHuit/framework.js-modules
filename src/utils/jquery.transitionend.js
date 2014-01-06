@@ -8,7 +8,8 @@
 	
 	'use strict'; 
 	
-	var transitionEndEvent = 'transitionend webkitTransitionEnd oTransitionEnd mozTransitionEnd MSTransitionEnd',
+	var transitionEndEvent = 'transitionend ' + 
+		'webkitTransitionEnd oTransitionEnd mozTransitionEnd MSTransitionEnd',
 	addClassTimer = 'add-class-timer',
 	queue = [],
 	
@@ -105,10 +106,12 @@
 				var localFound = false;
 				
 				if (!!q && !!q.selectors) {
-				
-					localFound = _.some(q.selectors, function eachCallbackSelector(value, selector) {
+					
+					var eachCallbackSelector = function (value, selector) {
 						return !!~$.inArray(selector, selectors);
-					});
+					};
+					
+					localFound = _.some(q.selectors, eachCallbackSelector);
 					
 					if (localFound) {
 						// remove from queue
