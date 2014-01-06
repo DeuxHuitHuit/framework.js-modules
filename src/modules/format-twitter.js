@@ -19,7 +19,7 @@
 	
 	var twitterat = function (t) {
 		return t.replace(
-/(^|[^\w]+)\@([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]{1,15}(\/[a-zA-Z0-9-_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)*)/gi,
+/(^|[^\w]+)\@([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]{1,15}(\/[a-zA-Z0-9-_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)*)/gi, // jshint ignore:line
 			function (m, m1, m2) {
 				return m1 + '<a href="http://twitter.com/' + m2 +
 					'" target="_blank">@' + m2 + '</a>';
