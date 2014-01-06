@@ -55,7 +55,7 @@ module.exports = function fxGruntConfig(grunt) {
 			files: SRC_FILES.concat(GRUNT_FILE),
 			//force: true,
 			options: {
-				bitwise: true,
+				bitwise: false,
 				camelcase: false,
 				curly: true,
 				eqeqeq: false, // allow ==
@@ -94,7 +94,8 @@ module.exports = function fxGruntConfig(grunt) {
 					jQuery: true,
 					console: true,
 					App: true,
-					Loader: true
+					Loader: true,
+					_: true
 				}
 			}
 		},
