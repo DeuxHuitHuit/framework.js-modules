@@ -25,12 +25,8 @@
 				var href = t.attr('href');
 				
 				if (!!href && (/^https?:\/\//.test(href) || /^\/workspace/.test(href))) {
-					if (t.attr('target') != '_blank') {
-						// must not be in
-						if (! /^:\/\//.test(href)) {
-							//set target
-							t.attr('target', '_blank');
-						}
+					if (!t.attr('target')) {
+						t.attr('target', '_blank');
 					}
 				}
 			});
