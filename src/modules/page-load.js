@@ -66,7 +66,7 @@
 		if (isStarted) {
 			var incVal = currentValue + INCREMENT;
 			currentValue = Math.max(incVal, percent);
-			currentValue = Matx.min(currentValue, 1);
+			currentValue = Math.min(currentValue, 1);
 			holder.width(p(currentValue));
 		}
 		App.log({args: ['Progress %s', percent], me: 'page-load'});
