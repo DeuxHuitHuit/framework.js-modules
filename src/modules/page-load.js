@@ -13,9 +13,11 @@
 	var INCREMENT = 0.05; // 5%
 	var CLOSE_DELAY = 700; // ms
 	
+	var LOADING = 'page-loading';
 	var SHOW = 'show';
 	var START = 'start';
 	
+	var html = $();
 	var holder = $();
 	
 	var isStarted = false;
@@ -40,6 +42,8 @@
 			.addClass(START)
 			.addClass(SHOW);
 		
+		html.addClass(LOADING);
+		
 		isStarted = true;
 		
 		App.log({args: 'Start', me: 'page-load'});
@@ -51,6 +55,7 @@
 		
 		closeTimer = setTimeout(function () {
 			holder.removeClass(SHOW);
+			html.removeClass(LOADING);
 			isStarted = false;
 		}, CLOSE_DELAY);
 		
@@ -61,6 +66,7 @@
 		if (isStarted) {
 			var incVal = currentValue + INCREMENT;
 			currentValue = Math.max(incVal, percent);
+			currentValue = Matx.min(currentValue, 1);
 			holder.width(p(currentValue));
 		}
 		App.log({args: ['Progress %s', percent], me: 'page-load'});
@@ -88,6 +94,7 @@
 	};
 	
 	var init = function () {
+		html = $('html');
 		holder = $('#load-progress');
 	};
 	
