@@ -32,6 +32,7 @@
 				body.addClass(enteringPage.key().substring(1));
 				sitePages.animate({opacity: 1}, 500);
 				enteringPage.enter(data.enterNext);
+				App.callback(callback);
 			});
 			
 		};
