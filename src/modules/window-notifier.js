@@ -8,17 +8,27 @@
 	'use strict';
 	var win = $(window);
 	
+	var notify = function (key, e) {
+		App.mediator.notify('site.' + key, {event: e});
+	};
+	
 	var resizeHandler = function (e) {
-		App.mediator.notify('site.resize', null, e);
+		notify('resize', e);
 	};
 	
 	var scrollHandler = function (e) {
-		App.mediator.notify('site.scroll', null, e);
+		notify('scroll', e);
+	};
+	
+	var loadHandler = function (e) {
+		notify('loaded', e);
 	};
 	
 	var init = function () {
-		//Trigger resize
-		win.resize(resizeHandler).scroll(scrollHandler);
+		win
+			.load(loadHandler)
+			.resize(resizeHandler)
+			.scroll(scrollHandler);
 	};
 	
 	var WindowNotifier = App.modules.exports('windowNotifier', {
