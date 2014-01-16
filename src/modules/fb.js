@@ -8,29 +8,52 @@
 (function ($, undefined) {
 	'use strict';
 	
-	var facebookParse = function () {
+	var facebookParse = function (key, data) {
 		if (!!window.FB && !!window.FB.XFBML) {
-			window.FB.XFBML.parse();
+			data = data || {};
+			window.FB.XFBML.parse(data.elem || document, function () {
+				facebookResize(key, {
+					elem: data.elem || $('.page:visible', App.root())
+				});
+			});
 		}
+	};
+	
+	var facebookResize = function (key, data) {
+		if (!data) {
+			return;
+		}
+		data.elem.find('.fb-comments').each(function (index, elem) {
+			var ctn = $(elem);
+			var w = ctn.width();
+			
+			if (w > 100) {
+				ctn
+					.attr('data-width', w)
+					.find('>span>iframe, >span:first-child').width(w);
+			}
+		});
 	};
 	
 	var actions = function () {
 		return {
 			page: {
-				entering: facebookParse
+				enter: facebookParse
 			},
 			FB: {
-				parse: facebookParse
+				parse: facebookParse,
+				resize: facebookResize
+			},
+			articleChanger: {
+				enter: facebookParse
+			},
+			site: {
+				loaded: facebookParse
 			}
 		};
 	};
 	
-	var init = function () {
-		facebookParse();
-	};
-	
 	var FBParser = App.modules.exports('FB', {
-		init: init,
 		actions : actions
 	});
 	
