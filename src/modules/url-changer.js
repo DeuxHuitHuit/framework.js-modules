@@ -91,7 +91,7 @@
 		return {
 			urlChanged : function () {
 				var nextPage = App.pages.page(document.location.pathname);
-
+				
 				//if we found a page for this route
 				if (nextPage) {
 					
@@ -143,8 +143,8 @@
 	};
 	
 	var _strategies = {
-		hash : createHashStrategy(),
-		history : createHistoryStrategy()
+		hash: createHashStrategy(),
+		history: createHistoryStrategy()
 	};
 	
 	var _currentStrategy = _strategies.hash;
@@ -180,10 +180,10 @@
 		var QSIndex = _currentPageFragment.indexOf('?');
 		if (QSIndex > -1) {
 			_currentQsFragment = window.QueryStringParser.parse(
-					_currentPageFragment.substring(QSIndex)
-				);
+				_currentPageFragment.substring(QSIndex)
+			);
 		} else {
-			_currentQsFragment	= {};
+			_currentQsFragment = {};
 		}
 	};
 	
@@ -214,10 +214,9 @@
 	};
 	
 	var onUpdateUrlFragment = function (key, data, e) {
-		
 		//Dont do it if we dont have any page url
-		if (_currentPageUrl !== '') {
-			if ($.type(data) != 'object') {
+		if (!_currentPageUrl) {
+			if ($.isPlainObject(data)) {
 				//Keep a copy of the fragment
 				_currentPageFragment = data;
 				//Keep QS sync
@@ -228,39 +227,42 @@
 	};
 	
 	var _generateQsString = function () {
-		var result = '',
-		c = 0;
+		var result = '';
 		
-		for (var prop in _currentQsFragment) {
-			if (_currentQsFragment[prop] !== null) {
-				if (c > 0) {
+		$.each(_currentQsFragment, function (prop, value) {
+			if (!!value) {
+				if (!!result.length) {
 					result += '&';
 				}
-				result += prop + '=' + _currentQsFragment[prop];
-				c++;
+				result += (prop + '=' + value);
 			}
-		}
+		});
+		
 		return result;
 	};
 	
 	var onUpdateQsFragment = function (key, data, e) {
-		if (typeof data == 'object') {
+		if ($.isPlainObject(data)) {
 			//Update _currentQsFragment
 			$.extend(_currentQsFragment, data);
 			
 			var currentQsIndex = _currentPageFragment.indexOf('?'),
 			newQsString = _generateQsString();
 			
-			//Generate new page fragment
-			if (currentQsIndex === -1) {
-				_currentPageFragment += '?' + newQsString;
-			} else {
-				_currentPageFragment = _currentPageFragment.substring(0, currentQsIndex + 1) + 
-					newQsString;
+			if (newQsString !== _currentPageFragment) {
+				//Generate new page fragment
+				if (!newQsString.length) {
+					_currentPageFragment = '';
+				} else if (currentQsIndex === -1) {
+					_currentPageFragment += '?' + newQsString;
+				} else {
+					_currentPageFragment = _currentPageFragment.substring(0, currentQsIndex + 1) + 
+						newQsString;
+				}
+				
+				//_currentPage
+				_currentStrategy.updateUrlFragment();
 			}
-			
-			//_currentPage
-			_currentStrategy.updateUrlFragment();
 		}
 	};
 	
