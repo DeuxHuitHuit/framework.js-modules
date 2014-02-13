@@ -1,17 +1,49 @@
 (function ($) {
 	'use strict';
 	
-	// ga facilitator
-	$.sendPageView = function (opts) {
-		if (!!window.ga) {
-			var defaults = {
-				page: window.location.pathname + window.location.search,
-				location: window.location.href,
-				hostname: window.location.hostname
-			};
-			var args = !opts ? defaults : $.extend(defaults, opts);
-			
-			window.ga('send', 'pageview', args);
-		}
+	var log = function () {
+		var args = [];
+		$.each(arguments, function (i, a) {
+			if ($.isPlainObject(a)) {
+				a = JSON.stringify(a, null, 2);
+			} else {
+				a = '"' + a + '"';
+			}
+			args.push(a);
+		});
+		App.log('ga(' + args.join(',') + ');');
 	};
+	
+	// ga facilitators
+	$.sendPageView = function (opts) {
+		var ga = window.ga || log;
+		var defaults = {
+			page: window.location.pathname + window.location.search,
+			location: window.location.href,
+			hostname: window.location.hostname
+		};
+		var args = !opts ? defaults : $.extend(defaults, opts);
+		
+		ga('send', 'pageview', args);
+	};
+	
+	$.sendEvent = function (cat, label, value) {
+		var ga = window.ga || log;
+		ga('send', 'event', cat, label, value);
+	};
+	
+	$.fn.sendClickEvent = function (options) {
+		var t = $(this).eq(0);
+		var gaValue = t.attr('data-ga-value');
+		var o = $.extend({}, options, {
+			cat: 'button-' + $('html').attr('lang').toUpperCase(),
+			event: 'click',
+			value: gaValue || t.text()
+		});
+		if (!gaValue) {
+			App.log('No ga-value found, reverting to text');
+		}
+		$.sendEvent(o.cat, o.event, o.value);
+	};
+	
 })(jQuery);
