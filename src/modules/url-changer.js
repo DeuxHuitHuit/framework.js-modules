@@ -11,6 +11,7 @@
 	
 	var win = $(window);
 	var _currentPageKey = '';
+	var _currentPageRoute = '';
 	var _currentPageUrl = '';
 	var _currentPageFragment = '';
 	var _currentQsFragment = {};
@@ -24,25 +25,29 @@
 			urlChanged : function () {
 				if (!_isInternalFragChange) {
 					var h = document.location.hash;
+					var loc = h.length > 1 ? 
+							h.substring(1) : 
+							document.location.pathname + document.location.search;
 					
-					var	nextPage = App.pages.page(h.length > 1 ? 
-						h.substring(1) : document.location.pathname);
+					var	nextPage = App.pages.page(loc);
 
 					//if we found a page for this route
 					if (nextPage) {
 						
 						//Detect if we change page
 						if (nextPage.key() == _currentPageKey) {
-							var _cur = _currentPageUrl;
-							var pageFragment = document.location.hash.substring(_cur.length);
+							var _cur = _currentPageRoute;
+							var pageFragment = loc.substring(_cur.length);
 							
 							if (_currentPageFragment != pageFragment || _triggerFirstHashChange) {
 								App.mediator.notify('page.fragmentChanged', pageFragment);
 								_currentPageFragment = pageFragment;
 							}
 						} else {
-							App.mediator.goto(document.location.hash.substring(1));
+							App.mediator.goto(loc);
 						}
+					} else {
+						App.log({args: 'Page not found', me: 'Url Changer'}); 
 					}
 				} else {
 					_isInternalFragChange = false;
@@ -50,7 +55,7 @@
 			},
 			pageEntering : function (newRoute) {
 				// Raise flag for the first time
-				if (_currentPageUrl === '') {
+				if (_currentPageRoute === '') {
 					_triggerFirstHashChange = true;
 				} else {
 					//Raise flag for internal change
@@ -68,18 +73,45 @@
 				}
 			},
 			updateUrlFragment : function () {
-				var newVal = _currentPageUrl + _currentPageFragment;
+				var newVal = _currentPageRoute + _currentPageFragment;
 				
 				//Raise flag for internal change
 				_isInternalFragChange = true;
 				
-				if (_currentPageUrl[_currentPageUrl.length - 1] == '/' && 
+				if (_currentPageRoute[_currentPageRoute.length - 1] == '/' && 
 					_currentPageFragment[0] == '/') {
-					newVal = _currentPageUrl + _currentPageFragment.substring(1);
+					newVal = _currentPageRoute + _currentPageFragment.substring(1);
 				}
 				
 				$.bbq.pushState('#' + newVal);
 				_isInternalFragChange = false;
+			},
+			_getCurrentUrl: function (defaultValue) {
+				var h = document.location.hash;
+				if (!!h) {
+					return h.replace(/#/gi, '');
+				}
+				return defaultValue;
+			},
+			getFullUrl: function () {
+				return this._getCurrentUrl(document.location.toString());
+			},
+			getCurrentUrl: function () {
+				return this._getCurrentUrl(document.location.pathname).split('?')[0];
+			},
+			getQueryString: function () {
+				var url = this.getFullUrl();
+				var split = url.split('?');
+				var qs = '';
+				
+				if (split.length > 1) {
+					split.shift();
+					qs = split.join('?');
+					if (!!qs && qs.indexOf('?') !== 0) {
+						qs += '?' + qs;
+					}
+				}
+				return qs;
 			}
 		};
 	};
@@ -97,7 +129,7 @@
 					
 					//Detect if we change page
 					if (nextPage.key() == _currentPageKey) {
-						var _cur = document.location.origin + _currentPageUrl;
+						var _cur = document.location.origin + _currentPageRoute;
 						var pageFragment = document.location.href.substring(_cur.length);
 						
 						if (_currentPageFragment != pageFragment) {
@@ -108,15 +140,17 @@
 						_isPopingState = true;
 						App.mediator.goto(document.location.pathname + document.location.search);
 					}
+				} else {
+					App.log({args: 'Page not found', me: 'Url Changer'}); 
 				}
 			},
 			pageEntering : function (newRoute) {
 				var url = newRoute;
 				
-				if (_currentPageUrl === '') {
+				if (_currentPageRoute === '') {
 					_triggerFirstFragmentChange = true;
 				}
-				if (_currentPageUrl !== '') {
+				if (_currentPageRoute !== '') {
 					url = url + _currentPageFragment;
 				
 					if (!_isPopingState) {
@@ -131,13 +165,22 @@
 					//Detect if we have a fragment
 					var href = document.location.href;
 					var curPageHref = document.location.protocol + '//' + 
-						document.location.host + _currentPageUrl;
+						document.location.host + _currentPageRoute;
 					_currentPageFragment = href.substring(curPageHref.length);
 					App.mediator.notify('page.fragmentChanged', _currentPageFragment);
 				}
 			},
 			updateUrlFragment : function () {
-				history.pushState({}, document.title, _currentPageUrl + _currentPageFragment);
+				history.pushState({}, document.title, _currentPageRoute + _currentPageFragment);
+			},
+			getCurrentUrl: function () {
+				return document.location.pathname;
+			},
+			getQueryString: function () {
+				return document.location.search;
+			},
+			getFullUrl: function () {
+				return document.location.toString();
 			}
 		};
 	};
@@ -192,10 +235,11 @@
 		var nextRoute = _extractFragmentFromRoute(_getNextRouteFromData(data), data.route);
 		
 		//Update browser url if we change page route
-		if (_currentPageUrl != nextRoute) {
+		if (_currentPageRoute != nextRoute) {
 			//Keep a copy of the currentPage url
 			_currentStrategy.pageEntering(nextRoute);
-			_currentPageUrl = nextRoute;
+			_currentPageRoute = nextRoute;
+			_currentPageUrl = data.route;
 			_currentPageKey = data.page.key();
 			
 			$.sendPageView({page: data.route});
@@ -214,15 +258,16 @@
 	};
 	
 	var onUpdateUrlFragment = function (key, data, e) {
-		//Dont do it if we dont have any page url
-		if (!_currentPageUrl) {
+		// Don't do it if we don't have any page url
+		if (!!_currentPageRoute) {
+			//Keep a copy of the fragment
+			_currentPageFragment = data;
 			if ($.isPlainObject(data)) {
-				//Keep a copy of the fragment
-				_currentPageFragment = data;
 				//Keep QS sync
 				_extractQS();
 			}
 			_currentStrategy.updateUrlFragment();
+			$.sendPageView({page: data.route});
 		}
 	};
 	
@@ -262,6 +307,7 @@
 				
 				//_currentPage
 				_currentStrategy.updateUrlFragment();
+				$.sendPageView({page: data.route});
 			}
 		}
 	};
@@ -276,10 +322,22 @@
 		_currentPageFragment = _oldFragment;
 		_extractQS();
 		_currentStrategy.urlChanged();
+		$.sendPageView({page: data.route});
 	};
 	
 	var _urlChanged = function () {
 		_currentStrategy.urlChanged();
+	};
+	
+	var getCurrentUrl = function () {
+		return _currentStrategy.getCurrentUrl();
+	};
+	
+	var getQueryString = function () {
+		return _currentStrategy.getQueryString();
+	};
+	var getFullUrl = function () {
+		return _currentStrategy.getFullUrl();
 	};
 	
 	var init = function () {
@@ -304,14 +362,19 @@
 	var actions = function () {
 		return {
 			page: {
-				entering : onPageEntering,
-				leaving : onPageLeaving,
-				enter : onPageEntered,
-				updateUrlFragment : onUpdateUrlFragment,
-				updateQsFragment : onUpdateQsFragment
+				entering: onPageEntering,
+				leaving: onPageLeaving,
+				enter: onPageEntered,
+				updateUrlFragment: onUpdateUrlFragment,
+				updateQsFragment: onUpdateQsFragment
 			},
-			pages : {
+			pages: {
 				navigateToCurrent : onNavigateToCurrent
+			},
+			url: {
+				getUrl: getCurrentUrl,
+				getQueryString: getQueryString,
+				getFullUrl: getFullUrl
 			}
 		};
 	};
