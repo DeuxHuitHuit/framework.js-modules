@@ -97,7 +97,9 @@
 					
 					//Detect if we change page
 					if (nextPage.key() == _currentPageKey) {
-						var _cur = document.location.origin + _currentPageUrl;
+						//Dont use origin, not working well on ie10-11
+						var loc = document.location;
+						var _cur = loc.protocol + '//' + loc.hostname + _currentPageUrl;
 						var pageFragment = document.location.href.substring(_cur.length);
 						
 						if (_currentPageFragment != pageFragment) {
