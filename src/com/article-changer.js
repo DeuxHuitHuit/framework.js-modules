@@ -7,18 +7,25 @@
 (function ($, w, doc, undefined) {
 
 	'use strict';
+	
+	var DEFAULT_DELAY = 350;
 
 	var animToArticleDefault = function (current, next, o) {
 		if (!!current.length) {
-			$.scrollTo(0, Math.min(500, $(w).scrollTop()), function () {
-				current.fadeTo(500, 0, function () {
+			var afterScroll = function () {
+				current.fadeTo(DEFAULT_DELAY, 0, function () {
 					current.hide();
-					next.fadeTo(500, 1);
+					next.fadeTo(DEFAULT_DELAY, 1);
 					o.articleEnter(next);
 				});
-			});
+			};
+			if ($.mobile) {
+				afterScroll();
+			} else {
+				$.scrollTo(0, Math.min(500, $(w).scrollTop()), afterScroll);
+			}
 		} else {
-			next.fadeTo(500, 1);
+			next.fadeTo(DEFAULT_DELAY, 1);
 			o.articleEnter(next);
 		}
 	};
