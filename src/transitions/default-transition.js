@@ -12,6 +12,8 @@
 	var body = $('body');
 	var sitePages = $('#site-pages');
 	
+	var DEFAULT_DELAY = 350;
+	
 	var defaultTransition = function (data, callback) {
 		
 		var leavingPage = data.currentPage;
@@ -30,28 +32,42 @@
 			domEnteringPage.ready(function () {
 				domEnteringPage.css({opacity: 1, display: 'block'});
 				body.addClass(enteringPage.key().substring(1));
-				sitePages.animate({opacity: 1}, 500);
+				sitePages.animate({opacity: 1}, DEFAULT_DELAY, function () {
+					App.modules.notify('transition.end', {page: enteringPage, route: data.route});
+				});
 				enteringPage.enter(data.enterNext);
 				App.callback(callback);
 			});
-			
 		};
 		
-		body.removeClass(leavingPage.key().substring(1));
-		
-		sitePages.animate({opacity: 0}, 1000, function () {
-			//notify all module
-			App.modules.notify('page.leaving', {page: leavingPage});
+		var afterScroll = function () {
+			sitePages.animate({opacity: 0}, DEFAULT_DELAY, function () {
+				//notify all module from leaving
+				body.removeClass(leavingPage.key().substring(1));
+				App.modules.notify('page.leaving', {page: leavingPage});
+				
+				if ($.mobile) {
+					win.scrollTop(0);
+				}
+				
+				//Leave the current page
+				leavingPage.leave(data.leaveCurrent);
 			
-			//Leave the current page
-			leavingPage.leave(data.leaveCurrent);
+				domLeavingPage.hide();
+				enterPageAnimation();
+			});
+		};
 		
-			domLeavingPage.hide();
-			enterPageAnimation();
-			
-		});
+		if ($.mobile) {
+			afterScroll();
+		} else {
+			$.scrollTo(0, {
+				duration : Math.min(1200, $(window).scrollTop()),
+				easing : 'easeInOutQuad',
+				onAfter : afterScroll
+			});
+		}
 	};
-	
 	
 	App.transitions.exports({
 		transition: defaultTransition,
