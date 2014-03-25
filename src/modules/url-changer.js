@@ -203,7 +203,7 @@
 	};
 	
 	var _extractFragmentFromRoute = function (nextRoute, reelRoute) {
-		var	starIndex = nextRoute.indexOf('*');
+		var	starIndex = !nextRoute ? -1 : nextRoute.indexOf('*');
 		
 		if (starIndex > -1) {
 			nextRoute = nextRoute.substring(0, starIndex);
