@@ -1,6 +1,147 @@
-/*! framework.js-modules - v1.1.0 - - build  - 2014-01-03
+/*! framework.js-modules - v1.1.0 - - build  - 2014-03-28
 * https://github.com/DeuxHuitHuit/framework.js-modules
 * Copyright (c) 2014 Deux Huit Huit; Licensed MIT */
+/**
+ * @author Deux Huit Huit
+ *
+ * Article Changer
+ *
+ */
+(function ($, w, doc, undefined) {
+
+	'use strict';
+	
+	var DEFAULT_DELAY = 350;
+
+	var animToArticleDefault = function (current, next, o) {
+		if (!!current.length) {
+			var afterScroll = function () {
+				current.fadeTo(DEFAULT_DELAY, 0, function () {
+					current.hide();
+					next.fadeTo(DEFAULT_DELAY, 1);
+					o.articleEnter(next);
+				});
+			};
+			if ($.mobile) {
+				afterScroll();
+			} else {
+				$.scrollTo(0, Math.min(500, $(w).scrollTop()), afterScroll);
+			}
+		} else {
+			next.fadeTo(DEFAULT_DELAY, 1);
+			o.articleEnter(next);
+		}
+	};
+	
+	var appendDefault = function (articleCtn, dataLoaded, pageHandle, o) {
+		var article = o.findArticle(dataLoaded, pageHandle, o);
+		article.hide();
+		articleCtn.append(article);
+	};
+	
+	var findArticleDefault = function (articleCtn, pageHandle, o) {
+		pageHandle = pageHandle || '';
+		return $(o.articleSelector + '[data-handle="' + pageHandle + '"]', $(articleCtn));
+	};
+	
+	var defOptions = {
+		articleSelector: '.js-article',
+		containerSelector: '.js-article-ctn',
+		findArticle: findArticleDefault,
+		appendArticle: appendDefault,
+		animToArticle: animToArticleDefault,
+		articleEnter: function () {
+			App.modules.notify('articleChanger.enter');
+		}
+	};
+	
+	App.components.exports('articleChanger', function _searchBar() {
+		
+		var o;
+		var page;
+		var articleCtn;
+		var currentPageHandle;
+		
+		var init = function (_page, options) {
+			page = _page;
+			o = $.extend({}, defOptions, options);
+			articleCtn = $(o.containerSelector, page);
+		};
+		
+		var navigateTo = function (newPageHandle) {
+			var currentPage = o.findArticle(articleCtn, currentPageHandle, o);
+			var loadSucess = function (dataLoaded, textStatus, jqXHR) {
+				//Append New article
+				o.appendArticle(articleCtn, dataLoaded, newPageHandle, o);
+				var nextPage = o.findArticle(articleCtn, newPageHandle, o);
+				
+				App.modules.notify('pageLoad.end');
+				App.modules.notify('articleChanger.entering');
+				
+				if (!nextPage.length) {
+					App.log({
+						args: ['Could not find new article `%s`', newPageHandle],
+						fx: 'error',
+						me: 'Article Changer'
+					});
+				} else {
+					o.animToArticle(currentPage, nextPage, o);
+				}
+			};
+			if (currentPageHandle !== newPageHandle) {
+				
+				var nextPage = o.findArticle(articleCtn, newPageHandle, o);
+				
+				// LoadPage
+				if (!nextPage.length) {
+					var loc = '';
+					App.modules.notify('url.getFullUrl', null, function (key, res) {
+						loc = res;
+					});
+					App.modules.notify('pageLoad.start', {page: page});
+					Loader.load({
+						url: loc,
+						priority: 0, // now
+						vip: true, // bypass others
+						success: loadSucess,
+						progress: function (e) {
+							var total = e.originalEvent.total;
+							var loaded = e.originalEvent.loaded;
+							var percent = total > 0 ? loaded / total : 0;
+							
+							App.mediator.notify('pageLoad.progress', {
+								event: e,
+								total: total,
+								loaded: loaded,
+								percent: percent
+							});
+						},
+						error: function () {
+							App.modules.notify('article.loaderror');
+							App.modules.notify('pageLoad.end');
+						},
+						giveup: function (e) {
+							App.modules.notify('pageLoad.end');
+						}
+					});
+					
+				} else {
+					o.animToArticle(currentPage, nextPage, o);
+				}
+				
+				currentPageHandle = newPageHandle;
+			}
+		};
+		
+		return {
+			init : init,
+			clear : function () { currentPageHandle = ''; },
+			navigateTo : navigateTo
+		};
+	
+	});
+	
+})(jQuery, window, document);
 /**
  * @author Deux Huit Huit
  *
@@ -153,12 +294,8 @@
 				var href = t.attr('href');
 				
 				if (!!href && (/^https?:\/\//.test(href) || /^\/workspace/.test(href))) {
-					if (t.attr('target') != '_blank') {
-						// must not be in
-						if (! /^:\/\//.test(href)) {
-							//set target
-							t.attr('target', '_blank');
-						}
+					if (!t.attr('target')) {
+						t.attr('target', '_blank');
 					}
 				}
 			});
@@ -198,29 +335,52 @@
 (function ($, undefined) {
 	'use strict';
 	
-	var facebookParse = function () {
+	var facebookParse = function (key, data) {
 		if (!!window.FB && !!window.FB.XFBML) {
-			window.FB.XFBML.parse();
+			data = data || {};
+			window.FB.XFBML.parse(data.elem || document, function () {
+				facebookResize(key, {
+					elem: data.elem || $('.page:visible', App.root())
+				});
+			});
 		}
+	};
+	
+	var facebookResize = function (key, data) {
+		if (!data) {
+			return;
+		}
+		data.elem.find('.fb-comments').each(function (index, elem) {
+			var ctn = $(elem);
+			var w = ctn.width();
+			
+			if (w > 100) {
+				ctn
+					.attr('data-width', w)
+					.find('>span>iframe, >span:first-child').width(w);
+			}
+		});
 	};
 	
 	var actions = function () {
 		return {
 			page: {
-				entering: facebookParse
+				enter: facebookParse
 			},
 			FB: {
-				parse: facebookParse
+				parse: facebookParse,
+				resize: facebookResize
+			},
+			articleChanger: {
+				enter: facebookParse
+			},
+			site: {
+				loaded: facebookParse
 			}
 		};
 	};
 	
-	var init = function () {
-		facebookParse();
-	};
-	
 	var FBParser = App.modules.exports('FB', {
-		init: init,
 		actions : actions
 	});
 	
@@ -246,7 +406,7 @@
 	
 	var twitterat = function (t) {
 		return t.replace(
-/(^|[^\w]+)\@([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]{1,15}(\/[a-zA-Z0-9-_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)*)/gi,
+/(^|[^\w]+)\@([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]{1,15}(\/[a-zA-Z0-9-_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)*)/gi, // jshint ignore:line
 			function (m, m1, m2) {
 				return m1 + '<a href="http://twitter.com/' + m2 +
 					'" target="_blank">@' + m2 + '</a>';
@@ -513,9 +673,11 @@
 	var INCREMENT = 0.05; // 5%
 	var CLOSE_DELAY = 700; // ms
 	
+	var LOADING = 'page-loading';
 	var SHOW = 'show';
 	var START = 'start';
 	
+	var html = $();
 	var holder = $();
 	
 	var isStarted = false;
@@ -540,6 +702,8 @@
 			.addClass(START)
 			.addClass(SHOW);
 		
+		html.addClass(LOADING);
+		
 		isStarted = true;
 		
 		App.log({args: 'Start', me: 'page-load'});
@@ -551,6 +715,7 @@
 		
 		closeTimer = setTimeout(function () {
 			holder.removeClass(SHOW);
+			html.removeClass(LOADING);
 			isStarted = false;
 		}, CLOSE_DELAY);
 		
@@ -561,6 +726,7 @@
 		if (isStarted) {
 			var incVal = currentValue + INCREMENT;
 			currentValue = Math.max(incVal, percent);
+			currentValue = Math.min(currentValue, 1);
 			holder.width(p(currentValue));
 		}
 		App.log({args: ['Progress %s', percent], me: 'page-load'});
@@ -588,11 +754,40 @@
 	};
 	
 	var init = function () {
+		html = $('html');
 		holder = $('#load-progress');
 	};
 	
 	var PageLoad = App.modules.exports('page-load', {
 		init: init,
+		actions : actions
+	});
+	
+})(jQuery);
+/******************************
+ * @author Deux Huit Huit
+ ******************************/
+
+/**
+ * Route not found handling
+ */
+(function ($, undefined) {
+
+	'use strict';
+	
+	var actions = function () {
+		return {
+			pages: {
+				routeNotFound: function (key, data) {
+					if (!!data && !!data.url && data.url !== document.location.pathname) {
+						document.location = data.url;
+					}
+				}
+			}
+		};
+	};
+	
+	var RouteNotFound = App.modules.exports('route-not-found', {
 		actions : actions
 	});
 	
@@ -908,38 +1103,43 @@
 	
 	var win = $(window);
 	var _currentPageKey = '';
+	var _currentPageRoute = '';
 	var _currentPageUrl = '';
 	var _currentPageFragment = '';
 	var _currentQsFragment = {};
 	
 	var createHashStrategy = function () {
-		var _initialDocumentUrl = document.location.pathname;
+		var _initialDocumentUrl = window.location.pathname;
 		var _isInternalFragChange = false;
 		var _triggerFirstHashChange = false;
 		
 		return {
 			urlChanged : function () {
 				if (!_isInternalFragChange) {
-					var h = document.location.hash;
+					var h = window.location.hash;
+					var loc = h.length > 1 ? 
+							h.substring(1) : 
+							window.location.pathname + window.location.search;
 					
-					var	nextPage = App.pages.page(h.length > 1 ? 
-						h.substring(1) : document.location.pathname);
+					var	nextPage = App.pages.page(loc);
 
 					//if we found a page for this route
 					if (nextPage) {
 						
 						//Detect if we change page
 						if (nextPage.key() == _currentPageKey) {
-							var _cur = _currentPageUrl;
-							var pageFragment = document.location.hash.substring(_cur.length);
+							var _cur = _currentPageRoute;
+							var pageFragment = loc.substring(_cur.length);
 							
 							if (_currentPageFragment != pageFragment || _triggerFirstHashChange) {
 								App.mediator.notify('page.fragmentChanged', pageFragment);
 								_currentPageFragment = pageFragment;
 							}
 						} else {
-							App.mediator.goto(document.location.hash.substring(1));
+							App.mediator.goto(loc);
 						}
+					} else {
+						App.log({args: 'Page not found', me: 'Url Changer'}); 
 					}
 				} else {
 					_isInternalFragChange = false;
@@ -947,7 +1147,7 @@
 			},
 			pageEntering : function (newRoute) {
 				// Raise flag for the first time
-				if (_currentPageUrl === '') {
+				if (_currentPageRoute === '') {
 					_triggerFirstHashChange = true;
 				} else {
 					//Raise flag for internal change
@@ -965,18 +1165,45 @@
 				}
 			},
 			updateUrlFragment : function () {
-				var newVal = _currentPageUrl + _currentPageFragment;
+				var newVal = _currentPageRoute + _currentPageFragment;
 				
 				//Raise flag for internal change
 				_isInternalFragChange = true;
 				
-				if (_currentPageUrl[_currentPageUrl.length - 1] == '/' && 
+				if (_currentPageRoute[_currentPageRoute.length - 1] == '/' && 
 					_currentPageFragment[0] == '/') {
-					newVal = _currentPageUrl + _currentPageFragment.substring(1);
+					newVal = _currentPageRoute + _currentPageFragment.substring(1);
 				}
 				
 				$.bbq.pushState('#' + newVal);
 				_isInternalFragChange = false;
+			},
+			_getCurrentUrl: function (defaultValue) {
+				var h = window.location.hash;
+				if (!!h) {
+					return h.replace(/#/gi, '');
+				}
+				return defaultValue;
+			},
+			getFullUrl: function () {
+				return this._getCurrentUrl(window.location.toString());
+			},
+			getCurrentUrl: function () {
+				return this._getCurrentUrl(window.location.pathname).split('?')[0];
+			},
+			getQueryString: function () {
+				var url = this.getFullUrl();
+				var split = url.split('?');
+				var qs = '';
+				
+				if (split.length > 1) {
+					split.shift();
+					qs = split.join('?');
+					if (!!qs && qs.indexOf('?') !== 0) {
+						qs += '?' + qs;
+					}
+				}
+				return qs;
 			}
 		};
 	};
@@ -987,15 +1214,20 @@
 		
 		return {
 			urlChanged : function () {
-				var nextPage = App.pages.page(document.location.pathname);
-
+				var nextPage = App.pages.page(window.location.pathname);
+				
 				//if we found a page for this route
 				if (nextPage) {
 					
 					//Detect if we change page
 					if (nextPage.key() == _currentPageKey) {
-						var _cur = document.location.origin + _currentPageUrl;
-						var pageFragment = document.location.href.substring(_cur.length);
+						var loc = window.location;
+						if (!loc.origin) {
+							// IE !!
+							loc.origin = loc.protocol + '//' + loc.hostname;
+						}
+						var _cur = loc.origin + _currentPageRoute;
+						var pageFragment = loc.href.substring(_cur.length);
 						
 						if (_currentPageFragment != pageFragment) {
 							App.mediator.notify('page.fragmentChanged', pageFragment);
@@ -1003,17 +1235,19 @@
 						}
 					} else {
 						_isPopingState = true;
-						App.mediator.goto(document.location.pathname + document.location.search);
+						App.mediator.goto(window.location.pathname + window.location.search);
 					}
+				} else {
+					App.log({args: 'Page not found', me: 'Url Changer'}); 
 				}
 			},
 			pageEntering : function (newRoute) {
 				var url = newRoute;
 				
-				if (_currentPageUrl === '') {
+				if (_currentPageRoute === '') {
 					_triggerFirstFragmentChange = true;
 				}
-				if (_currentPageUrl !== '') {
+				if (_currentPageRoute !== '') {
 					url = url + _currentPageFragment;
 				
 					if (!_isPopingState) {
@@ -1026,22 +1260,31 @@
 			pageEntered : function () {
 				if (_triggerFirstFragmentChange) {
 					//Detect if we have a fragment
-					var href = document.location.href;
-					var curPageHref = document.location.protocol + '//' + 
-						document.location.host + _currentPageUrl;
+					var href = window.location.href;
+					var curPageHref = window.location.protocol + '//' + 
+						window.location.host + _currentPageRoute;
 					_currentPageFragment = href.substring(curPageHref.length);
 					App.mediator.notify('page.fragmentChanged', _currentPageFragment);
 				}
 			},
 			updateUrlFragment : function () {
-				history.pushState({}, document.title, _currentPageUrl + _currentPageFragment);
+				history.pushState({}, document.title, _currentPageRoute + _currentPageFragment);
+			},
+			getCurrentUrl: function () {
+				return window.location.pathname;
+			},
+			getQueryString: function () {
+				return window.location.search;
+			},
+			getFullUrl: function () {
+				return window.location.toString();
 			}
 		};
 	};
 	
 	var _strategies = {
-		hash : createHashStrategy(),
-		history : createHistoryStrategy()
+		hash: createHashStrategy(),
+		history: createHistoryStrategy()
 	};
 	
 	var _currentStrategy = _strategies.hash;
@@ -1055,7 +1298,7 @@
 	};
 	
 	var _extractFragmentFromRoute = function (nextRoute, reelRoute) {
-		var	starIndex = nextRoute.indexOf('*');
+		var	starIndex = !nextRoute ? -1 : nextRoute.indexOf('*');
 		
 		if (starIndex > -1) {
 			nextRoute = nextRoute.substring(0, starIndex);
@@ -1077,10 +1320,10 @@
 		var QSIndex = _currentPageFragment.indexOf('?');
 		if (QSIndex > -1) {
 			_currentQsFragment = window.QueryStringParser.parse(
-					_currentPageFragment.substring(QSIndex)
-				);
+				_currentPageFragment.substring(QSIndex)
+			);
 		} else {
-			_currentQsFragment	= {};
+			_currentQsFragment = {};
 		}
 	};
 	
@@ -1089,10 +1332,11 @@
 		var nextRoute = _extractFragmentFromRoute(_getNextRouteFromData(data), data.route);
 		
 		//Update browser url if we change page route
-		if (_currentPageUrl != nextRoute) {
+		if (_currentPageRoute != nextRoute) {
 			//Keep a copy of the currentPage url
 			_currentStrategy.pageEntering(nextRoute);
-			_currentPageUrl = nextRoute;
+			_currentPageRoute = nextRoute;
+			_currentPageUrl = data.route;
 			_currentPageKey = data.page.key();
 			
 			$.sendPageView({page: data.route});
@@ -1111,53 +1355,57 @@
 	};
 	
 	var onUpdateUrlFragment = function (key, data, e) {
-		
-		//Dont do it if we dont have any page url
-		if (_currentPageUrl !== '') {
-			if ($.type(data) != 'object') {
-				//Keep a copy of the fragment
-				_currentPageFragment = data;
+		// Don't do it if we don't have any page url
+		if (!!_currentPageRoute) {
+			//Keep a copy of the fragment
+			_currentPageFragment = data;
+			if ($.isPlainObject(data)) {
 				//Keep QS sync
 				_extractQS();
 			}
 			_currentStrategy.updateUrlFragment();
+			$.sendPageView({page: data.route});
 		}
 	};
 	
 	var _generateQsString = function () {
-		var result = '',
-		c = 0;
+		var result = '';
 		
-		for (var prop in _currentQsFragment) {
-			if (_currentQsFragment[prop] !== null) {
-				if (c > 0) {
+		$.each(_currentQsFragment, function (prop, value) {
+			if (!!value) {
+				if (!!result.length) {
 					result += '&';
 				}
-				result += prop + '=' + _currentQsFragment[prop];
-				c++;
+				result += (prop + '=' + value);
 			}
-		}
+		});
+		
 		return result;
 	};
 	
 	var onUpdateQsFragment = function (key, data, e) {
-		if (typeof data == 'object') {
+		if ($.isPlainObject(data)) {
 			//Update _currentQsFragment
 			$.extend(_currentQsFragment, data);
 			
 			var currentQsIndex = _currentPageFragment.indexOf('?'),
 			newQsString = _generateQsString();
 			
-			//Generate new page fragment
-			if (currentQsIndex === -1) {
-				_currentPageFragment += '?' + newQsString;
-			} else {
-				_currentPageFragment = _currentPageFragment.substring(0, currentQsIndex + 1) + 
-					newQsString;
+			if (newQsString !== _currentPageFragment) {
+				//Generate new page fragment
+				if (!newQsString.length) {
+					_currentPageFragment = '';
+				} else if (currentQsIndex === -1) {
+					_currentPageFragment += '?' + newQsString;
+				} else {
+					_currentPageFragment = _currentPageFragment.substring(0, currentQsIndex + 1) + 
+						newQsString;
+				}
+				
+				//_currentPage
+				_currentStrategy.updateUrlFragment();
+				$.sendPageView({page: data.route});
 			}
-			
-			//_currentPage
-			_currentStrategy.updateUrlFragment();
 		}
 	};
 	
@@ -1171,10 +1419,22 @@
 		_currentPageFragment = _oldFragment;
 		_extractQS();
 		_currentStrategy.urlChanged();
+		$.sendPageView({page: data.route});
 	};
 	
 	var _urlChanged = function () {
 		_currentStrategy.urlChanged();
+	};
+	
+	var getCurrentUrl = function () {
+		return _currentStrategy.getCurrentUrl();
+	};
+	
+	var getQueryString = function () {
+		return _currentStrategy.getQueryString();
+	};
+	var getFullUrl = function () {
+		return _currentStrategy.getFullUrl();
 	};
 	
 	var init = function () {
@@ -1199,14 +1459,19 @@
 	var actions = function () {
 		return {
 			page: {
-				entering : onPageEntering,
-				leaving : onPageLeaving,
-				enter : onPageEntered,
-				updateUrlFragment : onUpdateUrlFragment,
-				updateQsFragment : onUpdateQsFragment
+				entering: onPageEntering,
+				leaving: onPageLeaving,
+				enter: onPageEntered,
+				updateUrlFragment: onUpdateUrlFragment,
+				updateQsFragment: onUpdateQsFragment
 			},
-			pages : {
+			pages: {
 				navigateToCurrent : onNavigateToCurrent
+			},
+			url: {
+				getUrl: getCurrentUrl,
+				getQueryString: getQueryString,
+				getFullUrl: getFullUrl
 			}
 		};
 	};
@@ -1227,17 +1492,27 @@
 	'use strict';
 	var win = $(window);
 	
+	var notify = function (key, e) {
+		App.mediator.notify('site.' + key, {event: e});
+	};
+	
 	var resizeHandler = function (e) {
-		App.mediator.notify('site.resize', null, e);
+		notify('resize', e);
 	};
 	
 	var scrollHandler = function (e) {
-		App.mediator.notify('site.scroll', null, e);
+		notify('scroll', e);
+	};
+	
+	var loadHandler = function (e) {
+		notify('loaded', e);
 	};
 	
 	var init = function () {
-		//Trigger resize
-		win.resize(resizeHandler).scroll(scrollHandler);
+		win
+			.load(loadHandler)
+			.resize(resizeHandler)
+			.scroll(scrollHandler);
 	};
 	
 	var WindowNotifier = App.modules.exports('windowNotifier', {
@@ -1260,6 +1535,8 @@
 	var body = $('body');
 	var sitePages = $('#site-pages');
 	
+	var DEFAULT_DELAY = 350;
+	
 	var defaultTransition = function (data, callback) {
 		
 		var leavingPage = data.currentPage;
@@ -1278,27 +1555,42 @@
 			domEnteringPage.ready(function () {
 				domEnteringPage.css({opacity: 1, display: 'block'});
 				body.addClass(enteringPage.key().substring(1));
-				sitePages.animate({opacity: 1}, 500);
+				sitePages.animate({opacity: 1}, DEFAULT_DELAY, function () {
+					App.modules.notify('transition.end', {page: enteringPage, route: data.route});
+				});
 				enteringPage.enter(data.enterNext);
+				App.callback(callback);
 			});
-			
 		};
 		
-		body.removeClass(leavingPage.key().substring(1));
-		
-		sitePages.animate({opacity: 0}, 1000, function () {
-			//notify all module
-			App.modules.notify('page.leaving', {page: leavingPage});
+		var afterScroll = function () {
+			sitePages.animate({opacity: 0}, DEFAULT_DELAY, function () {
+				//notify all module from leaving
+				body.removeClass(leavingPage.key().substring(1));
+				App.modules.notify('page.leaving', {page: leavingPage});
+				
+				if ($.mobile) {
+					win.scrollTop(0);
+				}
+				
+				//Leave the current page
+				leavingPage.leave(data.leaveCurrent);
 			
-			//Leave the current page
-			leavingPage.leave(data.leaveCurrent);
+				domLeavingPage.hide();
+				enterPageAnimation();
+			});
+		};
 		
-			domLeavingPage.hide();
-			enterPageAnimation();
-			
-		});
+		if ($.mobile) {
+			afterScroll();
+		} else {
+			$.scrollTo(0, {
+				duration : Math.min(1200, $(window).scrollTop()),
+				easing : 'easeInOutQuad',
+				onAfter : afterScroll
+			});
+		}
 	};
-	
 	
 	App.transitions.exports({
 		transition: defaultTransition,
@@ -1315,21 +1607,27 @@
  * Default page implementation
  *
  */
+
 (function ($, undefined) {
 
 	'use strict';
 	
-	var onEnter = function (next) {
-		App.callback(next);
-	};
-	
-	var init = function () {
+	App.pages.exports('defaultPage', function () {
 		
-	};
-	
-	App.pages.exports('defaultPage', {
-		init: init,
-		enter : onEnter
+		var onEnter = function (next) {
+			App.callback(next);
+		};
+		
+		var init = function () {
+			
+		};
+		
+		var self = {
+			init: init,
+			enter : onEnter
+		};
+		
+		return self;
 	});
 	
 })(jQuery);
@@ -1348,7 +1646,9 @@
 	
 	//var VENDOR_PREFIXES = ['', '-webkit-', '-moz-', '-o-', '-ms-'];
 	
+	/* jshint ignore:start */
 	// from https://github.com/DeuxHuitHuit/jQuery-Animate-Enhanced/blob/master/scripts/src/jquery.animate-enhanced.js
+	/* jshint ignore:end */
 	var HAS_3D =  ('WebKitCSSMatrix' in window && 'm11' in new window.WebKitCSSMatrix());
 	
 	var _getTranslation = function (x, y, z) {
@@ -1413,17 +1713,348 @@
 (function ($) {
 	'use strict';
 	
-	// ga facilitator
+	var log = function () {
+		var args = [];
+		$.each(arguments, function (i, a) {
+			if ($.isPlainObject(a)) {
+				a = JSON.stringify(a, null, 2);
+			} else {
+				a = '"' + a + '"';
+			}
+			args.push(a);
+		});
+		App.log('ga(' + args.join(',') + ');');
+	};
+	
+	// ga facilitators
 	$.sendPageView = function (opts) {
-		if (!!window.ga) {
-			var defaults = {
-				page: window.location.pathname + window.location.search,
-				location: window.location.href,
-				hostname: window.location.hostname
-			};
-			var args = !opts ? defaults : $.extend(defaults, opts);
+		var ga = window.ga || log;
+		var defaults = {
+			page: window.location.pathname + window.location.search,
+			location: window.location.href,
+			hostname: window.location.hostname
+		};
+		var args = !opts ? defaults : $.extend(defaults, opts);
+		
+		ga('send', 'pageview', args);
+	};
+	
+	$.sendEvent = function (cat, label, value) {
+		var ga = window.ga || log;
+		ga('send', 'event', cat, label, value);
+	};
+	
+	$.fn.sendClickEvent = function (options) {
+		var t = $(this).eq(0);
+		var gaValue = t.attr('data-ga-value');
+		var o = $.extend({}, options, {
+			cat: 'button-' + $('html').attr('lang').toUpperCase(),
+			event: 'click',
+			value: gaValue || t.text()
+		});
+		if (!gaValue) {
+			App.log('No ga-value found, reverting to text');
+		}
+		$.sendEvent(o.cat, o.event, o.value);
+	};
+	
+})(jQuery);
+/**
+ * @author Deux Huit Huit
+ * 
+ */
+(function ($, undefined) {
+	
+	'use strict';
+	
+	var dropdownmenu = function (opts) {
+	
+		
+		var init = function (index) {
 			
-			window.ga('send', 'pageview', args);
+			var elem = $(this);
+			
+			var isPoped = false;
+			
+			// Create options
+			var options = $.extend({}, $.dropdownmenu.defaults, {
+				popup: elem.attr('data-popup'),
+				items: elem.attr('data-items'),
+				background: elem.attr('data-background')
+			}, opts);
+			
+			// Ensure we are dealing with jQuery objects
+			options.popup = $(options.popup);
+			options.background = $(options.background);
+			options.items = options.popup.find(options.items);
+			
+			var showMenu = function () {
+				if (!isPoped) {
+					positionMenu();
+					
+					options.background.addClasses(options.showClass, options.popupClass);
+					options.popup.addClasses(options.showClass, options.popupClass);
+					isPoped = true;
+					
+					if ($.isFunction(options.menuPoped)) {
+						options.menuPoped.call(elem, options);
+					}
+					
+					elem.trigger('menuPoped', [options]);
+				}
+			};
+			
+			var hideMenu = function () {
+				if (isPoped) {
+					options.background.removeClasses(options.showClass, options.popupClass);
+					options.popup.removeClasses(options.showClass, options.popupClass);
+					isPoped = false;
+				}
+			};
+			
+			var positionMenu = function () {
+				var tOffset = elem.offset();
+				
+				options.popup.css(tOffset);
+			};
+			
+			elem.click(function elemClick(e) {
+				showMenu();
+				
+				return window.pd(e, true);
+			});
+			
+			options.items.click(function itemClick(e) {
+				var t = $(this);
+				options.items.removeClass(options.selectedClass);
+				t.addClass(options.selectedClass);
+				
+				if ($.isFunction(options.selectionChanged)) {
+					options.selectionChanged.call(elem, t, options);
+				} else {
+					elem.text(t.text());
+				}
+				
+				elem.trigger('selectionChanged', [t, options]);
+				
+				hideMenu();
+				
+				//Mis en commentaire pour permettre le faire le clique sur les liens
+				//return window.pd(e, true);
+			});
+			
+			options.background.click(function bgClick(e) {
+				hideMenu();
+				
+				return window.pd(e, true);
+			});
+			
+			$(window).resize(function (e) {
+				if (isPoped) {
+					positionMenu();
+				}
+			});
+		};
+		
+		return init;
+	};
+	
+	
+	$.fn.dropdownmenu = function (options) {
+		var t = $(this);
+		
+		return t.each(dropdownmenu(options));
+	};
+	
+	$.dropdownmenu = {
+		defaults: {
+			popup: null,
+			items: '>*',
+			background: null,
+			showClass: 'show',
+			popupClass: 'popup',
+			selectedClass: 'selected',
+			selectionChanged: null,
+			menuPoped: null
 		}
 	};
+	
+})(jQuery);
+/**
+ * @author Deux Huit Huit
+ * 
+ * css3 Transition end
+ */
+
+(function ($, undefined) {
+	
+	'use strict'; 
+	
+	var transitionEndEvent = 'transitionend ' + 
+		'webkitTransitionEnd oTransitionEnd mozTransitionEnd MSTransitionEnd',
+	addClassTimer = 'add-class-timer',
+	queue = [],
+	
+	_forEachSelectorsInQueue = function (fn) { 
+		if (!!queue.length) {
+			$.each(queue, function eachRemoveFromQueue(index, q) {
+				// check q since it may be undefined
+				// when the array removes it
+				if (!!q) {
+					// call it
+					fn.call(this, q, index);
+				}
+			});
+		}
+	};
+	
+	if (!window.App || !!window.App.debug()) {
+		$.transitionsQueue = function () {
+			return queue;
+		};
+	}
+	
+	$('body').on(transitionEndEvent, function (e) {
+		var target = $(e.target);
+		
+		_forEachSelectorsInQueue(function eachInQueue(q, index) {
+			
+			$.each(q.selectors, function eachCallbackSelector(selector, value) {
+				q.selectors[selector] = value || target.is(selector);
+			});
+			
+			// every selectors are on
+			if (_.every(q.selectors)) {
+				// remove from queue
+				queue.splice(index, 1);
+				// call callback
+				q.callback.call(q.context, e);
+			}
+		});
+		//console.log('transition ended for ', e.target);
+	});
+	
+	$.fn.transitionEnd = function (callback, selectors) {
+		var 
+		self = $(this),
+		q = {
+			selectors: {},
+			callback: callback,
+			context: this,
+			timestamp: $.now()
+		};
+		
+		if (!!selectors && !$.isArray(selectors)) {
+			selectors = [selectors];
+		}
+		
+		if (!selectors || !selectors.length) {
+			// use ourself if we can
+			if (!!self.selector) {
+				q.selectors[self.selector] = false;
+			} else {
+				if (!!App.debug()) {
+					console.warn('Element %s has no selector', this);
+				}
+				// exit
+				return self;
+			}
+		} else {
+			$.each(selectors, function (index, value) {
+				if (!!value) {
+					q.selectors[value] = false;
+				} else if (!!App.debug()) {
+					console.warn('Element %s has no selector', index);
+				}
+			});
+		}
+		
+		// add to queue
+		queue.push(q);
+		
+		return self;
+	};
+	
+	$.removeFromTransition = function (selectors) {
+		var found = false;
+		
+		if (!!selectors) {
+		
+			if (!$.isArray(selectors)) {
+				selectors = [selectors];
+			}
+			
+			_forEachSelectorsInQueue(function eachInQueue(q, index) {
+				var localFound = false;
+				
+				if (!!q && !!q.selectors) {
+					
+					var eachCallbackSelector = function (value, selector) {
+						return !!~$.inArray(selector, selectors);
+					};
+					
+					localFound = _.some(q.selectors, eachCallbackSelector);
+					
+					if (localFound) {
+						// remove from queue
+						queue.splice(index, 1);
+						
+						//console.log('%s at %s have been removed from queue', selectors, index);
+						
+						found = true;
+					}
+				}
+			});
+		}
+		
+		return found;
+	};
+	
+	
+	$.fn.addClasses = function (class1, class2, callback, selectors) {
+		var t = $(this);
+		if (!t.length) {
+			return t;
+		}
+		selectors = selectors || [t.selector];
+		return t.each(function (index, element) {
+			var t = $(element), 
+			timer = t.data(addClassTimer);
+			
+			clearTimeout(timer);
+			
+			t.addClass(class1);
+			
+			timer = setTimeout(function addClassesTimer(class2, callback, selectors) {
+				// if class1 is still present
+				if (t.hasClass(class1)) {
+					if ($.isFunction(callback)) {
+						t.transitionEnd(callback, selectors);
+					}
+					t.addClass(class2);
+				}
+			}, 100, class2, callback, selectors);
+			
+			t.data(addClassTimer, timer);
+		});
+	};
+
+	$.fn.removeClasses = function (class1, class2, callback, selectors) {
+		var t = $(this);
+		if (!t.length) {
+			return t;
+		}
+		selectors = selectors || t.selector;
+		return t.each(function (index, element) {
+			var t = $(element);
+			t.transitionEnd(function tEnd() {
+				t.removeClass(class1);
+				if ($.isFunction(callback)) {
+					callback();
+				}
+			}, selectors);
+			t.removeClass(class2);
+		});
+	};
+	
 })(jQuery);
