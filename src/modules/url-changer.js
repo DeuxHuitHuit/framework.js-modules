@@ -17,17 +17,17 @@
 	var _currentQsFragment = {};
 	
 	var createHashStrategy = function () {
-		var _initialDocumentUrl = document.location.pathname;
+		var _initialDocumentUrl = window.location.pathname;
 		var _isInternalFragChange = false;
 		var _triggerFirstHashChange = false;
 		
 		return {
 			urlChanged : function () {
 				if (!_isInternalFragChange) {
-					var h = document.location.hash;
+					var h = window.location.hash;
 					var loc = h.length > 1 ? 
 							h.substring(1) : 
-							document.location.pathname + document.location.search;
+							window.location.pathname + window.location.search;
 					
 					var	nextPage = App.pages.page(loc);
 
@@ -87,17 +87,17 @@
 				_isInternalFragChange = false;
 			},
 			_getCurrentUrl: function (defaultValue) {
-				var h = document.location.hash;
+				var h = window.location.hash;
 				if (!!h) {
 					return h.replace(/#/gi, '');
 				}
 				return defaultValue;
 			},
 			getFullUrl: function () {
-				return this._getCurrentUrl(document.location.toString());
+				return this._getCurrentUrl(window.location.toString());
 			},
 			getCurrentUrl: function () {
-				return this._getCurrentUrl(document.location.pathname).split('?')[0];
+				return this._getCurrentUrl(window.location.pathname).split('?')[0];
 			},
 			getQueryString: function () {
 				var url = this.getFullUrl();
@@ -122,17 +122,20 @@
 		
 		return {
 			urlChanged : function () {
-				var nextPage = App.pages.page(document.location.pathname);
+				var nextPage = App.pages.page(window.location.pathname);
 				
 				//if we found a page for this route
 				if (nextPage) {
 					
 					//Detect if we change page
 					if (nextPage.key() == _currentPageKey) {
-						//Dont use origin, not working well on ie10-11
-						var loc = document.location;
-						var _cur = loc.protocol + '//' + loc.hostname + _currentPageRoute;
-						var pageFragment = document.location.href.substring(_cur.length);
+						var loc = window.location;
+						if (!loc.origin) {
+							// IE !!
+							loc.origin = loc.protocol + '//' + loc.hostname;
+						}
+						var _cur = loc.origin + _currentPageRoute;
+						var pageFragment = loc.href.substring(_cur.length);
 						
 						if (_currentPageFragment != pageFragment) {
 							App.mediator.notify('page.fragmentChanged', pageFragment);
@@ -140,7 +143,7 @@
 						}
 					} else {
 						_isPopingState = true;
-						App.mediator.goto(document.location.pathname + document.location.search);
+						App.mediator.goto(window.location.pathname + window.location.search);
 					}
 				} else {
 					App.log({args: 'Page not found', me: 'Url Changer'}); 
@@ -165,9 +168,9 @@
 			pageEntered : function () {
 				if (_triggerFirstFragmentChange) {
 					//Detect if we have a fragment
-					var href = document.location.href;
-					var curPageHref = document.location.protocol + '//' + 
-						document.location.host + _currentPageRoute;
+					var href = window.location.href;
+					var curPageHref = window.location.protocol + '//' + 
+						window.location.host + _currentPageRoute;
 					_currentPageFragment = href.substring(curPageHref.length);
 					App.mediator.notify('page.fragmentChanged', _currentPageFragment);
 				}
@@ -176,13 +179,13 @@
 				history.pushState({}, document.title, _currentPageRoute + _currentPageFragment);
 			},
 			getCurrentUrl: function () {
-				return document.location.pathname;
+				return window.location.pathname;
 			},
 			getQueryString: function () {
-				return document.location.search;
+				return window.location.search;
 			},
 			getFullUrl: function () {
-				return document.location.toString();
+				return window.location.toString();
 			}
 		};
 	};
