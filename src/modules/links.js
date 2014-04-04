@@ -45,9 +45,9 @@
 			':not([data-action^="full"])' +
 			':not([data-action^="toggle"])' +
 			':not([data-action^="none"])';
-		$('#site').on('click', sel, onClickGoto);
+		$('#site').on($.click, sel, onClickGoto);
 		
-		$('#site').on('click', 'a[href^="/"][data-action^="toggle"]', onClickToggle);
+		$('#site').on($.click, 'a[href^="/"][data-action^="toggle"]', onClickToggle);
 	};
 	
 	var Links = App.modules.exports('links', {
