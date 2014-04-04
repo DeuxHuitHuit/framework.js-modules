@@ -1,4 +1,4 @@
-/*! framework.js-modules - v1.1.0 - - build  - 2014-03-28
+/*! framework.js-modules - v1.1.0 - - build  - 2014-04-04
 * https://github.com/DeuxHuitHuit/framework.js-modules
 * Copyright (c) 2014 Deux Huit Huit; Licensed MIT */
 /**
@@ -489,9 +489,9 @@
 			':not([data-action^="full"])' +
 			':not([data-action^="toggle"])' +
 			':not([data-action^="none"])';
-		$('#site').on('click', sel, onClickGoto);
+		$('#site').on($.click, sel, onClickGoto);
 		
-		$('#site').on('click', 'a[href^="/"][data-action^="toggle"]', onClickToggle);
+		$('#site').on($.click, 'a[href^="/"][data-action^="toggle"]', onClickToggle);
 	};
 	
 	var Links = App.modules.exports('links', {
