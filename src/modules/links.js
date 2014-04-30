@@ -18,6 +18,10 @@
 	var onClickGoto = function (e) {
 		var t = $(this);
 		var href = t.attr('href');
+		
+		if (!App.mediator._currentPage()) {
+			return true;
+		}
 			
 		if (!e.ctrlKey) {
 			App.mediator.goto(href);
@@ -28,6 +32,10 @@
 	var onClickToggle = function (e) {
 		var t = $(this);
 		var href = t.attr('href');
+		
+		if (!App.mediator._currentPage()) {
+			return true;
+		}
 		
 		App.mediator.toggle(href);
 		
