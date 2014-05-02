@@ -72,7 +72,7 @@
 	var youtubeProvider = $.extend({}, abstractProvider, {
 		getIframe: function (url, autoplay) {
 			var id = url.indexOf('v=') > 0 ? 
-				url.substring(url.indexOf('v=') + 2) : url.substring(url.lastIndexOf('/'));
+				url.match(/v=([^\&]+)/mi)[1] : url.substring(url.lastIndexOf('/'));
 			var autoPlay = autoplay !== undefined ? autoplay : 1;
 			var iframe = abstractProvider.getIframe()
 				.attr('id', 'youtube-player-' + id)
