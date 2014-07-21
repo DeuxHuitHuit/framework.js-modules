@@ -1,5 +1,7 @@
 /**
  * @author Deux Huit Huit
+ * 
+ * jPlayer
  */
  
 (function ($, win, undefined) {
