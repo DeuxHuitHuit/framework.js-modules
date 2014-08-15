@@ -5,7 +5,7 @@
  *
  */
 
-(function ($, undefined) {
+(function ($, global, undefined) {
 
 	'use strict';
 	
@@ -27,4 +27,4 @@
 		return self;
 	});
 	
-})(jQuery);
+})(jQuery, window);
