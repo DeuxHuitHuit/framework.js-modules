@@ -4,21 +4,27 @@
  * Default page implementation
  *
  */
-(function ($, undefined) {
+
+(function ($, global, undefined) {
 
 	'use strict';
 	
-	var onEnter = function (next) {
-		App.callback(next);
-	};
-	
-	var init = function () {
+	App.pages.exports('defaultPage', function () {
 		
-	};
-	
-	App.pages.exports('defaultPage', {
-		init: init,
-		enter : onEnter
+		var onEnter = function (next) {
+			App.callback(next);
+		};
+		
+		var init = function () {
+			
+		};
+		
+		var self = {
+			init: init,
+			enter : onEnter
+		};
+		
+		return self;
 	});
 	
-})(jQuery);
+})(jQuery, window);

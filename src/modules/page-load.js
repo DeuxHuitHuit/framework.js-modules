@@ -9,13 +9,14 @@
 
 	'use strict';
 	
-	var INITIAL_VALUE = 0.02; // 2%
+	var INITIAL_VALUE = 0.40; // 40%
 	var INCREMENT = 0.05; // 5%
 	var CLOSE_DELAY = 700; // ms
 	
 	var LOADING = 'page-loading';
 	var SHOW = 'show';
 	var START = 'start';
+	var END = 'end';
 	
 	var html = $();
 	var holder = $();
@@ -33,14 +34,18 @@
 		clearTimeout(closeTimer);
 		
 		currentValue = INITIAL_VALUE;
-
+		
 		holder
+			.removeClass(END)
+			.removeClass(SHOW)
 			.removeClass(START)
-			.width(p(currentValue))
+			.width(p(0))
 			.height();
 		holder
 			.addClass(START)
-			.addClass(SHOW);
+			.addClass(SHOW)
+			.width(p(currentValue))
+			.height();
 		
 		html.addClass(LOADING);
 		
@@ -51,6 +56,7 @@
 	
 	var end = function () {
 		holder
+			.addClass(END)
 			.width('100%');
 		
 		closeTimer = setTimeout(function () {

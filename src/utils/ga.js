@@ -35,15 +35,23 @@
 	$.fn.sendClickEvent = function (options) {
 		var t = $(this).eq(0);
 		var gaValue = t.attr('data-ga-value');
+		var gaCat = t.attr('data-ga-cat');
 		var o = $.extend({}, options, {
-			cat: 'button-' + $('html').attr('lang').toUpperCase(),
+			cat: !!gaCat ? gaCat : 'click',
 			event: 'click',
-			value: gaValue || t.text()
+			value: !!gaValue ? gaValue : t.text()
 		});
 		if (!gaValue) {
 			App.log('No ga-value found, reverting to text');
 		}
 		$.sendEvent(o.cat, o.event, o.value);
 	};
+	
+	// auto-hook
+	$(function () {
+		$('#site').on($.click, '*[data-ga-value]', function (e) {
+			$(e.target).sendClickEvent();
+		});
+	});
 	
 })(jQuery);

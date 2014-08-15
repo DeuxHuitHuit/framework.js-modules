@@ -1,7 +1,7 @@
 /**
  * @author Deux Huit Huit
  *
- * Search Bar
+ * Time Ago
  *
  */
 (function ($, w, doc, undefined) {

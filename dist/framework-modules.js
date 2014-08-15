@@ -1,4 +1,4 @@
-/*! framework.js-modules - v1.1.0 - - build  - 2014-02-20
+/*! framework.js-modules - v1.1.0 - - build  - 2014-04-04
 * https://github.com/DeuxHuitHuit/framework.js-modules
 * Copyright (c) 2014 Deux Huit Huit; Licensed MIT */
 /**
@@ -10,18 +10,25 @@
 (function ($, w, doc, undefined) {
 
 	'use strict';
+	
+	var DEFAULT_DELAY = 350;
 
 	var animToArticleDefault = function (current, next, o) {
 		if (!!current.length) {
-			$.scrollTo(0, Math.min(500, $(w).scrollTop()), function () {
-				current.fadeTo(500, 0, function () {
+			var afterScroll = function () {
+				current.fadeTo(DEFAULT_DELAY, 0, function () {
 					current.hide();
-					next.fadeTo(500, 1);
+					next.fadeTo(DEFAULT_DELAY, 1);
 					o.articleEnter(next);
 				});
-			});
+			};
+			if ($.mobile) {
+				afterScroll();
+			} else {
+				$.scrollTo(0, Math.min(500, $(w).scrollTop()), afterScroll);
+			}
 		} else {
-			next.fadeTo(500, 1);
+			next.fadeTo(DEFAULT_DELAY, 1);
 			o.articleEnter(next);
 		}
 	};
@@ -149,7 +156,7 @@
 	if ($('html').attr('lang') == 'fr') {
 		jQuery.timeago.settings.strings = {
 		   // environ ~= about, it's optional
-			prefixAgo : 'Publié il y a',
+			prefixAgo : 'PubliÃ© il y a',
 			prefixFromNow : 'd\'ici',
 			seconds : 'moins d\'une minute',
 			minute : 'environ une minute',
@@ -399,7 +406,7 @@
 	
 	var twitterat = function (t) {
 		return t.replace(
-/(^|[^\w]+)\@([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]{1,15}(\/[a-zA-Z0-9-_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)*)/gi, // jshint ignore:line
+/(^|[^\w]+)\@([a-zA-Z0-9_Ã Ã¡Ã¢Ã£Ã¤Ã¥Ã§Ã¨Ã©ÃªÃ«Ã¬Ã­Ã®Ã¯Ã°Ã²Ã³Ã´ÃµÃ¶Ã¹ÃºÃ»Ã¼Ã½Ã¿]{1,15}(\/[a-zA-Z0-9-_Ã Ã¡Ã¢Ã£Ã¤Ã¥Ã§Ã¨Ã©ÃªÃ«Ã¬Ã­Ã®Ã¯Ã°Ã²Ã³Ã´ÃµÃ¶Ã¹ÃºÃ»Ã¼Ã½Ã¿]+)*)/gi, // jshint ignore:line
 			function (m, m1, m2) {
 				return m1 + '<a href="http://twitter.com/' + m2 +
 					'" target="_blank">@' + m2 + '</a>';
@@ -408,7 +415,7 @@
 	};
 	
 	var twitterhash = function (t) {
-		return t.replace(/(^|[^&\w'"]+)\#([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ^"^<^>]+)/gi, 
+		return t.replace(/(^|[^&\w'"]+)\#([a-zA-Z0-9_Ã Ã¡Ã¢Ã£Ã¤Ã¥Ã§Ã¨Ã©ÃªÃ«Ã¬Ã­Ã®Ã¯Ã°Ã²Ã³Ã´ÃµÃ¶Ã¹ÃºÃ»Ã¼Ã½Ã¿^"^<^>]+)/gi, 
 			function (m, m1, m2) {
 				return m.substr(-1) === '"' || m.substr(-1) == '<' ? 
 					m : m1 + '<a href="https://twitter.com/search?q=%23' + m2 +
@@ -482,9 +489,9 @@
 			':not([data-action^="full"])' +
 			':not([data-action^="toggle"])' +
 			':not([data-action^="none"])';
-		$('#site').on('click', sel, onClickGoto);
+		$('#site').on($.click, sel, onClickGoto);
 		
-		$('#site').on('click', 'a[href^="/"][data-action^="toggle"]', onClickToggle);
+		$('#site').on($.click, 'a[href^="/"][data-action^="toggle"]', onClickToggle);
 	};
 	
 	var Links = App.modules.exports('links', {
@@ -1102,17 +1109,17 @@
 	var _currentQsFragment = {};
 	
 	var createHashStrategy = function () {
-		var _initialDocumentUrl = document.location.pathname;
+		var _initialDocumentUrl = window.location.pathname;
 		var _isInternalFragChange = false;
 		var _triggerFirstHashChange = false;
 		
 		return {
 			urlChanged : function () {
 				if (!_isInternalFragChange) {
-					var h = document.location.hash;
+					var h = window.location.hash;
 					var loc = h.length > 1 ? 
 							h.substring(1) : 
-							document.location.pathname + document.location.search;
+							window.location.pathname + window.location.search;
 					
 					var	nextPage = App.pages.page(loc);
 
@@ -1172,17 +1179,17 @@
 				_isInternalFragChange = false;
 			},
 			_getCurrentUrl: function (defaultValue) {
-				var h = document.location.hash;
+				var h = window.location.hash;
 				if (!!h) {
 					return h.replace(/#/gi, '');
 				}
 				return defaultValue;
 			},
 			getFullUrl: function () {
-				return this._getCurrentUrl(document.location.toString());
+				return this._getCurrentUrl(window.location.toString());
 			},
 			getCurrentUrl: function () {
-				return this._getCurrentUrl(document.location.pathname).split('?')[0];
+				return this._getCurrentUrl(window.location.pathname).split('?')[0];
 			},
 			getQueryString: function () {
 				var url = this.getFullUrl();
@@ -1207,17 +1214,20 @@
 		
 		return {
 			urlChanged : function () {
-				var nextPage = App.pages.page(document.location.pathname);
+				var nextPage = App.pages.page(window.location.pathname);
 				
 				//if we found a page for this route
 				if (nextPage) {
 					
 					//Detect if we change page
 					if (nextPage.key() == _currentPageKey) {
-						//Dont use origin, not working well on ie10-11
-						var loc = document.location;
-						var _cur = loc.protocol + '//' + loc.hostname + _currentPageRoute;
-						var pageFragment = document.location.href.substring(_cur.length);
+						var loc = window.location;
+						if (!loc.origin) {
+							// IE !!
+							loc.origin = loc.protocol + '//' + loc.hostname;
+						}
+						var _cur = loc.origin + _currentPageRoute;
+						var pageFragment = loc.href.substring(_cur.length);
 						
 						if (_currentPageFragment != pageFragment) {
 							App.mediator.notify('page.fragmentChanged', pageFragment);
@@ -1225,7 +1235,7 @@
 						}
 					} else {
 						_isPopingState = true;
-						App.mediator.goto(document.location.pathname + document.location.search);
+						App.mediator.goto(window.location.pathname + window.location.search);
 					}
 				} else {
 					App.log({args: 'Page not found', me: 'Url Changer'}); 
@@ -1250,9 +1260,9 @@
 			pageEntered : function () {
 				if (_triggerFirstFragmentChange) {
 					//Detect if we have a fragment
-					var href = document.location.href;
-					var curPageHref = document.location.protocol + '//' + 
-						document.location.host + _currentPageRoute;
+					var href = window.location.href;
+					var curPageHref = window.location.protocol + '//' + 
+						window.location.host + _currentPageRoute;
 					_currentPageFragment = href.substring(curPageHref.length);
 					App.mediator.notify('page.fragmentChanged', _currentPageFragment);
 				}
@@ -1261,13 +1271,13 @@
 				history.pushState({}, document.title, _currentPageRoute + _currentPageFragment);
 			},
 			getCurrentUrl: function () {
-				return document.location.pathname;
+				return window.location.pathname;
 			},
 			getQueryString: function () {
-				return document.location.search;
+				return window.location.search;
 			},
 			getFullUrl: function () {
-				return document.location.toString();
+				return window.location.toString();
 			}
 		};
 	};
@@ -1288,7 +1298,7 @@
 	};
 	
 	var _extractFragmentFromRoute = function (nextRoute, reelRoute) {
-		var	starIndex = nextRoute.indexOf('*');
+		var	starIndex = !nextRoute ? -1 : nextRoute.indexOf('*');
 		
 		if (starIndex > -1) {
 			nextRoute = nextRoute.substring(0, starIndex);
@@ -1525,6 +1535,8 @@
 	var body = $('body');
 	var sitePages = $('#site-pages');
 	
+	var DEFAULT_DELAY = 350;
+	
 	var defaultTransition = function (data, callback) {
 		
 		var leavingPage = data.currentPage;
@@ -1543,28 +1555,42 @@
 			domEnteringPage.ready(function () {
 				domEnteringPage.css({opacity: 1, display: 'block'});
 				body.addClass(enteringPage.key().substring(1));
-				sitePages.animate({opacity: 1}, 500);
+				sitePages.animate({opacity: 1}, DEFAULT_DELAY, function () {
+					App.modules.notify('transition.end', {page: enteringPage, route: data.route});
+				});
 				enteringPage.enter(data.enterNext);
 				App.callback(callback);
 			});
-			
 		};
 		
-		body.removeClass(leavingPage.key().substring(1));
-		
-		sitePages.animate({opacity: 0}, 1000, function () {
-			//notify all module
-			App.modules.notify('page.leaving', {page: leavingPage});
+		var afterScroll = function () {
+			sitePages.animate({opacity: 0}, DEFAULT_DELAY, function () {
+				//notify all module from leaving
+				body.removeClass(leavingPage.key().substring(1));
+				App.modules.notify('page.leaving', {page: leavingPage});
+				
+				if ($.mobile) {
+					win.scrollTop(0);
+				}
+				
+				//Leave the current page
+				leavingPage.leave(data.leaveCurrent);
 			
-			//Leave the current page
-			leavingPage.leave(data.leaveCurrent);
+				domLeavingPage.hide();
+				enterPageAnimation();
+			});
+		};
 		
-			domLeavingPage.hide();
-			enterPageAnimation();
-			
-		});
+		if ($.mobile) {
+			afterScroll();
+		} else {
+			$.scrollTo(0, {
+				duration : Math.min(1200, $(window).scrollTop()),
+				easing : 'easeInOutQuad',
+				onAfter : afterScroll
+			});
+		}
 	};
-	
 	
 	App.transitions.exports({
 		transition: defaultTransition,
@@ -1581,21 +1607,27 @@
  * Default page implementation
  *
  */
+
 (function ($, undefined) {
 
 	'use strict';
 	
-	var onEnter = function (next) {
-		App.callback(next);
-	};
-	
-	var init = function () {
+	App.pages.exports('defaultPage', function () {
 		
-	};
-	
-	App.pages.exports('defaultPage', {
-		init: init,
-		enter : onEnter
+		var onEnter = function (next) {
+			App.callback(next);
+		};
+		
+		var init = function () {
+			
+		};
+		
+		var self = {
+			init: init,
+			enter : onEnter
+		};
+		
+		return self;
 	});
 	
 })(jQuery);
@@ -1615,8 +1647,7 @@
 	//var VENDOR_PREFIXES = ['', '-webkit-', '-moz-', '-o-', '-ms-'];
 	
 	/* jshint ignore:start */
-	// from https://github.com/DeuxHuitHuit/jQuery-Animate-Enhanced/
-	// blob/master/scripts/src/jquery.animate-enhanced.js
+	// from https://github.com/DeuxHuitHuit/jQuery-Animate-Enhanced/blob/master/scripts/src/jquery.animate-enhanced.js
 	/* jshint ignore:end */
 	var HAS_3D =  ('WebKitCSSMatrix' in window && 'm11' in new window.WebKitCSSMatrix());
 	

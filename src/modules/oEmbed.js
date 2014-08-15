@@ -35,8 +35,16 @@
 		pause : function (container) {}
 	};
 	
+	var $f = function () {
+		return window.$f;
+	};
+	
+	var YT = function () {
+		return !!window.YT ? window.YT.Player : false;
+	};
+	
 	var vimeoProvider = $.extend({}, abstractProvider, {
-		getIframe : function (id, autoplay) {
+		getIframe: function (id, autoplay) {
 			autoplay = autoplay !== undefined ? autoplay : 1;
 			return abstractProvider.getIframe()
 				.attr('src', '//player.vimeo.com/video/' + id +
@@ -44,37 +52,45 @@
 						'&api=1&html5=1');
 		},
 		
-		play : function (container) {
-			var player = window.$f($('iframe', container).get(0));
-			
-			player.api('play');
+		play: function (container) {
+			App.loaded($f, function ($f) {
+				var player = $f($('iframe', container).get(0));
+				
+				player.api('play');
+			});
 		},
 		
-		pause : function (container) {
-			var player = window.$f($('iframe', container).get(0));
-			player.api('pause');
+		pause: function (container) {
+			App.loaded($f, function ($f) {
+				var player = window.$f($('iframe', container).get(0));
+				
+				player.api('pause');
+			});
 		}
 	});
 	
 	var youtubeProvider = $.extend({}, abstractProvider, {
-		getIframe : function (url, autoplay) {
+		getIframe: function (url, autoplay) {
 			var id = url.indexOf('v=') > 0 ? 
-				url.substring(url.indexOf('v=') + 2) : url.substring(url.lastIndexOf('/'));
+				url.match(/v=([^\&]+)/mi)[1] : url.substring(url.lastIndexOf('/'));
 			var autoPlay = autoplay !== undefined ? autoplay : 1;
 			var iframe = abstractProvider.getIframe()
 				.attr('id', 'youtube-player-' + id)
 				.attr('src', '//www.youtube.com/embed/' + id + 
 				'?feature=oembed&autoplay=' + autoPlay + '&enablejsapi=1&version=3&html5=1');
-
-			this._player = new window.YT.Player(iframe.get(0));
+				
+			App.loaded(YT, function (Player) {
+				youtubeProvider._player = new Player(iframe.get(0));
+			});
+			
 			return iframe;
 		},
 		
-		play : function (container) {
+		play: function (container) {
 			this._player.playVideo();
 		},
 		
-		pause : function (container) {
+		pause: function (container) {
 			this._player.pauseVideo();
 		}
 	});
@@ -135,7 +151,7 @@
 	
 	var init = function () {
 		// capture all click in #site: delegate to the link
-		$('#site').on('click', 'a.play-button', playBtnClicked);
+		$('#site').on($.click, 'a.play-button', playBtnClicked);
 	};
 	
 	var actions = {

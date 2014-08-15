@@ -43,8 +43,10 @@
 			//Update links
 			$(linkSelector).each(function () {
 				var t = $(this);
-				if (linkList[document.location.pathname][t.data('lg')]) {
-					t.attr('href', linkList[document.location.pathname][t.data('lg')]);
+				var value = linkList[document.location.pathname][t.data('lg')];
+				
+				if (value) {
+					t.attr('href', value);
 				}
 			});
 		}

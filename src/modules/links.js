@@ -18,6 +18,10 @@
 	var onClickGoto = function (e) {
 		var t = $(this);
 		var href = t.attr('href');
+		
+		if (!App.mediator._currentPage()) {
+			return true;
+		}
 			
 		if (!e.ctrlKey) {
 			App.mediator.goto(href);
@@ -28,6 +32,10 @@
 	var onClickToggle = function (e) {
 		var t = $(this);
 		var href = t.attr('href');
+		
+		if (!App.mediator._currentPage()) {
+			return true;
+		}
 		
 		App.mediator.toggle(href);
 		
@@ -45,9 +53,9 @@
 			':not([data-action^="full"])' +
 			':not([data-action^="toggle"])' +
 			':not([data-action^="none"])';
-		$('#site').on('click', sel, onClickGoto);
+		$('#site').on($.click, sel, onClickGoto);
 		
-		$('#site').on('click', 'a[href^="/"][data-action^="toggle"]', onClickToggle);
+		$('#site').on($.click, 'a[href^="/"][data-action^="toggle"]', onClickToggle);
 	};
 	
 	var Links = App.modules.exports('links', {

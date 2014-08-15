@@ -18,17 +18,19 @@
 	};
 	
 	var onPageLoaded = function (key, data, e) {
-		var title = '';
-		$(data.data).each(function (i, e) {  
-			if ($(e).is('title')) {
-				title = $(e).text();
-				return true;
+		if (data.data) {
+			var title = '';
+			$(data.data).each(function (i, e) {  
+				if ($(e).is('title')) {
+					title = $(e).text();
+					return true;
+				}
+			});
+			if (!!!data.url) {
+				data.url = document.location.pathname;
 			}
-		});
-		if (!!!data.url) {
-			data.url = document.location.pathname;
+			titleList[data.url] = title;
 		}
-		titleList[data.url] = title;
 	};
 	
 	var onEnter = function (key, data, e) {
