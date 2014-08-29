@@ -48,8 +48,11 @@
 		enterPageAnimation();
 	};
 	
-	var onRequestPageTransition = function (key, data, e) {
-		var animation = defaultTransition;
+	var defaultBeginTransition = function (data) {
+		
+	};
+	
+	var getTransitionObj = function (data) {
 		var c = 0;
 		
 		for (; c < transitionList.length; c++) {
@@ -58,13 +61,34 @@
 			if ((it.from === data.currentPage.key().substring(1) || it.from === '*') &&
 				(it.to === data.nextPage.key().substring(1) || it.to === '*')) {
 				if (it.canAnimate(data)) {
-					animation = it.transition;
-					break;
+					return it;
 				}
 			}
 		}
+	};
+	
+	var onRequestBeginPageTransition = function (key, data) {
+		var beginAnimation = defaultBeginTransition;
+		
+		var anim = getTransitionObj(data);
+		if (anim) {
+			beginAnimation = anim.beginTransition;
+		}
 		
 		animatingTo = data.nextPage.key().substring(1);
+		beginAnimation(data);
+		
+	};
+	
+	var onRequestPageTransition = function (key, data, e) {
+		var animation = defaultTransition;
+		
+		var anim = getTransitionObj(data);
+		if (anim) {
+			animation = anim.transition;
+		}
+		
+		
 		animation(data, function () {
 			animatingTo = '';
 		});
@@ -76,7 +100,8 @@
 	var actions = function () {
 		return {
 			pages: {
-				requestPageTransition: onRequestPageTransition
+				requestPageTransition: onRequestPageTransition,
+				requestBeginPageTransition: onRequestBeginPageTransition
 			},
 			pageTransitionAnimation : {
 				getTargetPage : function (key, data, e) {
@@ -105,6 +130,7 @@
 		var o = $.extend({
 			from : '*',
 			to : '*',
+			beginTransition: defaultBeginTransition,
 			transition : defaultTransition,
 			canAnimate : function () {
 				return true;
