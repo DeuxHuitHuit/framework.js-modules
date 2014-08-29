@@ -22,19 +22,22 @@
 	};
 	
 	var onPageLoaded = function (key, data, e) {
-		var linkData = {};
-		$(data.data).each(function (i, e) {  
-			if ($(e).is('link')) {
-				var t = $(e);
-				if (t.attr('hreflang')) {
-					linkData[t.attr('hreflang')] = t.attr('href');
+		if (data.data) {
+			var linkData = {};
+			
+			$(data.data).each(function (i, e) {  
+				if ($(e).is('link')) {
+					var t = $(e);
+					if (t.attr('hreflang')) {
+						linkData[t.attr('hreflang')] = t.attr('href');
+					}
 				}
-			}
-			if ($(e).is('body')) {
-				return true;
-			}
-		});
-		linkList[data.url] = linkData;
+				if ($(e).is('body')) {
+					return true;
+				}
+			});
+			linkList[data.url] = linkData;
+		}
 	};
 	
 	var onEnter = function (key, data, e) {
