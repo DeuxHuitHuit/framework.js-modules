@@ -139,6 +139,7 @@
 		
 		if (o.from === '*' && o.to === '*') {
 			defaultTransition = o.transition;
+			defaultBeginTransition = o.beginTransition;
 		} else {
 			transitionList.push(o);	
 		}
