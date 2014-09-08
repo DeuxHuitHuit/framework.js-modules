@@ -32,12 +32,13 @@
 	var onClickToggle = function (e) {
 		var t = $(this);
 		var href = t.attr('href');
+		var fallback = t.attr('data-toggle-fallback-url');
 		
 		if (!App.mediator._currentPage()) {
 			return true;
 		}
 		
-		App.mediator.toggle(href);
+		App.mediator.toggle(href, fallback);
 		
 		return window.pd(e);
 	};

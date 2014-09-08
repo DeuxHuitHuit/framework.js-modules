@@ -1,4 +1,4 @@
-/*! framework.js-modules - v1.1.0 - - build  - 2014-04-04
+/*! framework.js-modules - v0.4.1 - - build  - 2014-09-08
 * https://github.com/DeuxHuitHuit/framework.js-modules
 * Copyright (c) 2014 Deux Huit Huit; Licensed MIT */
 /**
@@ -144,8 +144,174 @@
 })(jQuery, window, document);
 /**
  * @author Deux Huit Huit
+ * 
+ * jPlayer
+ */
+ 
+(function ($, win, undefined) {
+
+	'use strict';
+	
+	App.components.exports('jplayer', function (o) {
+		
+		var container;
+		var defaultOptions = {
+			playerSelector: '.js-jplayer-player',
+			playerContainerSelector: '.js-jplayer-container',
+			onReady: null,
+			onTimeupdate: null,
+			backgroundColor: 'transparent',
+			loop: true,
+			width: 1920,
+			height: 1080,
+			resize: true
+		};
+		
+		var options = $.extend({}, defaultOptions, o);
+		
+		//Partie pour les players video
+		var loadAllVideo = function () {
+			var playerCtn = container.find(options.playerContainerSelector);
+			
+			playerCtn.each(function () {
+				var ctn = $(this);
+				var player = ctn.find(options.playerSelector);
+				
+				player.jPlayer({
+					ready: function () {
+						var t = $(this);
+						t.jPlayer('setMedia', {
+							webmv: ctn.attr('data-video-webm'),
+							m4v: ctn.attr('data-video-mp4'),
+							ogv: ctn.attr('data-video-ogv')
+						});
+						
+						if (options.resize) {
+							resizeVideo(ctn);
+						}
+						
+						App.callback(options.onReady, [ctn]);
+					},
+					solution: 'html, flash',
+					swfPath: '//cdnjs.cloudflare.com/ajax/libs/jplayer/2.5.4/',
+					loop: options.loop,
+					volume: 0,
+					supplied: 'webmv, m4v, ogv',
+					backgroundColor: options.backgroundColor,
+					wmode: options.backgroundColor,
+					size: {
+						width: options.width,
+						height: options.height
+					},
+					preload: options.preload || 'none',
+					play: function (e) {
+						App.mediator.notify('jplayer.play', {ctn: ctn});
+						
+					},
+					timeupdate: function (e) {
+						var status = e.jPlayer.status;
+						
+						if (!!status.currentTime) {
+							App.mediator.notify('jplayer.timeupdate', {status: status, ctn: ctn});
+						}
+						
+						App.callback(options.onTimeupdate, [ctn, status]);
+					},
+					ended: function () {
+						App.callback(options.onEnded, [ctn]);
+					}
+				});
+			});
+		};
+		
+		var resizeVideo = function (playerCtn) {
+			var ctnWidth = playerCtn.width();
+			var ctnHeight = playerCtn.height();
+			var player = playerCtn.find(options.playerSelector);
+			
+			var newSize = $.sizing.aspectFill({
+				width: ctnWidth,
+				height: ctnHeight,
+				preferWidth: false
+			}, options.width / options.height);
+			var newPosition = $.positioning.autoPosition({
+				position: 'center',
+				left: 'left',
+				top: 'top'
+			}, $.size(ctnWidth, ctnHeight), newSize);
+
+			player.size(newSize).css(newPosition).data({
+				size: newSize,
+				position: newPosition
+			});
+
+			player.jPlayer('option', {size: newSize});
+		};
+		
+		var resizeAllVideo = function () {
+			container.find(options.playerContainerSelector).each(function () {
+				resizeVideo($(this));
+			});
+		};
+		
+		var destroyVideo = function (playerCtn) {
+			var player = playerCtn.find(options.playerSelector);
+			
+			player.jPlayer('destroy');
+			player.jPlayer('pauseOthers');
+		};
+		
+		var destroyAllVideo = function () {
+			container.find(options.playerContainerSelector).each(function () {
+				var t = $(this);
+				
+				destroyVideo(t);
+				t.removeClass('video-loaded').closest('.video-loaded').removeClass('video-loaded');
+			});
+		};
+		
+		var playVideo = function (playerCtn) {
+			var player = playerCtn.find(options.playerSelector);
+			player.jPlayer('pauseOthers');
+			player.jPlayer('play');
+		};
+		
+		var pauseVideo = function (playerCtn) {
+			var player = playerCtn.find(options.playerSelector);
+			
+			player.jPlayer('pause');
+		};
+		
+		var stopVideo = function (playerCtn) {
+			var player = playerCtn.find(options.playerSelector);
+			
+			player.jPlayer('stop');
+		};
+		
+		//_container délimite ou je veux écouté mes évenement 
+		//(page ou site, ce qui a été spécifier lors du init)
+		var init = function (_container) {
+			container = $(_container);
+		};
+		
+		return {
+			init: init,
+			loadAllVideo: loadAllVideo,
+			destroyVideo: destroyVideo,
+			destroyAllVideo: destroyAllVideo,
+			playVideo: playVideo,
+			pauseVideo: pauseVideo,
+			stopVideo: stopVideo,
+			resizeVideo: resizeVideo,
+			resizeAllVideo: resizeAllVideo
+		};
+	});
+	
+})(jQuery, jQuery(window));
+/**
+ * @author Deux Huit Huit
  *
- * Search Bar
+ * Time Ago
  *
  */
 (function ($, w, doc, undefined) {
@@ -156,7 +322,7 @@
 	if ($('html').attr('lang') == 'fr') {
 		jQuery.timeago.settings.strings = {
 		   // environ ~= about, it's optional
-			prefixAgo : 'PubliÃ© il y a',
+			prefixAgo : 'Publié il y a',
 			prefixFromNow : 'd\'ici',
 			seconds : 'moins d\'une minute',
 			minute : 'environ une minute',
@@ -221,19 +387,22 @@
 	};
 	
 	var onPageLoaded = function (key, data, e) {
-		var linkData = {};
-		$(data.data).each(function (i, e) {  
-			if ($(e).is('link')) {
-				var t = $(e);
-				if (t.attr('hreflang')) {
-					linkData[t.attr('hreflang')] = t.attr('href');
+		if (data.data) {
+			var linkData = {};
+			
+			$(data.data).each(function (i, e) {  
+				if ($(e).is('link')) {
+					var t = $(e);
+					if (t.attr('hreflang')) {
+						linkData[t.attr('hreflang')] = t.attr('href');
+					}
 				}
-			}
-			if ($(e).is('body')) {
-				return true;
-			}
-		});
-		linkList[data.url] = linkData;
+				if ($(e).is('body')) {
+					return true;
+				}
+			});
+			linkList[data.url] = linkData;
+		}
 	};
 	
 	var onEnter = function (key, data, e) {
@@ -242,8 +411,10 @@
 			//Update links
 			$(linkSelector).each(function () {
 				var t = $(this);
-				if (linkList[document.location.pathname][t.data('lg')]) {
-					t.attr('href', linkList[document.location.pathname][t.data('lg')]);
+				var value = linkList[document.location.pathname][t.data('lg')];
+				
+				if (value) {
+					t.attr('href', value);
 				}
 			});
 		}
@@ -406,7 +577,7 @@
 	
 	var twitterat = function (t) {
 		return t.replace(
-/(^|[^\w]+)\@([a-zA-Z0-9_Ã Ã¡Ã¢Ã£Ã¤Ã¥Ã§Ã¨Ã©ÃªÃ«Ã¬Ã­Ã®Ã¯Ã°Ã²Ã³Ã´ÃµÃ¶Ã¹ÃºÃ»Ã¼Ã½Ã¿]{1,15}(\/[a-zA-Z0-9-_Ã Ã¡Ã¢Ã£Ã¤Ã¥Ã§Ã¨Ã©ÃªÃ«Ã¬Ã­Ã®Ã¯Ã°Ã²Ã³Ã´ÃµÃ¶Ã¹ÃºÃ»Ã¼Ã½Ã¿]+)*)/gi, // jshint ignore:line
+/(^|[^\w]+)\@([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]{1,15}(\/[a-zA-Z0-9-_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)*)/gi, // jshint ignore:line
 			function (m, m1, m2) {
 				return m1 + '<a href="http://twitter.com/' + m2 +
 					'" target="_blank">@' + m2 + '</a>';
@@ -415,7 +586,7 @@
 	};
 	
 	var twitterhash = function (t) {
-		return t.replace(/(^|[^&\w'"]+)\#([a-zA-Z0-9_Ã Ã¡Ã¢Ã£Ã¤Ã¥Ã§Ã¨Ã©ÃªÃ«Ã¬Ã­Ã®Ã¯Ã°Ã²Ã³Ã´ÃµÃ¶Ã¹ÃºÃ»Ã¼Ã½Ã¿^"^<^>]+)/gi, 
+		return t.replace(/(^|[^&\w'"]+)\#([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ^"^<^>]+)/gi, 
 			function (m, m1, m2) {
 				return m.substr(-1) === '"' || m.substr(-1) == '<' ? 
 					m : m1 + '<a href="https://twitter.com/search?q=%23' + m2 +
@@ -462,6 +633,10 @@
 	var onClickGoto = function (e) {
 		var t = $(this);
 		var href = t.attr('href');
+		
+		if (!App.mediator._currentPage()) {
+			return true;
+		}
 			
 		if (!e.ctrlKey) {
 			App.mediator.goto(href);
@@ -472,8 +647,13 @@
 	var onClickToggle = function (e) {
 		var t = $(this);
 		var href = t.attr('href');
+		var fallback = t.attr('data-toggle-fallback-url');
 		
-		App.mediator.toggle(href);
+		if (!App.mediator._currentPage()) {
+			return true;
+		}
+		
+		App.mediator.toggle(href, fallback);
 		
 		return window.pd(e);
 	};
@@ -538,8 +718,16 @@
 		pause : function (container) {}
 	};
 	
+	var $f = function () {
+		return window.$f;
+	};
+	
+	var YT = function () {
+		return !!window.YT ? window.YT.Player : false;
+	};
+	
 	var vimeoProvider = $.extend({}, abstractProvider, {
-		getIframe : function (id, autoplay) {
+		getIframe: function (id, autoplay) {
 			autoplay = autoplay !== undefined ? autoplay : 1;
 			return abstractProvider.getIframe()
 				.attr('src', '//player.vimeo.com/video/' + id +
@@ -547,37 +735,45 @@
 						'&api=1&html5=1');
 		},
 		
-		play : function (container) {
-			var player = window.$f($('iframe', container).get(0));
-			
-			player.api('play');
+		play: function (container) {
+			App.loaded($f, function ($f) {
+				var player = $f($('iframe', container).get(0));
+				
+				player.api('play');
+			});
 		},
 		
-		pause : function (container) {
-			var player = window.$f($('iframe', container).get(0));
-			player.api('pause');
+		pause: function (container) {
+			App.loaded($f, function ($f) {
+				var player = window.$f($('iframe', container).get(0));
+				
+				player.api('pause');
+			});
 		}
 	});
 	
 	var youtubeProvider = $.extend({}, abstractProvider, {
-		getIframe : function (url, autoplay) {
+		getIframe: function (url, autoplay) {
 			var id = url.indexOf('v=') > 0 ? 
-				url.substring(url.indexOf('v=') + 2) : url.substring(url.lastIndexOf('/'));
+				url.match(/v=([^\&]+)/mi)[1] : url.substring(url.lastIndexOf('/'));
 			var autoPlay = autoplay !== undefined ? autoplay : 1;
 			var iframe = abstractProvider.getIframe()
 				.attr('id', 'youtube-player-' + id)
 				.attr('src', '//www.youtube.com/embed/' + id + 
 				'?feature=oembed&autoplay=' + autoPlay + '&enablejsapi=1&version=3&html5=1');
-
-			this._player = new window.YT.Player(iframe.get(0));
+				
+			App.loaded(YT, function (Player) {
+				youtubeProvider._player = new Player(iframe.get(0));
+			});
+			
 			return iframe;
 		},
 		
-		play : function (container) {
+		play: function (container) {
 			this._player.playVideo();
 		},
 		
-		pause : function (container) {
+		pause: function (container) {
 			this._player.pauseVideo();
 		}
 	});
@@ -638,7 +834,7 @@
 	
 	var init = function () {
 		// capture all click in #site: delegate to the link
-		$('#site').on('click', 'a.play-button', playBtnClicked);
+		$('#site').on($.click, 'a.play-button', playBtnClicked);
 	};
 	
 	var actions = {
@@ -669,13 +865,14 @@
 
 	'use strict';
 	
-	var INITIAL_VALUE = 0.02; // 2%
+	var INITIAL_VALUE = 0.40; // 40%
 	var INCREMENT = 0.05; // 5%
 	var CLOSE_DELAY = 700; // ms
 	
 	var LOADING = 'page-loading';
 	var SHOW = 'show';
 	var START = 'start';
+	var END = 'end';
 	
 	var html = $();
 	var holder = $();
@@ -693,14 +890,18 @@
 		clearTimeout(closeTimer);
 		
 		currentValue = INITIAL_VALUE;
-
+		
 		holder
+			.removeClass(END)
+			.removeClass(SHOW)
 			.removeClass(START)
-			.width(p(currentValue))
+			.width(p(0))
 			.height();
 		holder
 			.addClass(START)
-			.addClass(SHOW);
+			.addClass(SHOW)
+			.width(p(currentValue))
+			.height();
 		
 		html.addClass(LOADING);
 		
@@ -711,6 +912,7 @@
 	
 	var end = function () {
 		holder
+			.addClass(END)
 			.width('100%');
 		
 		closeTimer = setTimeout(function () {
@@ -867,17 +1069,19 @@
 	};
 	
 	var onPageLoaded = function (key, data, e) {
-		var title = '';
-		$(data.data).each(function (i, e) {  
-			if ($(e).is('title')) {
-				title = $(e).text();
-				return true;
+		if (data.data) {
+			var title = '';
+			$(data.data).each(function (i, e) {  
+				if ($(e).is('title')) {
+					title = $(e).text();
+					return true;
+				}
+			});
+			if (!!!data.url) {
+				data.url = document.location.pathname;
 			}
-		});
-		if (!!!data.url) {
-			data.url = document.location.pathname;
+			titleList[data.url] = title;
 		}
-		titleList[data.url] = title;
 	};
 	
 	var onEnter = function (key, data, e) {
@@ -1002,8 +1206,11 @@
 		enterPageAnimation();
 	};
 	
-	var onRequestPageTransition = function (key, data, e) {
-		var animation = defaultTransition;
+	var defaultBeginTransition = function (data) {
+		
+	};
+	
+	var getTransitionObj = function (data) {
 		var c = 0;
 		
 		for (; c < transitionList.length; c++) {
@@ -1012,13 +1219,34 @@
 			if ((it.from === data.currentPage.key().substring(1) || it.from === '*') &&
 				(it.to === data.nextPage.key().substring(1) || it.to === '*')) {
 				if (it.canAnimate(data)) {
-					animation = it.transition;
-					break;
+					return it;
 				}
 			}
 		}
+	};
+	
+	var onRequestBeginPageTransition = function (key, data) {
+		var beginAnimation = defaultBeginTransition;
+		
+		var anim = getTransitionObj(data);
+		if (anim) {
+			beginAnimation = anim.beginTransition;
+		}
 		
 		animatingTo = data.nextPage.key().substring(1);
+		beginAnimation(data);
+		
+	};
+	
+	var onRequestPageTransition = function (key, data, e) {
+		var animation = defaultTransition;
+		
+		var anim = getTransitionObj(data);
+		if (anim) {
+			animation = anim.transition;
+		}
+		
+		
 		animation(data, function () {
 			animatingTo = '';
 		});
@@ -1030,7 +1258,8 @@
 	var actions = function () {
 		return {
 			pages: {
-				requestPageTransition: onRequestPageTransition
+				requestPageTransition: onRequestPageTransition,
+				requestBeginPageTransition: onRequestBeginPageTransition
 			},
 			pageTransitionAnimation : {
 				getTargetPage : function (key, data, e) {
@@ -1059,6 +1288,7 @@
 		var o = $.extend({
 			from : '*',
 			to : '*',
+			beginTransition: defaultBeginTransition,
 			transition : defaultTransition,
 			canAnimate : function () {
 				return true;
@@ -1067,6 +1297,7 @@
 		
 		if (o.from === '*' && o.to === '*') {
 			defaultTransition = o.transition;
+			defaultBeginTransition = o.beginTransition;
 		} else {
 			transitionList.push(o);	
 		}
@@ -1608,7 +1839,7 @@
  *
  */
 
-(function ($, undefined) {
+(function ($, global, undefined) {
 
 	'use strict';
 	
@@ -1630,7 +1861,7 @@
 		return self;
 	});
 	
-})(jQuery);
+})(jQuery, window);
 
 /**
  * @author Deux Huit Huit
@@ -1647,7 +1878,8 @@
 	//var VENDOR_PREFIXES = ['', '-webkit-', '-moz-', '-o-', '-ms-'];
 	
 	/* jshint ignore:start */
-	// from https://github.com/DeuxHuitHuit/jQuery-Animate-Enhanced/blob/master/scripts/src/jquery.animate-enhanced.js
+	// from https://github.com/DeuxHuitHuit/jQuery-Animate-Enhanced/
+	// blob/master/scripts/src/jquery.animate-enhanced.js
 	/* jshint ignore:end */
 	var HAS_3D =  ('WebKitCSSMatrix' in window && 'm11' in new window.WebKitCSSMatrix());
 	
@@ -1702,11 +1934,11 @@
 	var DISABLED = 'disabled';
 
 	$.fn.disable = function () {
-		$(this).attr(DISABLED, DISABLED).addClass(DISABLED);
+		return $(this).attr(DISABLED, DISABLED).addClass(DISABLED);
 	};
 	
 	$.fn.enable = function () {
-		$(this).removeAttr(DISABLED).removeClass(DISABLED);
+		return $(this).removeAttr(DISABLED).removeClass(DISABLED);
 	};
 	
 })(jQuery);
@@ -1747,16 +1979,24 @@
 	$.fn.sendClickEvent = function (options) {
 		var t = $(this).eq(0);
 		var gaValue = t.attr('data-ga-value');
+		var gaCat = t.attr('data-ga-cat');
 		var o = $.extend({}, options, {
-			cat: 'button-' + $('html').attr('lang').toUpperCase(),
+			cat: !!gaCat ? gaCat : 'click',
 			event: 'click',
-			value: gaValue || t.text()
+			value: !!gaValue ? gaValue : t.text()
 		});
 		if (!gaValue) {
 			App.log('No ga-value found, reverting to text');
 		}
 		$.sendEvent(o.cat, o.event, o.value);
 	};
+	
+	// auto-hook
+	$(function () {
+		$('#site').on($.click, '*[data-ga-value]', function (e) {
+			$(e.target).sendClickEvent();
+		});
+	});
 	
 })(jQuery);
 /**
@@ -2058,3 +2298,65 @@
 	};
 	
 })(jQuery);
+/**
+ * @author Deux Huit Huit
+ *
+ * Local storage wrapper
+ */
+
+(function ($, global) {
+	'use strict';
+
+	var setValue = function (key, val) {
+		try {
+			window.localStorage[key] = '' + val;
+		} catch (ex) {
+			App.log(ex);
+		}
+	};
+
+	var getValue = function (key) {
+		try {
+			return window.localStorage[key];
+		} catch (ex) {
+			App.log(ex);
+			return null;
+		}
+	};
+
+	var putValue = function (key, val) {
+		try {
+			var value = getValue(key);
+			if (!value) {
+				value = '' + val;
+			} else {
+				value += ' ' + val;
+			}
+			if (!!val) {
+				setValue(key, value);
+			}
+		} catch (ex) {
+			App.log(ex);
+		}
+	};
+
+	var putValueAsync = function (key, val) {
+		setTimeout(function _putValueAsync() {
+			putValue(key, val);
+		}, 16);
+	};
+
+	global.storage = {
+		val: function (key, val) {
+			if (!!val) {
+				setValue(key, val);
+			}
+			return getValue(key);
+		},
+		put: putValue,
+		async: {
+			put: putValueAsync
+		}
+	};
+
+})(jQuery, App);
