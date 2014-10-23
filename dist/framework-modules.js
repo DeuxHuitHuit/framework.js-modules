@@ -1,4 +1,4 @@
-/*! framework.js-modules - v0.4.1 - - build  - 2014-09-08
+/*! framework.js-modules - v0.4.2 - - build  - 2014-10-23
 * https://github.com/DeuxHuitHuit/framework.js-modules
 * Copyright (c) 2014 Deux Huit Huit; Licensed MIT */
 /**
@@ -702,7 +702,8 @@
 	var	abstractProvider = {
 		embed : function (container, id) {
 			var iAutoPlayParsed = parseInt(container.attr('data-autoplay'), 10);
-			var iframe = this.getIframe(id, iAutoPlayParsed, 10);
+			var iRelatedVideo = container.attr('data-rel') === '1' ? 1 : 0;
+			var iframe = this.getIframe(id, iAutoPlayParsed, iRelatedVideo);
 			
 			iframe.attr('width', '100%');
 			iframe.attr('height', '100%');
@@ -727,12 +728,12 @@
 	};
 	
 	var vimeoProvider = $.extend({}, abstractProvider, {
-		getIframe: function (id, autoplay) {
+		getIframe: function (id, autoplay, rel) {
 			autoplay = autoplay !== undefined ? autoplay : 1;
 			return abstractProvider.getIframe()
 				.attr('src', '//player.vimeo.com/video/' + id +
 						'?autoplay=' + autoplay +
-						'&api=1&html5=1');
+						'&api=1&html5=1&rel=' + rel);
 		},
 		
 		play: function (container) {
@@ -753,15 +754,16 @@
 	});
 	
 	var youtubeProvider = $.extend({}, abstractProvider, {
-		getIframe: function (url, autoplay) {
+		getIframe: function (url, autoplay, rel) {
 			var id = url.indexOf('v=') > 0 ? 
 				url.match(/v=([^\&]+)/mi)[1] : url.substring(url.lastIndexOf('/'));
 			var autoPlay = autoplay !== undefined ? autoplay : 1;
 			var iframe = abstractProvider.getIframe()
 				.attr('id', 'youtube-player-' + id)
 				.attr('src', '//www.youtube.com/embed/' + id + 
-				'?feature=oembed&autoplay=' + autoPlay + '&enablejsapi=1&version=3&html5=1');
-				
+					'?feature=oembed&autoplay=' + autoPlay + 
+					'&enablejsapi=1&version=3&html5=1&rel=' + rel);
+			
 			App.loaded(YT, function (Player) {
 				youtubeProvider._player = new Player(iframe.get(0));
 			});
