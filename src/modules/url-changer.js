@@ -143,7 +143,7 @@
 						}
 					} else {
 						_isPopingState = true;
-						App.mediator.goto(window.location.pathname + window.location.search);
+						App.mediator.goto(window.location.pathname + window.location.search, _currentPageUrl);
 					}
 				} else {
 					App.log({args: 'Page not found', me: 'Url Changer'}); 
