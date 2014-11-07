@@ -31,54 +31,58 @@
 			
 			playerCtn.each(function () {
 				var ctn = $(this);
-				var player = ctn.find(options.playerSelector);
-				
-				player.jPlayer({
-					ready: function () {
-						var t = $(this);
-						t.jPlayer('setMedia', {
-							webmv: ctn.attr('data-video-webm'),
-							m4v: ctn.attr('data-video-mp4'),
-							ogv: ctn.attr('data-video-ogv')
-						});
-						
-						if (options.resize) {
-							resizeVideo(ctn);
-						}
-						
-						App.callback(options.onReady, [ctn]);
-					},
-					solution: 'html, flash',
-					swfPath: '//cdnjs.cloudflare.com/ajax/libs/jplayer/2.5.4/',
-					loop: options.loop,
-					volume: 0,
-					supplied: 'webmv, m4v, ogv',
-					backgroundColor: options.backgroundColor,
-					wmode: options.backgroundColor,
-					size: {
-						width: options.width,
-						height: options.height
-					},
-					preload: options.preload || 'none',
-					play: function (e) {
-						App.mediator.notify('jplayer.play', {ctn: ctn});
-						
-					},
-					timeupdate: function (e) {
-						var status = e.jPlayer.status;
-						
-						if (!!status.currentTime) {
-							App.mediator.notify('jplayer.timeupdate', {status: status, ctn: ctn});
-						}
-						
-						App.callback(options.onTimeupdate, [ctn, status]);
-					},
-					ended: function () {
-						App.callback(options.onEnded, [ctn]);
-					}
-				});
+				loadVideo(ctn);
 			});
 		};
+		
+		var loadVideo = function (ctn) {
+			var player = ctn.find(options.playerSelector);
+				
+			player.jPlayer({
+				ready: function () {
+					var t = $(this);
+					t.jPlayer('setMedia', {
+						webmv: ctn.attr('data-video-webm'),
+						m4v: ctn.attr('data-video-mp4'),
+						ogv: ctn.attr('data-video-ogv')
+					});
+					
+					if (options.resize) {
+						resizeVideo(ctn);
+					}
+					
+					App.callback(options.onReady, [ctn]);
+				},
+				solution: 'html, flash',
+				swfPath: '//cdnjs.cloudflare.com/ajax/libs/jplayer/2.5.4/',
+				loop: options.loop,
+				volume: 0,
+				supplied: 'webmv, m4v, ogv',
+				backgroundColor: options.backgroundColor,
+				wmode: options.backgroundColor,
+				size: {
+					width: options.width,
+					height: options.height
+				},
+				preload: options.preload || 'none',
+				play: function (e) {
+					App.mediator.notify('jplayer.play', {ctn: ctn});
+					
+				},
+				timeupdate: function (e) {
+					var status = e.jPlayer.status;
+					
+					if (!!status.currentTime) {
+						App.mediator.notify('jplayer.timeupdate', {status: status, ctn: ctn});
+					}
+					
+					App.callback(options.onTimeupdate, [ctn, status]);
+				},
+				ended: function () {
+					App.callback(options.onEnded, [ctn]);
+				}
+			});
+		}
 		
 		var resizeVideo = function (playerCtn) {
 			var ctnWidth = playerCtn.width();
@@ -153,6 +157,7 @@
 		return {
 			init: init,
 			loadAllVideo: loadAllVideo,
+			loadVideo: loadVideo,
 			destroyVideo: destroyVideo,
 			destroyAllVideo: destroyAllVideo,
 			playVideo: playVideo,
