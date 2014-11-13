@@ -7,6 +7,7 @@
 	
 	'use strict';
 	var win = $(window);
+	var doc = $(document);
 	
 	var notify = function (key, e) {
 		App.mediator.notify('site.' + key, {event: e});
@@ -24,11 +25,18 @@
 		notify('loaded', e);
 	};
 	
+	var visibilityHandler = function (e) {
+		var state = document.visibilityState || document.webkitVisibilityState || 'visible';
+		notify('visibilitychange', e, state);
+	};
+	
 	var init = function () {
 		win
 			.load(loadHandler)
 			.resize(resizeHandler)
 			.scroll(scrollHandler);
+		doc
+			.on('visibilitychange webkitvisibilitychange', visibilityHandler);
 	};
 	
 	var WindowNotifier = App.modules.exports('windowNotifier', {
