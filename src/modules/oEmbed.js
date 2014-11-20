@@ -12,7 +12,7 @@
  * <!-- Player api for dailymotion -->
  * <script src="//api.dmcdn.net/all.js"></script>
  */
-(function ($, undefined) {
+(function ($, global, undefined) {
 
 	'use strict';
 	
@@ -37,11 +37,11 @@
 	};
 	
 	var $f = function () {
-		return window.$f;
+		return global.$f;
 	};
 	
 	var YT = function () {
-		return !!window.YT ? window.YT.Player : false;
+		return !!global.YT ? global.YT.Player : false;
 	};
 	
 	var vimeoProvider = $.extend({}, abstractProvider, {
@@ -63,7 +63,7 @@
 		
 		pause: function (container) {
 			App.loaded($f, function ($f) {
-				var player = window.$f($('iframe', container).get(0));
+				var player = global.$f($('iframe', container).get(0));
 				
 				player.api('pause');
 			});
@@ -152,7 +152,7 @@
 		btn.fadeOut();
 		$('.item-video-container', item).fadeIn();
 		
-		return window.pd(e);
+		return global.pd(e);
 	};
 	
 	var init = function () {
@@ -173,6 +173,4 @@
 		}
 	});
 	
-	
-	
-})(jQuery);
+})(jQuery, window);
