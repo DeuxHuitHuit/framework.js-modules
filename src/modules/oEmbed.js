@@ -20,12 +20,12 @@
 		embed: function (container, id) {
 			var iAutoPlayParsed = parseInt(container.attr('data-autoplay'), 10);
 			var iRelatedVideo = container.attr('data-rel') === '1' ? 1 : 0;
-			var iframe = this.getIframe(id, iAutoPlayParsed, iRelatedVideo);
+			var extra = container.attr('data-extra');
+			var iframe = this.getIframe(id, iAutoPlayParsed, iRelatedVideo, extra);
 			
 			iframe.attr('width', '100%');
 			iframe.attr('height', '100%');
 			container.append(iframe);
-			
 		},
 		
 		getIframe : function (id) {
