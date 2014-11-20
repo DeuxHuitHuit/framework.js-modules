@@ -45,12 +45,12 @@
 	};
 	
 	var vimeoProvider = $.extend({}, abstractProvider, {
-		getIframe: function (id, autoplay, rel) {
+		getIframe: function (id, autoplay, rel, extra) {
 			autoplay = autoplay !== undefined ? autoplay : 1;
 			return abstractProvider.getIframe()
 				.attr('src', '//player.vimeo.com/video/' + id +
 						'?autoplay=' + autoplay +
-						'&api=1&html5=1&rel=' + rel);
+						'&api=1&html5=1&rel=' + rel + (extra || ''));
 		},
 		
 		play: function (container) {
@@ -71,7 +71,7 @@
 	});
 	
 	var youtubeProvider = $.extend({}, abstractProvider, {
-		getIframe: function (url, autoplay, rel) {
+		getIframe: function (url, autoplay, rel, extra) {
 			var id = url.indexOf('v=') > 0 ? 
 				url.match(/v=([^\&]+)/mi)[1] : url.substring(url.lastIndexOf('/'));
 			var autoPlay = autoplay !== undefined ? autoplay : 1;
@@ -79,7 +79,7 @@
 				.attr('id', 'youtube-player-' + id)
 				.attr('src', '//www.youtube.com/embed/' + id + 
 					'?feature=oembed&autoplay=' + autoPlay + 
-					'&enablejsapi=1&version=3&html5=1&rel=' + rel);
+					'&enablejsapi=1&version=3&html5=1&rel=' + rel + (extra || ''));
 			
 			App.loaded(YT, function (Player) {
 				youtubeProvider._player = new Player(iframe.get(0));
