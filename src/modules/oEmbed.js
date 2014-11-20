@@ -102,8 +102,8 @@
 	});
 
 	var providers = {
-		'Vimeo' : vimeoProvider,
-		'YouTube' : youtubeProvider
+		Vimeo: vimeoProvider,
+		YouTube: youtubeProvider
 	};
 	
 	var loadVideo = function (key, videoContainer) {
@@ -168,7 +168,7 @@
 	
 	var oEmbed = App.modules.exports('oEmbed', {
 		init: init,
-		actions : function () {
+		actions: function () {
 			return actions;
 		}
 	});
