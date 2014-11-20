@@ -17,7 +17,7 @@
 	'use strict';
 	
 	var	abstractProvider = {
-		embed : function (container, id) {
+		embed: function (container, id) {
 			var iAutoPlayParsed = parseInt(container.attr('data-autoplay'), 10);
 			var iRelatedVideo = container.attr('data-rel') === '1' ? 1 : 0;
 			var iframe = this.getIframe(id, iAutoPlayParsed, iRelatedVideo);
@@ -32,8 +32,8 @@
 			return $('<iframe allowfullscreen="" />');
 		},
 		
-		play : function (container) {},
-		pause : function (container) {}
+		play: function (container) {},
+		pause: function (container) {}
 	};
 	
 	var $f = function () {
@@ -89,11 +89,15 @@
 		},
 		
 		play: function (container) {
-			this._player.playVideo();
+			App.loaded(YT, function (Player) {
+				this._player.playVideo();
+			});
 		},
 		
 		pause: function (container) {
-			this._player.pauseVideo();
+			App.loaded(YT, function (Player) {
+				this._player.pauseVideo();
+			});
 		}
 	});
 
