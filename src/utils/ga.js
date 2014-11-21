@@ -50,7 +50,7 @@
 	// auto-hook
 	$(function () {
 		$('#site').on($.click, '*[data-ga-value]', function (e) {
-			$(e.target).sendClickEvent();
+			$(this).sendClickEvent();
 		});
 	});
 	
