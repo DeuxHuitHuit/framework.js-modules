@@ -45,7 +45,7 @@
 			var fx = t.attr('data-auto-ratio-property') || 'height';
 			var val;
 			
-			if(fx == 'width' || fx == 'max-width') {
+			if (fx == 'width' || fx == 'max-width') {
 				val = t.height();
 			} else {
 				val = t.width();

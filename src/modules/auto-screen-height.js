@@ -74,7 +74,7 @@
 			p.filter('.js-auto-screen-height')
 				.add($('.js-auto-screen-height', p))
 				.each(resizeItem);
-				mobileHeight = win.height();
+			mobileHeight = win.height();
 		}
 	};
 	

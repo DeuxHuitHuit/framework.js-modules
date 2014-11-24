@@ -15,7 +15,7 @@
 		$('.js-cycle:not(.cycle-inited)').each(function () {
 			var t = $(this);
 			
-			if (!t.data('cycle-disable-mobile') === true || !$.mobile) {
+			if (!t.data('cycle-disable-mobile') || !$.mobile) {
 				var o = {
 					slides: t.attr('data-cycle-slides') || '>img',
 					pager: t.attr('data-cycle-pager') || '> .cycle-pager',
@@ -33,7 +33,7 @@
 				t.cycle(o);
 				
 				t.addClass('cycle-inited');
-			};
+			}
 		});
 	};
 	

@@ -82,7 +82,7 @@
 					App.callback(options.onEnded, [ctn]);
 				}
 			});
-		}
+		};
 		
 		var resizeVideo = function (playerCtn) {
 			var ctnWidth = playerCtn.width();

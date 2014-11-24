@@ -126,10 +126,9 @@
 				
 				//if we found a page for this route
 				if (nextPage) {
-					
+					var loc = window.location;
 					//Detect if we change page
 					if (nextPage.key() == _currentPageKey) {
-						var loc = window.location;
 						if (!loc.origin) {
 							// IE !!
 							loc.origin = loc.protocol + '//' + loc.hostname;
@@ -143,7 +142,7 @@
 						}
 					} else {
 						_isPopingState = true;
-						App.mediator.goto(window.location.pathname + window.location.search, _currentPageUrl);
+						App.mediator.goto(loc.pathname + loc.search, _currentPageUrl);
 					}
 				} else {
 					App.log({args: 'Page not found', me: 'Url Changer'}); 
