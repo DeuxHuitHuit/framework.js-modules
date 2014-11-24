@@ -25,8 +25,7 @@
 					paused: t.data('cycle-paused') || false,
 					pauseOnHover: t.data('cycle-pause-on-hover') || false,
 					fx: t.data('cycle-fx') || 'fade',
-					captionTemplate: t.attr('data-cycle-caption-template') || 
-						'',
+					captionTemplate: t.attr('data-cycle-caption-template') || '',
 					log: App.debug()
 				};
 				
