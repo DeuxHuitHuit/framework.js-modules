@@ -1,6 +1,153 @@
-/*! framework.js-modules - v0.4.2 - - build  - 2014-10-23
+/*! framework.js-modules - v0.4.3 - - build  - 2014-11-24
 * https://github.com/DeuxHuitHuit/framework.js-modules
 * Copyright (c) 2014 Deux Huit Huit; Licensed MIT */
+/**
+ * @author Deux Huit Huit
+ *
+ * Article Changer
+ *
+ */
+(function ($, w, doc, undefined) {
+
+	'use strict';
+
+	var animToArticleDefault = function (current, next, o) {
+		var afterScroll = function () {
+			current.fadeTo(500, 0, function () {
+				current.hide();
+				
+				next.fadeTo(500, 1);
+				o.articleEnter(current, next, o);
+				setTimeout(function () {
+					App.mediator.notify('articleChanger.entering');
+				}, 100);
+			});
+		};
+		if (!!current.length) {
+			afterScroll();
+		} else {
+			next.fadeTo(500, 1);
+			o.articleEnter(current, next, o);
+		}
+	};
+	
+	var appendDefault = function (articleCtn, dataLoaded, pageHandle, o) {
+		var article = o.findArticle(dataLoaded, pageHandle, o);
+		article.hide();
+		articleCtn.append(article);
+		return article;
+	};
+	
+	var findArticleDefault = function (articleCtn, pageHandle, o) {
+		pageHandle = pageHandle || '';
+		var selector = o.articleSelector + 
+			(o.trackHandle ? '[data-handle="' + pageHandle + '"]' : '');
+		return $(selector, $(articleCtn));
+	};
+	
+	var defOptions = {
+		articleSelector: '.js-article',
+		containerSelector: '.js-article-ctn',
+		findArticle: findArticleDefault,
+		appendArticle: appendDefault,
+		animToArticle: animToArticleDefault,
+		trackHandle: true,
+		articleEnter: function (oldItem, newItem, o) {
+			if (!o.trackHandle) {
+				oldItem.remove();
+			}
+			App.modules.notify('articleChanger.enter');
+		}
+	};
+	
+	App.components.exports('articleChanger', function _searchBar() {
+		var o;
+		var page;
+		var articleCtn;
+		var currentPageHandle;
+		
+		var init = function (_page, options) {
+			page = _page;
+			o = $.extend({}, defOptions, options);
+			articleCtn = $(o.containerSelector, page);
+		};
+		
+		var navigateTo = function (newPageHandle, url) {
+			var currentPage = o.findArticle(articleCtn, currentPageHandle, o);
+			var loadUrl = url || document.location.href;
+			var loadSucess = function (dataLoaded, textStatus, jqXHR) {
+				//Append New article
+				var nextPage = o.appendArticle(articleCtn, dataLoaded, newPageHandle, o);
+				var loc = document.location;
+				var cleanUrl = loc.href.substring(loc.hostname.length + loc.protocol.length + 2);
+				
+				App.modules.notify('pageLoad.end');
+				App.modules.notify('articleChanger.entering', {url : cleanUrl, data : dataLoaded});
+				
+				if (!nextPage.length) {
+					App.log({
+						args: 'Could not find new article',
+						fx: 'error',
+						me: 'Article Changer'
+					});
+				} else {
+					o.animToArticle(currentPage, nextPage, o);
+				}
+			};
+
+			if (!o.trackHandle || currentPageHandle !== newPageHandle) {
+				
+				var nextPage;
+				if (o.trackHandle) {
+					nextPage = o.findArticle(articleCtn, newPageHandle, o);
+				}
+				
+				// LoadPage
+				if (!nextPage || !nextPage.length) {
+					App.modules.notify('pageLoad.start', {page: page});
+					Loader.load({
+						url: loadUrl,
+						priority: 0, // now
+						vip: true, // bypass others
+						success: loadSucess,
+						progress: function (e) {
+							var total = e.originalEvent.total;
+							var loaded = e.originalEvent.loaded;
+							var percent = total > 0 ? loaded / total : 0;
+							
+							App.mediator.notify('pageLoad.progress', {
+								event: e,
+								total: total,
+								loaded: loaded,
+								percent: percent
+							});
+						},
+						error: function () {
+							App.modules.notify('article.loaderror');
+							App.modules.notify('pageLoad.end');
+						},
+						giveup: function (e) {
+							App.modules.notify('pageLoad.end');
+						}
+					});
+					
+				} else {
+					o.animToArticle(currentPage, nextPage, o);
+				}
+				
+				currentPageHandle = newPageHandle;
+			}
+		};
+		
+		return {
+			init : init,
+			clear : function () { currentPageHandle = ''; },
+			navigateTo : navigateTo
+		};
+	
+	});
+	
+})(jQuery, window, document);
 /**
  * @author Deux Huit Huit
  *
@@ -175,52 +322,56 @@
 			
 			playerCtn.each(function () {
 				var ctn = $(this);
-				var player = ctn.find(options.playerSelector);
+				loadVideo(ctn);
+			});
+		};
+		
+		var loadVideo = function (ctn) {
+			var player = ctn.find(options.playerSelector);
 				
-				player.jPlayer({
-					ready: function () {
-						var t = $(this);
-						t.jPlayer('setMedia', {
-							webmv: ctn.attr('data-video-webm'),
-							m4v: ctn.attr('data-video-mp4'),
-							ogv: ctn.attr('data-video-ogv')
-						});
-						
-						if (options.resize) {
-							resizeVideo(ctn);
-						}
-						
-						App.callback(options.onReady, [ctn]);
-					},
-					solution: 'html, flash',
-					swfPath: '//cdnjs.cloudflare.com/ajax/libs/jplayer/2.5.4/',
-					loop: options.loop,
-					volume: 0,
-					supplied: 'webmv, m4v, ogv',
-					backgroundColor: options.backgroundColor,
-					wmode: options.backgroundColor,
-					size: {
-						width: options.width,
-						height: options.height
-					},
-					preload: options.preload || 'none',
-					play: function (e) {
-						App.mediator.notify('jplayer.play', {ctn: ctn});
-						
-					},
-					timeupdate: function (e) {
-						var status = e.jPlayer.status;
-						
-						if (!!status.currentTime) {
-							App.mediator.notify('jplayer.timeupdate', {status: status, ctn: ctn});
-						}
-						
-						App.callback(options.onTimeupdate, [ctn, status]);
-					},
-					ended: function () {
-						App.callback(options.onEnded, [ctn]);
+			player.jPlayer({
+				ready: function () {
+					var t = $(this);
+					t.jPlayer('setMedia', {
+						webmv: ctn.attr('data-video-webm'),
+						m4v: ctn.attr('data-video-mp4'),
+						ogv: ctn.attr('data-video-ogv')
+					});
+					
+					if (options.resize) {
+						resizeVideo(ctn);
 					}
-				});
+					
+					App.callback(options.onReady, [ctn]);
+				},
+				solution: 'html, flash',
+				swfPath: '//cdnjs.cloudflare.com/ajax/libs/jplayer/2.5.4/',
+				loop: options.loop,
+				volume: 0,
+				supplied: 'webmv, m4v, ogv',
+				backgroundColor: options.backgroundColor,
+				wmode: options.backgroundColor,
+				size: {
+					width: options.width,
+					height: options.height
+				},
+				preload: options.preload || 'none',
+				play: function (e) {
+					App.mediator.notify('jplayer.play', {ctn: ctn});
+					
+				},
+				timeupdate: function (e) {
+					var status = e.jPlayer.status;
+					
+					if (!!status.currentTime) {
+						App.mediator.notify('jplayer.timeupdate', {status: status, ctn: ctn});
+					}
+					
+					App.callback(options.onTimeupdate, [ctn, status]);
+				},
+				ended: function () {
+					App.callback(options.onEnded, [ctn]);
+				}
 			});
 		};
 		
@@ -297,6 +448,7 @@
 		return {
 			init: init,
 			loadAllVideo: loadAllVideo,
+			loadVideo: loadVideo,
 			destroyVideo: destroyVideo,
 			destroyAllVideo: destroyAllVideo,
 			playVideo: playVideo,
@@ -308,6 +460,7 @@
 	});
 	
 })(jQuery, jQuery(window));
+
 /**
  * @author Deux Huit Huit
  *
@@ -441,6 +594,386 @@
 /**
  * @author Deux Huit Huit
  * 
+ * Window Notifier
+ */
+(function ($, undefined) {
+
+	'use strict';
+	
+	var win = $(window);
+	
+	var pageEnter = function (key, data) {
+		//var p = $(data.page.key());
+		
+		$('.js-cycle:not(.cycle-inited)').each(function () {
+			var t = $(this);
+			
+			if (!t.data('cycle-disable-mobile') || !$.mobile) {
+				var o = {
+					slides: t.attr('data-cycle-slides') || '>img',
+					pager: t.attr('data-cycle-pager') || '> .cycle-pager',
+					next: t.attr('data-cycle-next') || '> .cycle-next',
+					prev: t.attr('data-cycle-prev') || '> .cycle-prev',
+					timeout: t.data('cycle-timeout') || 4000,
+					paused: t.data('cycle-paused') || false,
+					pauseOnHover: t.data('cycle-pause-on-hover') || false,
+					fx: t.data('cycle-fx') || 'fade',
+					captionTemplate: t.attr('data-cycle-caption-template') || 
+						'',
+					log: App.debug()
+				};
+				
+				t.cycle(o);
+				
+				t.addClass('cycle-inited');
+			}
+		});
+	};
+	
+	var init = function () {
+		
+	};
+	
+	var actions = function () {
+		return { 
+			/*site: {
+				resize: onResize
+			},*/
+			page: {
+				enter: pageEnter
+			},
+			articleChanger: {
+				enter: pageEnter
+			}
+		};
+	};
+
+	App.modules.exports('auto-cycle',  { 
+		init: init,
+		actions: actions
+	});
+	
+})(jQuery);
+
+/**
+ * @author Deux Huit Huit
+ * 
+ * auto jit image
+ */
+(function ($, global, undefined) {
+	
+	'use strict';
+	
+	var firstTime = true;
+	
+	var onEnter = function (key, data) {
+		if (!firstTime) {
+			$(data.page.key()).find('img[data-src-format]').jitImage();
+		}
+		firstTime = false;
+	};
+	
+	var actions = function () {
+		return {
+			page: {
+				enter: onEnter
+			}
+		};
+	};
+	
+	var AutoJitImage = App.modules.exports('auto-jit-image', {
+		actions: actions
+	});
+	
+})(jQuery, window);
+/**
+ * @author Deux Huit Huit
+ * 
+ * Auto ratio size
+ */
+(function ($, undefined) {
+	
+	'use strict';
+	
+	var win = $(window);
+	var site;
+	var sitePages;
+	
+	var getPage = function () {
+		return $('> .page:visible', sitePages);
+	};
+	
+	var parseRatio = function (ratio) {
+		if (!ratio) {
+			return 1;
+		}
+		var r = ratio.toString().split(/[:\/]/i);
+		if (!r.length) {
+			return 1;
+		} else if (r.length === 1) {
+			return parseFloat(r[0]);
+		} else if (r.length === 2) {
+			return parseInt(r[0], 10) / (parseInt(r[1], 10) || 1);
+		}
+		return -1;
+	};
+	
+	var defaultCallback = function () {
+		App.mediator.notifyCurrentPage('autoRatio.resizeCompleted');
+	};
+	
+	var onResize = function () {
+		updateElements($('*[data-auto-ratio]', getPage()), defaultCallback);
+	};
+	
+	var updateElements = function (elements, callback) {
+		elements.each(function () {
+			var t = $(this);
+			var r =  parseRatio(t.attr('data-auto-ratio'));
+			var fx = t.attr('data-auto-ratio-property') || 'height';
+			var val;
+			
+			if (fx == 'width' || fx == 'max-width') {
+				val = t.height();
+			} else {
+				val = t.width();
+			}
+			val = ~~Math.floor(val / r);
+			
+			t.css(fx, val + 'px');
+			
+			$('img[data-src-format]', t).jitImage();
+		});
+		
+		App.callback(callback);
+	};
+	
+	var onPageEnter = function () {
+		onResize();
+	};
+	
+	var update = function (key, data) {
+		if (data && data.elements) {
+			updateElements(
+				data.elements, 
+				(data.callback ? data.callback : defaultCallback)
+			);
+		} else {
+			onResize();
+		}
+	};
+	
+	var init = function () {
+		site = $('#site');
+		sitePages = $('#site-pages', site);
+		onResize();
+	};
+	
+	var actions = function () {
+		return {
+			site: {
+				resize: onResize
+			},
+			page: {
+				enter: onPageEnter
+			},
+			autoRatioSize: {
+				update: update
+			},
+			articleChanger: {
+				enter: onPageEnter
+			}
+		};
+	};
+	
+	App.modules.exports('auto-ratio-size', {
+		init: init,
+		actions: actions
+	});
+	
+})(jQuery);
+
+/**
+ * @author Deux Huit Huit
+ * 
+ * Window Notifier
+ */
+(function ($, undefined) {
+
+	'use strict';
+	
+	var win = $(window);
+	
+	var mobileHeight = 0;
+	
+	var getPage = function () {
+		return $('.page:visible');
+	};
+	
+	var platforms = {
+		'all': true,
+		'desktop': !$.mobile,
+		'tablette': $.tablette,
+		'mobile': $.mobile,
+		'phone': $.phone
+	};
+		
+	var getOffsetTotal = function (itemsArray) {
+		var total = 0;
+		
+		if (itemsArray) {
+		
+			var its = itemsArray.split(',');
+			$.each(its, function (i, value) {
+				total += $(value).height();
+			});
+		}
+		return total;
+	};
+	
+	var processPlatforms = function (itemsArray) {
+		var result = false;
+		
+		if (itemsArray) {
+		
+			var its = itemsArray.split(',');
+			$.each(its, function (i, value) {
+				if (platforms[value]) {
+					result = true;
+				}
+			});
+		}
+		return result;
+	};
+	
+	var resizeItem = function () {
+		var t = $(this);
+		var ratio = t.attr('data-height-ratio') || 1;
+		var fx = t.attr('data-height-property') || 'minHeight';
+		var offset = getOffsetTotal(t.attr('data-height-offset'));
+		var newHeight = (win.height() - offset) * ratio;
+		var platformsVal = processPlatforms(t.attr('data-screen-height-platform') || 'all');
+		var minWidth = t.attr('data-screen-height-min-width') || 0;
+		
+		//test platforms
+		if (platformsVal && win.width() > minWidth) {
+			t.css(fx, newHeight);
+		} else {
+			t.css(fx, '');
+		}
+	};
+	
+	var onResize = function (e) {
+		var p = getPage();
+		if (($.mobile && Math.abs(mobileHeight - win.height()) > 120) || !$.mobile) {
+			p.filter('.js-auto-screen-height')
+				.add($('.js-auto-screen-height', p))
+				.each(resizeItem);
+			mobileHeight = win.height();
+		}
+	};
+	
+	var onEnter = function () {
+		mobileHeight = 0;
+		onResize();
+		if ($.mobile) {
+			mobileHeight = win.height();
+		}
+		
+		setTimeout(onResize, 100);
+	};
+	
+	var init = function () {
+		onResize();
+		if ($.mobile) {
+			mobileHeight = win.height();
+		}
+	};
+	
+	var actions = function () {
+		return { 
+			site: {
+				resize: onResize
+			},
+			page: {
+				enter: onEnter
+			},
+			autoScreenHeight: {
+				update: onResize
+			},
+			articleChanger: {
+				entering: onResize
+			}
+		};
+	};
+
+	App.modules.exports('auto-screen-height',  { 
+		init: init,
+		actions: actions
+	});
+	
+})(jQuery);
+
+/**
+ * @author Deux Huit Huit
+ *
+ * Share This
+ * 
+ */
+(function ($, undefined) {
+	
+	'use strict';
+	
+	var win = $(window);
+	var site = $('#site');
+	
+	var getCurrentUrl = function () {
+		var docLoc = document.location;
+		return docLoc.protocol + '//' + docLoc.host + docLoc.pathname;
+	};
+	
+	var attachBtn = function (btn) {
+		
+		App.modules.notify('shareThis.applyButton', {
+			service: btn.attr('data-share-service') || 'sharethis',
+			title: btn.attr('data-share-title') || document.title,
+			url: btn.attr('data-share-url') || getCurrentUrl(),
+			type: btn.attr('data-share-type') || 'large',
+			element: btn.eq(0)[0]
+		});
+	};
+	
+	var autoAttach = function (key, data) {
+		$('.js-share-this-btn').each(function () {
+			attachBtn($(this));
+		});
+	};
+	
+	var init = function () {
+	
+	};
+	
+	var actions = {
+		articleChanger: {
+			enter: autoAttach
+		},
+		page: {
+			enter: autoAttach
+		}
+	};
+	
+	App.modules.exports('autoShareThis', {
+		init: function () {},
+		actions : function () {
+			return actions;
+		}
+	});
+	
+})(jQuery);
+
+/**
+ * @author Deux Huit Huit
+ * 
  * Blank link targets
  *
  * Listens to
@@ -496,6 +1029,33 @@
 	});
 	
 })(jQuery);
+/**
+ * @author Deux Huit Huit
+ * 
+ * Defered css
+ */
+(function ($, global, undefined) {
+	
+	'use strict';
+	
+	var actions = function () {
+		return {
+			site: {
+				loaded: function () {
+					$('link[data-href]').each(function () {
+						var t = $(this);
+						t.attr('href', t.attr('data-href'));
+					});
+				}
+			}
+		};
+	};
+	
+	var DeferedCss = App.modules.exports('defered-css', {
+		actions: actions
+	});
+	
+})(jQuery, window);
 /******************************
  * @author Deux Huit Huit
  ******************************/
@@ -695,45 +1255,45 @@
  * <!-- Player api for dailymotion -->
  * <script src="//api.dmcdn.net/all.js"></script>
  */
-(function ($, undefined) {
+(function ($, global, undefined) {
 
 	'use strict';
 	
 	var	abstractProvider = {
-		embed : function (container, id) {
+		embed: function (container, id) {
 			var iAutoPlayParsed = parseInt(container.attr('data-autoplay'), 10);
 			var iRelatedVideo = container.attr('data-rel') === '1' ? 1 : 0;
-			var iframe = this.getIframe(id, iAutoPlayParsed, iRelatedVideo);
+			var extra = container.attr('data-extra');
+			var iframe = this.getIframe(id, iAutoPlayParsed, iRelatedVideo, extra);
 			
 			iframe.attr('width', '100%');
 			iframe.attr('height', '100%');
 			container.append(iframe);
-			
 		},
 		
 		getIframe : function (id) {
 			return $('<iframe allowfullscreen="" />');
 		},
 		
-		play : function (container) {},
-		pause : function (container) {}
+		play: function (container) {},
+		pause: function (container) {}
 	};
 	
 	var $f = function () {
-		return window.$f;
+		return global.$f;
 	};
 	
 	var YT = function () {
-		return !!window.YT ? window.YT.Player : false;
+		return !!global.YT ? global.YT.Player : false;
 	};
 	
 	var vimeoProvider = $.extend({}, abstractProvider, {
-		getIframe: function (id, autoplay, rel) {
+		getIframe: function (id, autoplay, rel, extra) {
 			autoplay = autoplay !== undefined ? autoplay : 1;
 			return abstractProvider.getIframe()
 				.attr('src', '//player.vimeo.com/video/' + id +
 						'?autoplay=' + autoplay +
-						'&api=1&html5=1&rel=' + rel);
+						'&api=1&html5=1&rel=' + rel + (extra || ''));
 		},
 		
 		play: function (container) {
@@ -746,7 +1306,7 @@
 		
 		pause: function (container) {
 			App.loaded($f, function ($f) {
-				var player = window.$f($('iframe', container).get(0));
+				var player = global.$f($('iframe', container).get(0));
 				
 				player.api('pause');
 			});
@@ -754,7 +1314,7 @@
 	});
 	
 	var youtubeProvider = $.extend({}, abstractProvider, {
-		getIframe: function (url, autoplay, rel) {
+		getIframe: function (url, autoplay, rel, extra) {
 			var id = url.indexOf('v=') > 0 ? 
 				url.match(/v=([^\&]+)/mi)[1] : url.substring(url.lastIndexOf('/'));
 			var autoPlay = autoplay !== undefined ? autoplay : 1;
@@ -762,7 +1322,7 @@
 				.attr('id', 'youtube-player-' + id)
 				.attr('src', '//www.youtube.com/embed/' + id + 
 					'?feature=oembed&autoplay=' + autoPlay + 
-					'&enablejsapi=1&version=3&html5=1&rel=' + rel);
+					'&enablejsapi=1&version=3&html5=1&rel=' + rel + (extra || ''));
 			
 			App.loaded(YT, function (Player) {
 				youtubeProvider._player = new Player(iframe.get(0));
@@ -772,17 +1332,21 @@
 		},
 		
 		play: function (container) {
-			this._player.playVideo();
+			App.loaded(YT, function (Player) {
+				this._player.playVideo();
+			});
 		},
 		
 		pause: function (container) {
-			this._player.pauseVideo();
+			App.loaded(YT, function (Player) {
+				this._player.pauseVideo();
+			});
 		}
 	});
 
 	var providers = {
-		'Vimeo' : vimeoProvider,
-		'YouTube' : youtubeProvider
+		Vimeo: vimeoProvider,
+		YouTube: youtubeProvider
 	};
 	
 	var loadVideo = function (key, videoContainer) {
@@ -831,7 +1395,7 @@
 		btn.fadeOut();
 		$('.item-video-container', item).fadeIn();
 		
-		return window.pd(e);
+		return global.pd(e);
 	};
 	
 	var init = function () {
@@ -847,14 +1411,12 @@
 	
 	var oEmbed = App.modules.exports('oEmbed', {
 		init: init,
-		actions : function () {
+		actions: function () {
 			return actions;
 		}
 	});
 	
-	
-	
-})(jQuery);
+})(jQuery, window);
 
 /******************************
  * @author Deux Huit Huit
@@ -1451,10 +2013,9 @@
 				
 				//if we found a page for this route
 				if (nextPage) {
-					
+					var loc = window.location;
 					//Detect if we change page
 					if (nextPage.key() == _currentPageKey) {
-						var loc = window.location;
 						if (!loc.origin) {
 							// IE !!
 							loc.origin = loc.protocol + '//' + loc.hostname;
@@ -1468,7 +2029,7 @@
 						}
 					} else {
 						_isPopingState = true;
-						App.mediator.goto(window.location.pathname + window.location.search);
+						App.mediator.goto(loc.pathname + loc.search, _currentPageUrl);
 					}
 				} else {
 					App.log({args: 'Page not found', me: 'Url Changer'}); 
@@ -1715,6 +2276,7 @@
 	});
 	
 })(jQuery);
+
 /**
  * @author Deux Huit Huit
  * 
@@ -1724,6 +2286,7 @@
 	
 	'use strict';
 	var win = $(window);
+	var doc = $(document);
 	
 	var notify = function (key, e) {
 		App.mediator.notify('site.' + key, {event: e});
@@ -1741,11 +2304,18 @@
 		notify('loaded', e);
 	};
 	
+	var visibilityHandler = function (e) {
+		var state = document.visibilityState || document.webkitVisibilityState || 'visible';
+		notify('visibilitychange', e, state);
+	};
+	
 	var init = function () {
 		win
 			.load(loadHandler)
 			.resize(resizeHandler)
 			.scroll(scrollHandler);
+		doc
+			.on('visibilitychange webkitvisibilitychange', visibilityHandler);
 	};
 	
 	var WindowNotifier = App.modules.exports('windowNotifier', {
@@ -1996,7 +2566,7 @@
 	// auto-hook
 	$(function () {
 		$('#site').on($.click, '*[data-ga-value]', function (e) {
-			$(e.target).sendClickEvent();
+			$(this).sendClickEvent();
 		});
 	});
 	
