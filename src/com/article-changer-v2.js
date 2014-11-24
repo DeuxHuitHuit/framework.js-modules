@@ -57,7 +57,7 @@
 		}
 	};
 	
-	App.components.exports('articleChanger', function _searchBar() {
+	App.components.exports('articleChanger', function _articleChanger() {
 		var o;
 		var page;
 		var articleCtn;
