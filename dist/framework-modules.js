@@ -1,4 +1,4 @@
-/*! framework.js-modules - v0.4.3 - - build  - 2014-11-24
+/*! framework.js-modules - v0.4.3 - - build  - 2014-11-26
 * https://github.com/DeuxHuitHuit/framework.js-modules
 * Copyright (c) 2014 Deux Huit Huit; Licensed MIT */
 /**
@@ -60,7 +60,7 @@
 		}
 	};
 	
-	App.components.exports('articleChanger', function _searchBar() {
+	App.components.exports('articleChanger', function _articleChanger() {
 		var o;
 		var page;
 		var articleCtn;
@@ -202,7 +202,7 @@
 		}
 	};
 	
-	App.components.exports('articleChanger', function _searchBar() {
+	App.components.exports('articleChanger', function _articleChanger() {
 		
 		var o;
 		var page;
@@ -618,8 +618,7 @@
 					paused: t.data('cycle-paused') || false,
 					pauseOnHover: t.data('cycle-pause-on-hover') || false,
 					fx: t.data('cycle-fx') || 'fade',
-					captionTemplate: t.attr('data-cycle-caption-template') || 
-						'',
+					captionTemplate: t.attr('data-cycle-caption-template') || '',
 					log: App.debug()
 				};
 				
@@ -1589,7 +1588,7 @@
 		}
 		
 		// block clicks
-		$(o.element).click(function (e) {
+		$(o.element).on($.click, function (e) {
 			return window.pd(e, false);
 		});
 	};
@@ -2592,7 +2591,8 @@
 			var options = $.extend({}, $.dropdownmenu.defaults, {
 				popup: elem.attr('data-popup'),
 				items: elem.attr('data-items'),
-				background: elem.attr('data-background')
+				background: elem.attr('data-background'),
+				click: $.click || 'click'
 			}, opts);
 			
 			// Ensure we are dealing with jQuery objects
@@ -2630,13 +2630,13 @@
 				options.popup.css(tOffset);
 			};
 			
-			elem.click(function elemClick(e) {
+			elem.on(options.click, function elemClick(e) {
 				showMenu();
 				
 				return window.pd(e, true);
 			});
 			
-			options.items.click(function itemClick(e) {
+			options.items.on(options.click, function itemClick(e) {
 				var t = $(this);
 				options.items.removeClass(options.selectedClass);
 				t.addClass(options.selectedClass);
@@ -2655,7 +2655,7 @@
 				//return window.pd(e, true);
 			});
 			
-			options.background.click(function bgClick(e) {
+			options.background.on(options.click, function bgClick(e) {
 				hideMenu();
 				
 				return window.pd(e, true);
