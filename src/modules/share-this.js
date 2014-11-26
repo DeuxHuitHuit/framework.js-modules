@@ -29,7 +29,7 @@
 		}
 		
 		// block clicks
-		$(o.element).click(function (e) {
+		$(o.element).on($.click, function (e) {
 			return window.pd(e, false);
 		});
 	};

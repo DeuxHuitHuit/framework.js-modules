@@ -19,7 +19,8 @@
 			var options = $.extend({}, $.dropdownmenu.defaults, {
 				popup: elem.attr('data-popup'),
 				items: elem.attr('data-items'),
-				background: elem.attr('data-background')
+				background: elem.attr('data-background'),
+				click: $.click || 'click'
 			}, opts);
 			
 			// Ensure we are dealing with jQuery objects
@@ -57,13 +58,13 @@
 				options.popup.css(tOffset);
 			};
 			
-			elem.click(function elemClick(e) {
+			elem.on(options.click, function elemClick(e) {
 				showMenu();
 				
 				return window.pd(e, true);
 			});
 			
-			options.items.click(function itemClick(e) {
+			options.items.on(options.click, function itemClick(e) {
 				var t = $(this);
 				options.items.removeClass(options.selectedClass);
 				t.addClass(options.selectedClass);
@@ -82,7 +83,7 @@
 				//return window.pd(e, true);
 			});
 			
-			options.background.click(function bgClick(e) {
+			options.background.on(options.click, function bgClick(e) {
 				hideMenu();
 				
 				return window.pd(e, true);
