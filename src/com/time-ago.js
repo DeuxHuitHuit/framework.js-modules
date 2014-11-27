@@ -28,7 +28,7 @@
 		};
 	}
 	
-	/* Search Bar */
+	/* Time Ago */
 	App.components.exports('timeAgo', function _searchBar() {
 		
 		var page;
@@ -40,14 +40,13 @@
 				var t = $(this);
 				var d = new Date(t.attr('datetime'));
 				if (new Date().getTime() - d.getTime() < NB_JOURS) {
-					t.timeago();	
+					t.timeago();
 				}
 			});
 		};
 		
 		return {
 			init : init
-			
 		};
 	
 	});
