@@ -1,7 +1,7 @@
 /**
  * @author Deux Huit Huit
  * 
- * Window Notifier
+ * Auto screen height
  */
 (function ($, undefined) {
 
@@ -112,7 +112,7 @@
 		};
 	};
 
-	App.modules.exports('auto-screen-height',  { 
+	App.modules.exports('auto-screen-height', {
 		init: init,
 		actions: actions
 	});
