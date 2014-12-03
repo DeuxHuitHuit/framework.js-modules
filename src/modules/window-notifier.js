@@ -33,8 +33,10 @@
 	var init = function () {
 		win
 			.load(loadHandler)
-			.resize(resizeHandler)
 			.scroll(scrollHandler);
+		if (!$.mobile) {
+			win.resize(resizeHandler);
+		}
 		doc
 			.on('visibilitychange webkitvisibilitychange', visibilityHandler);
 	};
