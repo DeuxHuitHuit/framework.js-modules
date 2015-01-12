@@ -4,14 +4,19 @@
 
 /**
  * Page loading handling
+ *
+ * Use load progress if available, reverts to good old timer if not.
+ *
  */
 (function ($, undefined) {
 
 	'use strict';
 	
-	var INITIAL_VALUE = 0.40; // 40%
+	var INITIAL_VALUE = 0.30; // 30%
 	var INCREMENT = 0.05; // 5%
-	var CLOSE_DELAY = 700; // ms
+	var CLOSE_DELAY = 500; // ms
+	var START_DELAY = 300; // ms
+	var PROGRESS_DELAY = 150; //ms
 	
 	var LOADING = 'page-loading';
 	var SHOW = 'show';
@@ -25,9 +30,10 @@
 	
 	var closeTimer = 0;
 	var currentValue = 0;
+	var progressTimer = 0;
 	
 	var p = function (i) {
-		return (i * 100) + '%';
+		return ~~(i * 100) + '%';
 	};
 	
 	var start = function () {
@@ -52,30 +58,46 @@
 		isStarted = true;
 		
 		App.log({args: 'Start', me: 'page-load'});
+		
+		setTimeout(progress, START_DELAY);
 	};
 	
 	var end = function () {
 		holder
 			.addClass(END)
 			.width('100%');
+			
+		isStarted = false;
 		
 		closeTimer = setTimeout(function () {
 			holder.removeClass(SHOW);
 			html.removeClass(LOADING);
-			isStarted = false;
 		}, CLOSE_DELAY);
 		
 		App.log({args: 'End', me: 'page-load'});
 	};
 	
 	var progress = function (percent) {
+		clearTimeout(progressTimer);
 		if (isStarted) {
+			// increment current value
 			var incVal = currentValue + INCREMENT;
-			currentValue = Math.max(incVal, percent);
+			// use percent if greater then new incremented value
+			currentValue = Math.max(incVal, percent || 0);
+			// max out current value to 1
 			currentValue = Math.min(currentValue, 1);
+			// update ui
 			holder.width(p(currentValue));
+			// if we are running with the timer (not percent given)
+			// block before hitting 100%
+			if (!percent && currentValue < 1 - INCREMENT) {
+				progressTimer = setTimeout(progress, PROGRESS_DELAY);
+			}
 		}
-		App.log({args: ['Progress %s', percent], me: 'page-load'});
+		App.log({
+			args: ['Progress %s %s', percent || 'timer', currentValue],
+			me: 'page-load'
+		});
 	};
 	
 	var loadprogress = function (key, data) {
