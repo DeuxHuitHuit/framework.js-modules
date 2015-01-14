@@ -17,6 +17,11 @@
 		notify('resize', e);
 	};
 	
+	var orientationHandler = function (e) {
+		notify('orientation', e);
+		resizeHandler();
+	};
+	
 	var scrollHandler = function (e) {
 		notify('scroll', e);
 	};
@@ -33,7 +38,8 @@
 	var init = function () {
 		win
 			.load(loadHandler)
-			.scroll(scrollHandler);
+			.scroll(scrollHandler)
+			.on('orientationchange', orientationHandler);
 		if (!$.mobile) {
 			win.resize(resizeHandler);
 		}
