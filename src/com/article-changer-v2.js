@@ -67,6 +67,7 @@
 			page = _page;
 			o = $.extend({}, defOptions, options);
 			articleCtn = $(o.containerSelector, page);
+			currentPageHandle = o.startPageHandle;
 		};
 		
 		var navigateTo = function (newPageHandle, url) {
