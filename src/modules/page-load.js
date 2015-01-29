@@ -83,7 +83,7 @@
 			// increment current value
 			var incVal = currentValue + INCREMENT;
 			// use percent if greater then new incremented value
-			currentValue = Math.max(incVal, percent || 0);
+			currentValue = Math.max(incVal, percent || currentValue);
 			// max out current value to 1
 			currentValue = Math.min(currentValue, 1);
 			// update ui
@@ -108,7 +108,7 @@
 		return {
 			pageLoad: {
 				start: start,
-				progress: progress,
+				progress: loadprogress,
 				end: end
 			},
 			pages: {
