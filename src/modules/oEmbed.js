@@ -25,6 +25,7 @@
 			
 			iframe.attr('width', '100%');
 			iframe.attr('height', '100%');
+			iframe.attr('frameborder', '0');
 			container.append(iframe);
 		},
 		
