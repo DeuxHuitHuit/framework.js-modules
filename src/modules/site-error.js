@@ -7,9 +7,12 @@
 	'use strict';
 
 	var oldOnError = global.onerror;
-
-	global.onerror = function (errorMsg, url, lineNumber, column, errorObj) {
-		errorMsg += ' ' + url;
+	
+	var errorHandler = function (errorMsg, url, lineNumber, column, errorObj) {
+		errorMsg = errorMsg || '';
+		if (!!url) {
+			errorMsg += ' ' + url;
+		}
 		if (!!lineNumber) {
 			errorMsg += ' line ' + lineNumber;
 		}
@@ -24,5 +27,13 @@
 		// Call default
 		return App.callback(oldOnError, errorMsg, url, lineNumber, column, errorObj);
 	};
+
+	// Trap js errors
+	global.onerror = errorHandler;
+	
+	// Trap js errors
+	$(document).ajaxError(function(e, request, settings) {
+		$.sendEvent('error ajax', settings.url, e.result);
+	});
 
 })(jQuery, window);
