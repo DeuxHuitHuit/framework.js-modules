@@ -1,3 +1,9 @@
+/**
+ * @author Deux Huit Huit
+ *
+ * Google Analytics wrapper
+ */
+
 (function ($) {
 	'use strict';
 	
@@ -11,7 +17,7 @@
 			}
 			args.push(a);
 		});
-		App.log('ga(' + args.join(',') + ');');
+		App.log({args:['%cga(' + args.join(',') + ');', 'color:red']});
 	};
 	
 	// ga facilitators
@@ -27,9 +33,9 @@
 		ga('send', 'pageview', args);
 	};
 	
-	$.sendEvent = function (cat, label, value) {
+	$.sendEvent = function (cat, action, label, value, options) {
 		var ga = window.ga || log;
-		ga('send', 'event', cat, label, value);
+		ga('send', 'event', cat, action, label, value, options || {nonInteraction: 1});
 	};
 	
 	$.fn.sendClickEvent = function (options) {
@@ -44,7 +50,7 @@
 		if (!gaValue) {
 			App.log('No ga-value found, reverting to text');
 		}
-		$.sendEvent(o.cat, o.event, o.value);
+		$.sendEvent(o.cat, o.event, 'click-event', o.value);
 	};
 	
 	// auto-hook
