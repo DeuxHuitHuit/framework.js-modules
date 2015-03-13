@@ -24,6 +24,7 @@
 	
 	var scrollHandler = function (e) {
 		notify('scroll', e);
+		notify('postscroll', e);
 	};
 	
 	var loadHandler = function (e) {
