@@ -59,13 +59,24 @@
 		var newHeight = (win.height() - offset) * ratio;
 		var platformsVal = processPlatforms(t.attr('data-screen-height-platform') || 'all');
 		var minWidth = t.attr('data-screen-height-min-width') || 0;
+		var useMediaQuery = t.data('data-screen-height-use-media-query') || true;
+		
 		
 		//test platforms
-		if (platformsVal && win.width() > minWidth) {
+		if (platformsVal &&
+			!useMediaQuery &&
+			win.width() > minWidth) {
+				
+			t.css(fx, newHeight);
+			
+		} else if (platformsVal && 
+			useMediaQuery && 
+			window.matchMedia('(min-width: ' + minWidth + 'px)').matches) {
 			t.css(fx, newHeight);
 		} else {
 			t.css(fx, '');
 		}
+		
 	};
 	
 	var onResize = function (e) {
