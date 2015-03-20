@@ -60,7 +60,7 @@
 		var platformsVal = processPlatforms(t.attr('data-screen-height-platform') || 'all');
 		var minWidth = t.attr('data-screen-height-min-width') || 0;
 		var useMediaQuery = t.data('data-screen-height-use-media-query') || true;
-		
+		var useJitImage = t.attr('data-screen-height-jitimage') || true;
 		
 		//test platforms
 		if (platformsVal &&
@@ -76,7 +76,9 @@
 		} else {
 			t.css(fx, '');
 		}
-		
+		if (useJitImage) {
+			$('img[data-src-format]', t).jitImage();
+		}
 	};
 	
 	var onResize = function (e) {
