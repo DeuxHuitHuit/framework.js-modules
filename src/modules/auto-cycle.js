@@ -19,6 +19,7 @@
 				var o = {
 					slides: t.attr('data-cycle-slides') || '>img',
 					pager: t.attr('data-cycle-pager') || '> .cycle-pager',
+					pagerTemplate: t.attr('data-cycle-pager-template') || '<span><span>',
 					next: t.attr('data-cycle-next') || '> .cycle-next',
 					prev: t.attr('data-cycle-prev') || '> .cycle-prev',
 					timeout: t.attr('data-cycle-timeout') || 4000,
