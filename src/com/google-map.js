@@ -3,7 +3,7 @@
  *
  * Google maps component
  */
-(function ($, win, undefined) {
+(function ($, win, global, undefined) {
 
 	'use strict';
 	
@@ -108,4 +108,4 @@
 		};
 	});
 	
-})(jQuery, jQuery(window));
+})(jQuery, jQuery(window), window);
