@@ -2,11 +2,11 @@
   "name": "framework-modules",
   "title": "framework.js-modules",
   "description": "Collections of modules we frequently use with our framework",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "homepage": "https://github.com/DeuxHuitHuit/framework.js-modules",
   "author": {
     "name": "Deux Huit Huit",
-    "url": "http://www.deuxhuithuit.com/"
+    "url": "https://deuxhuithuit.com/"
   },
   "repository": {
     "type": "git",
