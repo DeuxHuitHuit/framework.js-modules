@@ -40,8 +40,8 @@
 				map: map,
 				icon: new google.maps.MarkerImage('/workspace/assets/img/gmap-pin.png',
 					new google.maps.Size(24, 42),
-					new google.maps.Point(0,0),
-					new google.maps.Point(12,42)
+					new google.maps.Point(0, 0),
+					new google.maps.Point(12, 42)
 				),
 				shadow: markerOption.iconShadow,
 				zIndex: markerOption.zIndex
@@ -54,7 +54,7 @@
 			
 				marker['infowindow'] = new google.maps.InfoWindow(
 					{
-						content:  markerOption.content
+						content: markerOption.content
 					}
 				);
 				
@@ -73,10 +73,9 @@
 		var createMap = function () {
 			map = new google.maps.Map(container.get(0), mapOptions);
 			
-			google.maps.event.addListener(map, 'bounds_changed', function() {
+			google.maps.event.addListener(map, 'bounds_changed', function () {
 				//notify page that bounds changed
 				App.mediator.notifyCurrentPage('map.boundsChanged', map.getBounds());
-				
 			});
 		};
 		

@@ -32,7 +32,7 @@
 	global.onerror = errorHandler;
 	
 	// Trap js errors
-	$(document).ajaxError(function(e, request, settings) {
+	$(document).ajaxError(function (e, request, settings) {
 		$.sendEvent('error ajax', settings.url, e.result);
 	});
 

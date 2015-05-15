@@ -95,7 +95,8 @@ module.exports = function fxGruntConfig(grunt) {
 					console: true,
 					App: true,
 					Loader: true,
-					_: true
+					_: true,
+					google: true
 				}
 			}
 		},

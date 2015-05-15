@@ -1,6 +1,6 @@
-/*! framework.js-modules - v0.4.4 - - build  - 2014-11-27
+/*! framework.js-modules - v0.5.0 - - build  - 2015-05-15
 * https://github.com/DeuxHuitHuit/framework.js-modules
-* Copyright (c) 2014 Deux Huit Huit; Licensed MIT */
+* Copyright (c) 2015 Deux Huit Huit; Licensed MIT */
 /**
  * @author Deux Huit Huit
  *
@@ -70,6 +70,7 @@
 			page = _page;
 			o = $.extend({}, defOptions, options);
 			articleCtn = $(o.containerSelector, page);
+			currentPageHandle = o.startPageHandle;
 		};
 		
 		var navigateTo = function (newPageHandle, url) {
@@ -148,6 +149,7 @@
 	});
 	
 })(jQuery, window, document);
+
 /**
  * @author Deux Huit Huit
  *
@@ -289,6 +291,117 @@
 	});
 	
 })(jQuery, window, document);
+/**
+ * @author Deux Huit Huit
+ *
+ * Google maps component
+ */
+(function ($, win, global, undefined) {
+
+	'use strict';
+	
+	App.components.exports('googleMap', function (o) {
+		
+		var container;
+		var markers = [];
+		var map;
+		var openedMarker;
+		
+		var defaultMapOptions = {
+			defaultMarkerOptions: {},
+			mapTypeId: google.maps.MapTypeId.ROADMAP,
+			markerAction: function () {
+				var reelPosition = new google.maps.LatLng(
+					this.getPosition().lat() + 0.005,
+					this.getPosition().lng());
+				map.panTo(reelPosition);
+				
+				closeAllPopup();
+				this['infowindow'].open(map, this);
+				openedMarker = this;
+			}
+		};
+		
+		var mapOptions = $.extend({}, defaultMapOptions, o);
+		
+		var addMarker = function (o) {
+			
+			var markerOption = $.extend({}, mapOptions.defaultMarkerOptions, o);
+				
+			var marker = new google.maps.Marker({
+				position: markerOption.LatLng,
+				map: map,
+				icon: new google.maps.MarkerImage('/workspace/assets/img/gmap-pin.png',
+					new google.maps.Size(24, 42),
+					new google.maps.Point(0, 0),
+					new google.maps.Point(12, 42)
+				),
+				shadow: markerOption.iconShadow,
+				zIndex: markerOption.zIndex
+			});
+			
+			markers.push(marker);
+			
+			//If we have content add the infoWindow
+			if (markerOption.content && markerOption.content.length) {
+			
+				marker['infowindow'] = new google.maps.InfoWindow(
+					{
+						content: markerOption.content
+					}
+				);
+				
+				google.maps.event.addListener(marker, 'click', mapOptions.markerAction);
+			} else if (mapOptions.markerCustomAction) {
+				google.maps.event.addListener(marker, 'click', mapOptions.markerCustomAction);
+			}
+		};
+		
+		var closeAllPopup = function () {
+			if (openedMarker) { 
+				openedMarker['infowindow'].close();
+			}
+		};
+		
+		var createMap = function () {
+			map = new google.maps.Map(container.get(0), mapOptions);
+			
+			google.maps.event.addListener(map, 'bounds_changed', function () {
+				//notify page that bounds changed
+				App.mediator.notifyCurrentPage('map.boundsChanged', map.getBounds());
+			});
+		};
+		
+		var googleMap = function () {
+			return !!global.google && !!google.maps && !!google.maps.Map;
+		};
+		
+		var initMap = function () {
+			if (!container.hasClass('map-loaded')) {
+				createMap();
+				container.addClass('map-loaded');
+			}
+		};
+		
+		var init = function (_page, selector) {
+			container = $(selector, _page);
+			App.loaded(googleMap, function () {
+				initMap();
+			});
+		};
+		
+		return {
+			init: init,
+			addMarker: addMarker,
+			center: function (lat, lng) {
+				map.panTo(new google.maps.LatLng(lat, lng));
+			},
+			closeAllPopup: closeAllPopup
+		};
+	});
+	
+})(jQuery, jQuery(window), window);
+
 /**
  * @author Deux Huit Huit
  * 
@@ -611,12 +724,13 @@
 				var o = {
 					slides: t.attr('data-cycle-slides') || '>img',
 					pager: t.attr('data-cycle-pager') || '> .cycle-pager',
+					pagerTemplate: t.attr('data-cycle-pager-template') || '<span><span>',
 					next: t.attr('data-cycle-next') || '> .cycle-next',
 					prev: t.attr('data-cycle-prev') || '> .cycle-prev',
-					timeout: t.data('cycle-timeout') || 4000,
-					paused: t.data('cycle-paused') || false,
-					pauseOnHover: t.data('cycle-pause-on-hover') || false,
-					fx: t.data('cycle-fx') || 'fade',
+					timeout: t.attr('data-cycle-timeout') || 4000,
+					paused: t.attr('data-cycle-paused') || false,
+					pauseOnHover: t.attr('data-cycle-pause-on-hover') || false,
+					fx: t.attr('data-cycle-fx') || 'fade',
 					captionTemplate: t.attr('data-cycle-caption-template') || '',
 					log: App.debug()
 				};
@@ -794,7 +908,7 @@
 /**
  * @author Deux Huit Huit
  * 
- * Window Notifier
+ * Auto screen height
  */
 (function ($, undefined) {
 
@@ -852,12 +966,25 @@
 		var newHeight = (win.height() - offset) * ratio;
 		var platformsVal = processPlatforms(t.attr('data-screen-height-platform') || 'all');
 		var minWidth = t.attr('data-screen-height-min-width') || 0;
+		var useMediaQuery = t.data('data-screen-height-use-media-query') || true;
+		var useJitImage = t.attr('data-screen-height-jitimage') || true;
 		
 		//test platforms
-		if (platformsVal && win.width() > minWidth) {
+		if (platformsVal &&
+			!useMediaQuery &&
+			win.width() > minWidth) {
+				
+			t.css(fx, newHeight);
+			
+		} else if (platformsVal && 
+			useMediaQuery && 
+			window.matchMedia('(min-width: ' + minWidth + 'px)').matches) {
 			t.css(fx, newHeight);
 		} else {
 			t.css(fx, '');
+		}
+		if (useJitImage) {
+			$('img[data-src-format]', t).jitImage();
 		}
 	};
 	
@@ -905,7 +1032,7 @@
 		};
 	};
 
-	App.modules.exports('auto-screen-height',  { 
+	App.modules.exports('auto-screen-height', {
 		init: init,
 		actions: actions
 	});
@@ -1266,6 +1393,7 @@
 			
 			iframe.attr('width', '100%');
 			iframe.attr('height', '100%');
+			iframe.attr('frameborder', '0');
 			container.append(iframe);
 		},
 		
@@ -1422,14 +1550,19 @@
 
 /**
  * Page loading handling
+ *
+ * Use load progress if available, reverts to good old timer if not.
+ *
  */
 (function ($, undefined) {
 
 	'use strict';
 	
-	var INITIAL_VALUE = 0.40; // 40%
+	var INITIAL_VALUE = 0.30; // 30%
 	var INCREMENT = 0.05; // 5%
-	var CLOSE_DELAY = 700; // ms
+	var CLOSE_DELAY = 500; // ms
+	var START_DELAY = 300; // ms
+	var PROGRESS_DELAY = 150; //ms
 	
 	var LOADING = 'page-loading';
 	var SHOW = 'show';
@@ -1443,9 +1576,10 @@
 	
 	var closeTimer = 0;
 	var currentValue = 0;
+	var progressTimer = 0;
 	
 	var p = function (i) {
-		return (i * 100) + '%';
+		return ~~(i * 100) + '%';
 	};
 	
 	var start = function () {
@@ -1470,30 +1604,46 @@
 		isStarted = true;
 		
 		App.log({args: 'Start', me: 'page-load'});
+		
+		setTimeout(progress, START_DELAY);
 	};
 	
 	var end = function () {
 		holder
 			.addClass(END)
 			.width('100%');
+			
+		isStarted = false;
 		
 		closeTimer = setTimeout(function () {
 			holder.removeClass(SHOW);
 			html.removeClass(LOADING);
-			isStarted = false;
 		}, CLOSE_DELAY);
 		
 		App.log({args: 'End', me: 'page-load'});
 	};
 	
 	var progress = function (percent) {
+		clearTimeout(progressTimer);
 		if (isStarted) {
+			// increment current value
 			var incVal = currentValue + INCREMENT;
-			currentValue = Math.max(incVal, percent);
+			// use percent if greater then new incremented value
+			currentValue = Math.max(incVal, percent || currentValue);
+			// max out current value to 1
 			currentValue = Math.min(currentValue, 1);
+			// update ui
 			holder.width(p(currentValue));
+			// if we are running with the timer (not percent given)
+			// block before hitting 100%
+			if (!percent && currentValue < 1 - INCREMENT) {
+				progressTimer = setTimeout(progress, PROGRESS_DELAY);
+			}
 		}
-		App.log({args: ['Progress %s', percent], me: 'page-load'});
+		App.log({
+			args: ['Progress %s %s', percent || 'timer', currentValue],
+			me: 'page-load'
+		});
 	};
 	
 	var loadprogress = function (key, data) {
@@ -1504,7 +1654,7 @@
 		return {
 			pageLoad: {
 				start: start,
-				progress: progress,
+				progress: loadprogress,
 				end: end
 			},
 			pages: {
@@ -1610,6 +1760,46 @@
 	});
 	
 })(jQuery);
+
+/**
+ * @author Deux Huit Huit
+ * 
+ * Module Site Error
+ */
+(function ($, global, undefined) {
+	'use strict';
+
+	var oldOnError = global.onerror;
+	
+	var errorHandler = function (errorMsg, url, lineNumber, column, errorObj) {
+		errorMsg = errorMsg || '';
+		if (!!url) {
+			errorMsg += ' ' + url;
+		}
+		if (!!lineNumber) {
+			errorMsg += ' line ' + lineNumber;
+		}
+		if (!!column) {
+			errorMsg += ' col ' + column;
+		}
+		if (!!errorObj && !!errorObj.stack) {
+			errorMsg += ' col ' + errorObj.stack;
+		}
+		// Log via Google Analytics
+		$.sendEvent('error', errorMsg);
+		// Call default
+		return App.callback(oldOnError, errorMsg, url, lineNumber, column, errorObj);
+	};
+
+	// Trap js errors
+	global.onerror = errorHandler;
+	
+	// Trap js errors
+	$(document).ajaxError(function (e, request, settings) {
+		$.sendEvent('error ajax', settings.url, e.result);
+	});
+
+})(jQuery, window);
 
 /**
  * @author Deux Huit Huit
@@ -2294,8 +2484,14 @@
 		notify('resize', e);
 	};
 	
+	var orientationHandler = function (e) {
+		notify('orientation', e);
+		resizeHandler();
+	};
+	
 	var scrollHandler = function (e) {
 		notify('scroll', e);
+		notify('postscroll', e);
 	};
 	
 	var loadHandler = function (e) {
@@ -2310,8 +2506,11 @@
 	var init = function () {
 		win
 			.load(loadHandler)
-			.resize(resizeHandler)
-			.scroll(scrollHandler);
+			.scroll(scrollHandler)
+			.on('orientationchange', orientationHandler);
+		if (!$.mobile) {
+			win.resize(resizeHandler);
+		}
 		doc
 			.on('visibilitychange webkitvisibilitychange', visibilityHandler);
 	};
@@ -2337,63 +2536,78 @@
 	var sitePages = $('#site-pages');
 	
 	var DEFAULT_DELAY = 350;
+			
+	var beginCompleted = false;
+	var loadCompleted = false;
+
+	var dataIn = null;
+	
+	var bgTransition = $('#bg-transition', body);
 	
 	var defaultTransition = function (data, callback) {
-		
+		loadCompleted = true;
+		dataIn = data;
+		if (beginCompleted) {
+			completeAnim(data, callback);
+		}
+	};
+	
+	var completeAnim = function (data, callback) {
 		var leavingPage = data.currentPage;
 		var enteringPage = data.nextPage;
 		
 		var domEnteringPage = $(enteringPage.key());
 		var domLeavingPage = $(leavingPage.key());
 		
-		var enterPageAnimation = function () {
+		body.addClass(enteringPage.key().substring(1));
+		//Notify intering page
+		App.modules.notify('page.entering', {page: enteringPage, route: data.route});
 		
-			//Notify intering page
-			App.modules.notify('page.entering', {page: enteringPage, route: data.route});
+		//Animate leaving and start entering after leaving animation
+		//Need a delay for get all Loaded
+		domEnteringPage.ready(function () {
+			domEnteringPage.css({opacity: 1, display: 'block'});
+			enteringPage.enter(data.enterNext);
 			
-			//Animate leaving and start entering after leaving animation
-			//Need a delay for get all Loaded
-			domEnteringPage.ready(function () {
-				domEnteringPage.css({opacity: 1, display: 'block'});
-				body.addClass(enteringPage.key().substring(1));
-				sitePages.animate({opacity: 1}, DEFAULT_DELAY, function () {
-					App.modules.notify('transition.end', {page: enteringPage, route: data.route});
-				});
-				enteringPage.enter(data.enterNext);
-				App.callback(callback);
+			bgTransition.fadeOut(DEFAULT_DELAY).promise().then(function () {
+				App.modules.notify('transition.end', {page: enteringPage, route: data.route});
 			});
-		};
-		
-		var afterScroll = function () {
-			sitePages.animate({opacity: 0}, DEFAULT_DELAY, function () {
-				//notify all module from leaving
-				body.removeClass(leavingPage.key().substring(1));
-				App.modules.notify('page.leaving', {page: leavingPage});
-				
-				if ($.mobile) {
-					win.scrollTop(0);
-				}
-				
-				//Leave the current page
-				leavingPage.leave(data.leaveCurrent);
 			
-				domLeavingPage.hide();
-				enterPageAnimation();
-			});
-		};
+			App.callback(callback);
+		});
+	};
+	
+	var defaultBeginTransition = function (data, callback) {
+		var leavingPage = data.currentPage;
+		var enteringPage = data.nextPage;
 		
-		if ($.mobile) {
-			afterScroll();
-		} else {
-			$.scrollTo(0, {
-				duration : Math.min(1200, $(window).scrollTop()),
-				easing : 'easeInOutQuad',
-				onAfter : afterScroll
-			});
-		}
+		var domEnteringPage = $(enteringPage.key());
+		var domLeavingPage = $(leavingPage.key());
+		
+		beginCompleted = false;
+		loadCompleted = false;
+		dataIn = null;
+		bgTransition.fadeIn(DEFAULT_DELAY).promise().then(function () {
+			//notify all module from leaving
+			body.removeClass(leavingPage.key().substring(1));
+			App.modules.notify('page.leaving', {page: leavingPage});
+			
+			win.scrollTop(0);
+			
+			//Leave the current page
+			leavingPage.leave(data.leaveCurrent);
+		
+			domLeavingPage.hide();
+			beginCompleted = true;
+			
+			if (loadCompleted) {
+				completeAnim(dataIn);
+			}
+		});
 	};
 	
 	App.transitions.exports({
+		beginTransition: defaultBeginTransition,
 		transition: defaultTransition,
 		canAnimate: function (data) {
 			return true;
@@ -2414,18 +2628,26 @@
 	'use strict';
 	
 	App.pages.exports('defaultPage', function () {
+		var page;
 		
 		var onEnter = function (next) {
 			App.callback(next);
 		};
 		
 		var init = function () {
-			
+			page = $(this.key());
+		};
+		
+		var actions = function () {
+			return {
+				
+			};
 		};
 		
 		var self = {
 			init: init,
-			enter : onEnter
+			enter: onEnter,
+			actions: actions
 		};
 		
 		return self;
@@ -2512,6 +2734,12 @@
 	};
 	
 })(jQuery);
+/**
+ * @author Deux Huit Huit
+ *
+ * Google Analytics wrapper
+ */
+
 (function ($) {
 	'use strict';
 	
@@ -2525,7 +2753,7 @@
 			}
 			args.push(a);
 		});
-		App.log('ga(' + args.join(',') + ');');
+		App.log({args: ['%cga(' + args.join(',') + ');', 'color:red']});
 	};
 	
 	// ga facilitators
@@ -2541,9 +2769,9 @@
 		ga('send', 'pageview', args);
 	};
 	
-	$.sendEvent = function (cat, label, value) {
+	$.sendEvent = function (cat, action, label, value, options) {
 		var ga = window.ga || log;
-		ga('send', 'event', cat, label, value);
+		ga('send', 'event', cat, action, label, value, options || {nonInteraction: 1});
 	};
 	
 	$.fn.sendClickEvent = function (options) {
@@ -2558,7 +2786,7 @@
 		if (!gaValue) {
 			App.log('No ga-value found, reverting to text');
 		}
-		$.sendEvent(o.cat, o.event, o.value);
+		$.sendEvent(o.cat, o.event, 'click-event', o.value);
 	};
 	
 	// auto-hook
@@ -2869,65 +3097,3 @@
 	};
 	
 })(jQuery);
-/**
- * @author Deux Huit Huit
- *
- * Local storage wrapper
- */
-
-(function ($, global) {
-	'use strict';
-
-	var setValue = function (key, val) {
-		try {
-			window.localStorage[key] = '' + val;
-		} catch (ex) {
-			App.log(ex);
-		}
-	};
-
-	var getValue = function (key) {
-		try {
-			return window.localStorage[key];
-		} catch (ex) {
-			App.log(ex);
-			return null;
-		}
-	};
-
-	var putValue = function (key, val) {
-		try {
-			var value = getValue(key);
-			if (!value) {
-				value = '' + val;
-			} else {
-				value += ' ' + val;
-			}
-			if (!!val) {
-				setValue(key, value);
-			}
-		} catch (ex) {
-			App.log(ex);
-		}
-	};
-
-	var putValueAsync = function (key, val) {
-		setTimeout(function _putValueAsync() {
-			putValue(key, val);
-		}, 16);
-	};
-
-	global.storage = {
-		val: function (key, val) {
-			if (!!val) {
-				setValue(key, val);
-			}
-			return getValue(key);
-		},
-		put: putValue,
-		async: {
-			put: putValueAsync
-		}
-	};
-
-})(jQuery, App);

@@ -46,7 +46,7 @@
 			domEnteringPage.css({opacity: 1, display: 'block'});
 			enteringPage.enter(data.enterNext);
 			
-			bgTransition.fadeOut(DEFAULT_DELAY).promise().then( function () {
+			bgTransition.fadeOut(DEFAULT_DELAY).promise().then(function () {
 				App.modules.notify('transition.end', {page: enteringPage, route: data.route});
 			});
 			
