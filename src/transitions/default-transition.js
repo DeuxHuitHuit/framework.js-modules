@@ -13,63 +13,78 @@
 	var sitePages = $('#site-pages');
 	
 	var DEFAULT_DELAY = 350;
+			
+	var beginCompleted = false;
+	var loadCompleted = false;
+
+	var dataIn = null;
+	
+	var bgTransition = $('#bg-transition', body);
 	
 	var defaultTransition = function (data, callback) {
-		
+		loadCompleted = true;
+		dataIn = data;
+		if (beginCompleted) {
+			completeAnim(data, callback);
+		}
+	};
+	
+	var completeAnim = function (data, callback) {
 		var leavingPage = data.currentPage;
 		var enteringPage = data.nextPage;
 		
 		var domEnteringPage = $(enteringPage.key());
 		var domLeavingPage = $(leavingPage.key());
 		
-		var enterPageAnimation = function () {
+		body.addClass(enteringPage.key().substring(1));
+		//Notify intering page
+		App.modules.notify('page.entering', {page: enteringPage, route: data.route});
 		
-			//Notify intering page
-			App.modules.notify('page.entering', {page: enteringPage, route: data.route});
+		//Animate leaving and start entering after leaving animation
+		//Need a delay for get all Loaded
+		domEnteringPage.ready(function () {
+			domEnteringPage.css({opacity: 1, display: 'block'});
+			enteringPage.enter(data.enterNext);
 			
-			//Animate leaving and start entering after leaving animation
-			//Need a delay for get all Loaded
-			domEnteringPage.ready(function () {
-				domEnteringPage.css({opacity: 1, display: 'block'});
-				body.addClass(enteringPage.key().substring(1));
-				sitePages.animate({opacity: 1}, DEFAULT_DELAY, function () {
-					App.modules.notify('transition.end', {page: enteringPage, route: data.route});
-				});
-				enteringPage.enter(data.enterNext);
-				App.callback(callback);
+			bgTransition.fadeOut(DEFAULT_DELAY).promise().then( function () {
+				App.modules.notify('transition.end', {page: enteringPage, route: data.route});
 			});
-		};
-		
-		var afterScroll = function () {
-			sitePages.animate({opacity: 0}, DEFAULT_DELAY, function () {
-				//notify all module from leaving
-				body.removeClass(leavingPage.key().substring(1));
-				App.modules.notify('page.leaving', {page: leavingPage});
-				
-				if ($.mobile) {
-					win.scrollTop(0);
-				}
-				
-				//Leave the current page
-				leavingPage.leave(data.leaveCurrent);
 			
-				domLeavingPage.hide();
-				enterPageAnimation();
-			});
-		};
+			App.callback(callback);
+		});
+	};
+	
+	var defaultBeginTransition = function (data, callback) {
+		var leavingPage = data.currentPage;
+		var enteringPage = data.nextPage;
 		
-		if ($.mobile) {
-			afterScroll();
-		} else {
-			$.scrollTo(0, {
-				duration : Math.min(1200, $(window).scrollTop()),
-				easing : 'easeInOutQuad',
-				onAfter : afterScroll
-			});
-		}
+		var domEnteringPage = $(enteringPage.key());
+		var domLeavingPage = $(leavingPage.key());
+		
+		beginCompleted = false;
+		loadCompleted = false;
+		dataIn = null;
+		bgTransition.fadeIn(DEFAULT_DELAY).promise().then(function () {
+			//notify all module from leaving
+			body.removeClass(leavingPage.key().substring(1));
+			App.modules.notify('page.leaving', {page: leavingPage});
+			
+			win.scrollTop(0);
+			
+			//Leave the current page
+			leavingPage.leave(data.leaveCurrent);
+		
+			domLeavingPage.hide();
+			beginCompleted = true;
+			
+			if (loadCompleted) {
+				completeAnim(dataIn);
+			}
+		});
 	};
 	
 	App.transitions.exports({
+		beginTransition: defaultBeginTransition,
 		transition: defaultTransition,
 		canAnimate: function (data) {
 			return true;
