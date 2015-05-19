@@ -39,23 +39,33 @@
 	};
 	
 	$.fn.sendClickEvent = function (options) {
+		options = options || {};
 		var t = $(this).eq(0);
-		var gaValue = t.attr('data-ga-value');
-		var gaCat = t.attr('data-ga-cat');
-		var o = $.extend({}, options, {
-			cat: !!gaCat ? gaCat : 'click',
-			event: 'click',
-			value: !!gaValue ? gaValue : t.text()
-		});
-		if (!gaValue) {
-			App.log('No ga-value found, reverting to text');
+		if (!options.action) {
+			options.action = 'click';
 		}
-		$.sendEvent(o.cat, o.event, 'click-event', o.value);
+		if (!options.label) {
+			options.label = t.text();
+		}
+		var o = $.extend({}, options, {
+			cat: t.attr('data-ga-cat'),
+			action: t.attr('data-ga-action'),
+			label: t.attr('data-ga-label'),
+			value: parseInt(t.attr('data-ga-value'), 10) || undefined
+		});
+		if (!o.cat) {
+			App.log('No ga-cat found. Cannot continue.');
+			return;
+		}
+		if (!o.label) {
+			App.log('No ga-label found. Reverting to text');
+		}
+		$.sendEvent(o.cat, o.action, o.label, o.value);
 	};
 	
 	// auto-hook
 	$(function () {
-		$('#site').on($.click, '*[data-ga-value]', function (e) {
+		$('#site').on($.click, '*[data-ga-cat]', function (e) {
 			$(this).sendClickEvent();
 		});
 	});
