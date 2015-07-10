@@ -19,8 +19,6 @@
 
 	var dataIn = null;
 	
-	var bgTransition = $('#bg-transition', body);
-	
 	var defaultTransition = function (data, callback) {
 		loadCompleted = true;
 		dataIn = data;
@@ -30,6 +28,7 @@
 	};
 	
 	var completeAnim = function (data, callback) {
+		var bgTransition = $('#bg-transition', body);
 		var leavingPage = data.currentPage;
 		var enteringPage = data.nextPage;
 		
@@ -55,6 +54,7 @@
 	};
 	
 	var defaultBeginTransition = function (data, callback) {
+		var bgTransition = $('#bg-transition', body);
 		var leavingPage = data.currentPage;
 		var enteringPage = data.nextPage;
 		
