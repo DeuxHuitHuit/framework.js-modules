@@ -41,7 +41,7 @@
 			.load(loadHandler)
 			.scroll(scrollHandler)
 			.on('orientationchange', orientationHandler);
-		if (!$.mobile) {
+		if (!$.ios) {
 			win.resize(resizeHandler);
 		}
 		doc
