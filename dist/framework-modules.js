@@ -1,4 +1,4 @@
-/*! framework.js-modules - v0.5.0 - - build  - 2015-05-19
+/*! framework.js-modules - v0.6.0 - - build  - 2015-10-20
 * https://github.com/DeuxHuitHuit/framework.js-modules
 * Copyright (c) 2015 Deux Huit Huit; Licensed MIT */
 /**
@@ -1137,7 +1137,7 @@
 	};
 	
 	var init = function () {
-		
+		$('a').blankLink();
 	};
 	
 	var actions = {
@@ -2508,7 +2508,7 @@
 			.load(loadHandler)
 			.scroll(scrollHandler)
 			.on('orientationchange', orientationHandler);
-		if (!$.mobile) {
+		if (!$.ios) {
 			win.resize(resizeHandler);
 		}
 		doc
@@ -2542,8 +2542,6 @@
 
 	var dataIn = null;
 	
-	var bgTransition = $('#bg-transition', body);
-	
 	var defaultTransition = function (data, callback) {
 		loadCompleted = true;
 		dataIn = data;
@@ -2553,6 +2551,7 @@
 	};
 	
 	var completeAnim = function (data, callback) {
+		var bgTransition = $('#bg-transition', body);
 		var leavingPage = data.currentPage;
 		var enteringPage = data.nextPage;
 		
@@ -2578,6 +2577,7 @@
 	};
 	
 	var defaultBeginTransition = function (data, callback) {
+		var bgTransition = $('#bg-transition', body);
 		var leavingPage = data.currentPage;
 		var enteringPage = data.nextPage;
 		
