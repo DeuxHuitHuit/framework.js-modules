@@ -39,7 +39,7 @@
 	};
 	
 	var init = function () {
-		
+		$('a').blankLink();
 	};
 	
 	var actions = {
