@@ -15,12 +15,7 @@
   "bugs": {
     "url": "https://github.com/DeuxHuitHuit/framework.js-modules/issues"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "http://deuxhuithuit.mit-license.org/"
-    }
-  ],
+  "license": "MIT",
   "dependencies": {},
   "keywords": [],
   "devDependencies": {
