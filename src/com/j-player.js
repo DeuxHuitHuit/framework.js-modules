@@ -53,8 +53,7 @@
 					
 					App.callback(options.onReady, [ctn]);
 				},
-				solution: 'html, flash',
-				swfPath: '//cdnjs.cloudflare.com/ajax/libs/jplayer/2.5.4/',
+				solution: 'html',
 				loop: options.loop,
 				volume: 0,
 				supplied: 'webmv, m4v, ogv',
