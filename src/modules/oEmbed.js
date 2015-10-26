@@ -91,13 +91,21 @@
 		
 		play: function (container) {
 			App.loaded(YT, function (Player) {
-				this._player.playVideo();
+				App.loaded(function () {
+					return youtubeProvider._player && youtubeProvider._player.playVideo;
+				}, function () {
+					youtubeProvider._player.playVideo();
+				});
 			});
 		},
 		
 		pause: function (container) {
 			App.loaded(YT, function (Player) {
-				this._player.pauseVideo();
+				App.loaded(function () {
+					return youtubeProvider._player && youtubeProvider._player.pauseVideo;
+				}, function () {
+					youtubeProvider._player.pauseVideo();
+				});
 			});
 		}
 	});
