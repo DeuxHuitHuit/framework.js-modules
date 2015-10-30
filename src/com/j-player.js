@@ -93,6 +93,11 @@
 				height: ctnHeight,
 				preferWidth: false
 			}, options.width / options.height);
+			
+			//Round size to avoid part of pixel
+			newSize.height = Math.ceil(newSize.height);
+			newSize.width = Math.ceil(newSize.width);
+			
 			var newPosition = $.positioning.autoPosition({
 				position: 'center',
 				left: 'left',
