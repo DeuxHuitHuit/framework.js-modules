@@ -22,8 +22,11 @@
 		if (!App.mediator._currentPage()) {
 			return true;
 		}
-			
-		if (!e.ctrlKey) {
+		
+		if (!e.metaKey) {
+			if (/^\?.+/.test(href)) {
+				href = window.location.pathname + href;
+			}
 			App.mediator.goto(href);
 			return window.pd(e);
 		}
@@ -48,15 +51,20 @@
 	};
 	
 	var init = function () {
-		// capture all click in #site: delegate to the link or in any ui-dialog (jquery.ui)
-		var sel = 'a[href^="/"]' + 
-			':not([href^="/workspace"])' +
-			':not([data-action^="full"])' +
-			':not([data-action^="toggle"])' +
-			':not([data-action^="none"])';
-		$('#site').on($.click, sel, onClickGoto);
-		
-		$('#site').on($.click, 'a[href^="/"][data-action^="toggle"]', onClickToggle);
+		var workspaceExclusion = ':not([href^="/workspace"])';
+		var dataAttrExclusions = ':not([data-action="full"])' +
+			':not([data-action="toggle"])' +
+			':not([data-action="none"])';
+		var toggleLinks = '[data-action="toggle"]';
+		var absoluteLinks = 'a[href^="/"]';
+		var queryStringLinks = 'a[href^="?"]';
+
+		// capture all click in #site
+		$('#site')
+			.on($.click, absoluteLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
+			.on($.click, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
+			.on($.click, absoluteLinks + toggleLinks, onClickToggle)
+			.on($.click, queryStringLinks + toggleLinks, onClickToggle);
 	};
 	
 	var Links = App.modules.exports('links', {
