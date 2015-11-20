@@ -23,7 +23,7 @@
 			return true;
 		}
 		
-		if (!e.metaKey) {
+		if (!e.metaKey && !e.ctrlKey) {
 			if (/^\?.+/.test(href)) {
 				href = window.location.pathname + href;
 			}
