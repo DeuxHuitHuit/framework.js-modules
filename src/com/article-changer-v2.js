@@ -53,7 +53,7 @@
 			if (!o.trackHandle) {
 				oldItem.remove();
 			}
-			App.modules.notify('articleChanger.enter');
+			App.mediator.notify('articleChanger.enter');
 		}
 	};
 	
@@ -79,8 +79,8 @@
 				var loc = document.location;
 				var cleanUrl = loc.href.substring(loc.hostname.length + loc.protocol.length + 2);
 				
-				App.modules.notify('pageLoad.end');
-				App.modules.notify('articleChanger.entering', {url : cleanUrl, data : dataLoaded});
+				App.mediator.notify('pageLoad.end');
+				App.mediator.notify('articleChanger.entering', {url : cleanUrl, data : dataLoaded});
 				
 				if (!nextPage.length) {
 					App.log({
@@ -102,7 +102,7 @@
 				
 				// LoadPage
 				if (!nextPage || !nextPage.length) {
-					App.modules.notify('pageLoad.start', {page: page});
+					App.mediator.notify('pageLoad.start', {page: page});
 					Loader.load({
 						url: loadUrl,
 						priority: 0, // now
@@ -121,11 +121,11 @@
 							});
 						},
 						error: function () {
-							App.modules.notify('article.loaderror');
-							App.modules.notify('pageLoad.end');
+							App.mediator.notify('article.loaderror');
+							App.mediator.notify('pageLoad.end');
 						},
 						giveup: function (e) {
-							App.modules.notify('pageLoad.end');
+							App.mediator.notify('pageLoad.end');
 						}
 					});
 					
