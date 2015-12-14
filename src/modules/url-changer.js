@@ -139,6 +139,8 @@
 						if (_currentPageFragment != pageFragment) {
 							App.mediator.notify('page.fragmentChanged', pageFragment);
 							_currentPageFragment = pageFragment;
+						} else {
+							App.mediator.notify('page.sameFragmentRequested', pageFragment);
 						}
 					} else {
 						_isPopingState = true;
