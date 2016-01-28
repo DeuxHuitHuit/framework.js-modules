@@ -199,7 +199,7 @@
 	var _currentStrategy = _strategies.hash;
 	
 	var _getLanguageIndex = function () {
-		return $('body').hasClass('fr') ? 0 : 1;
+		return $('body').hasClass('fr') ? 1 : 0;
 	};
 	
 	var _getNextRouteFromData = function (data) {
@@ -216,6 +216,20 @@
 			if (reelRoute.length > nextRoute.length) {
 				_currentPageFragment = reelRoute.substring(starIndex);
 				_extractQS();
+			} else {
+				//Clear fragment?
+				_currentPageFragment = '';
+				_currentQsFragment	= {};
+			}
+		} else {
+			//Keep Search and Hash has a fragment if we have a # or ? after the 
+			if (reelRoute.length > nextRoute.length) {
+				var charAfter = reelRoute[nextRoute.length];
+				
+				if (charAfter === '#' || charAfter === '?') {
+					_currentPageFragment = reelRoute.substring(nextRoute.length);
+					_extractQS();
+				}
 			} else {
 				//Clear fragment?
 				_currentPageFragment = '';
