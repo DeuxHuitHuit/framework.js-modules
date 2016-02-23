@@ -34,15 +34,35 @@
 		var addMarker = function (o) {
 			
 			var markerOption = $.extend({}, mapOptions.defaultMarkerOptions, o);
-				
+			
+			if (markerOption.iconImage) {
+				markerOption.iconImage = new google.maps.MarkerImage(
+					markerOption.iconImage.src,
+					new google.maps.Size(
+						markerOption.iconImage.size.width,
+						markerOption.iconImage.size.height
+					),
+					new google.maps.Point(
+						markerOption.iconImage.p1.x,
+						markerOption.iconImage.p1.y
+					),
+					new google.maps.Point(
+						markerOption.iconImage.p2.x,
+						markerOption.iconImage.p2.y
+					)
+				);
+			}
+			if (markerOption.position) {
+				markerOption.LatLng = new google.maps.LatLng(
+					markerOption.position.latitude,
+					markerOption.position.longitude
+				);
+			}
+			
 			var marker = new google.maps.Marker({
 				position: markerOption.LatLng,
 				map: map,
-				icon: new google.maps.MarkerImage('/workspace/assets/img/gmap-pin.png',
-					new google.maps.Size(24, 42),
-					new google.maps.Point(0, 0),
-					new google.maps.Point(12, 42)
-				),
+				icon: markerOption.iconImage,
 				shadow: markerOption.iconShadow,
 				zIndex: markerOption.zIndex
 			});
@@ -51,7 +71,6 @@
 			
 			//If we have content add the infoWindow
 			if (markerOption.content && markerOption.content.length) {
-			
 				marker['infowindow'] = new google.maps.InfoWindow(
 					{
 						content: markerOption.content
@@ -71,6 +90,15 @@
 		};
 		
 		var createMap = function () {
+			if (mapOptions.center) {
+				mapOptions.center = new google.maps.LatLng(mapOptions.center.latitude, mapOptions.center.longitude);
+			}
+			if (!!google.maps.MapTypeId[mapOptions.mapTypeId]) {
+				mapOptions.mapTypeId = google.maps.MapTypeId[mapOptions.mapTypeId];
+			}
+			else {
+				mapOptions.mapTypeId = google.maps.MapTypeId.ROADMAP;
+			}
 			map = new google.maps.Map(container.get(0), mapOptions);
 			
 			google.maps.event.addListener(map, 'bounds_changed', function () {
