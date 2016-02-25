@@ -16,7 +16,7 @@
 		
 		var defaultMapOptions = {
 			defaultMarkerOptions: {},
-			mapTypeId: google.maps.MapTypeId.ROADMAP,
+			mapTypeId: null,
 			markerAction: function () {
 				var reelPosition = new google.maps.LatLng(
 					this.getPosition().lat() + 0.005,
@@ -136,6 +136,14 @@
 			addMarker: addMarker,
 			center: function (lat, lng) {
 				map.panTo(new google.maps.LatLng(lat, lng));
+			},
+			zoom: function (value) {
+				map.setZoom(value);
+			},
+			fitBounds: function (viewport) {
+				map.fitBounds(new google.maps.LatLngBounds(
+					viewport.southwest, viewport.northeast
+				));
 			},
 			closeAllPopup: closeAllPopup
 		};
