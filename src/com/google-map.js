@@ -26,7 +26,9 @@
 				closeAllPopup();
 				this['infowindow'].open(map, this);
 				openedMarker = this;
-			}
+			},
+			beforeCreate: null,
+			afterCreate: null
 		};
 		
 		var mapOptions = $.extend({}, defaultMapOptions, o);
@@ -90,6 +92,8 @@
 		};
 		
 		var createMap = function () {
+			App.callback(mapOptions.beforeCreate, [google.maps, mapOptions, container]);
+			
 			if (mapOptions.center) {
 				mapOptions.center = new google.maps.LatLng(mapOptions.center.latitude, mapOptions.center.longitude);
 			}
@@ -105,6 +109,8 @@
 				//notify page that bounds changed
 				App.mediator.notifyCurrentPage('map.boundsChanged', map.getBounds());
 			});
+			
+			App.callback(mapOptions.afterCreate, [google.maps]);
 		};
 		
 		var googleMap = function () {
