@@ -28,9 +28,9 @@
 	};
 	
 	var fixScroll = function (value) {
-		$('.js-fix-scroll-pad').css({paddingRight: value});
-		$('.js-fix-scroll-right').css({right: value});
-		$('.js-fix-scroll-margin').css({marginRight: value});
+		$('.js-fix-scroll-pad').css({paddingRight: value || ''});
+		$('.js-fix-scroll-right').css({right: value || ''});
+		$('.js-fix-scroll-margin').css({marginRight: value || ''});
 	};
 	
 	var init = function () {
