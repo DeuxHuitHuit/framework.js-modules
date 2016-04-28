@@ -148,9 +148,11 @@
 			var timeout = 0;
 			var tick = function () {
 				clearTimeout(timeout);
-				var duration = youtubeProvider._player.getDuration();
-				var played = youtubeProvider._player.getCurrentTime();
-				App.callback(callback, [Math.max(0, (played / duration) * 100 || 0)]);
+				if (!!youtubeProvider._player) {
+					var duration = youtubeProvider._player.getDuration();
+					var played = youtubeProvider._player.getCurrentTime();
+					App.callback(callback, [Math.max(0, (played / duration) * 100 || 0)]);
+				}
 				timeout = setTimeout(tick, 2000);
 			};
 			App.loaded(YT, function (Player) {
@@ -162,8 +164,8 @@
 						else {
 							clearTimeout(timeout);
 							timeout = 0;
-		}
-	});
+						}
+					});
 				});
 			});
 		},
