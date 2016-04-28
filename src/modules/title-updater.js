@@ -51,6 +51,10 @@
 			internal : {
 				enter : onEnter
 			}
+		},
+		articleChanger: {
+			loaded: onPageLoaded,
+			enter: onEnter
 		}
 	};
 	
