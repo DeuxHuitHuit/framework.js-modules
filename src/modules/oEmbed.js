@@ -54,6 +54,15 @@
 						'&api=1&html5=1&rel=' + rel + (extra || ''));
 		},
 		
+		ready: function (container, callback) {
+			App.loaded($f, function ($f) {
+				var player = $f($('iframe', container).get(0));
+				player.addEvent('ready', function () {
+					App.callback(callback, [player]);
+				});
+			});
+		},
+		
 		play: function (container) {
 			App.loaded($f, function ($f) {
 				var player = $f($('iframe', container).get(0));
@@ -67,6 +76,26 @@
 				var player = global.$f($('iframe', container).get(0));
 				
 				player.api('pause');
+			});
+		},
+
+		progress: function (container, callback) {
+			App.loaded($f, function ($f) {
+				var player = global.$f($('iframe', container).get(0));
+				player.addEvent('playProgress', function (e) {
+					App.callback(callback, [e.percent * 100]);
+				});
+			});
+		},
+
+		finish: function (container, callback) {
+			App.loaded($f, function ($f) {
+				var player = global.$f($('iframe', container).get(0));
+				player.addEvent('finish', function () {
+					App.callback(callback, {
+						container: container
+					});
+				});
 			});
 		}
 	});
@@ -89,11 +118,19 @@
 			return iframe;
 		},
 		
+		_playerLoaded: function () {
+			return youtubeProvider._player && youtubeProvider._player.playVideo;
+		},
+		
+		ready: function (container, callback) {
+			App.loaded(YT, function (Player) {
+				App.callback(callback, [Player]);
+			});
+		},
+		
 		play: function (container) {
 			App.loaded(YT, function (Player) {
-				App.loaded(function () {
-					return youtubeProvider._player && youtubeProvider._player.playVideo;
-				}, function () {
+				App.loaded(youtubeProvider._playerLoaded, function () {
 					youtubeProvider._player.playVideo();
 				});
 			});
@@ -101,13 +138,49 @@
 		
 		pause: function (container) {
 			App.loaded(YT, function (Player) {
-				App.loaded(function () {
-					return youtubeProvider._player && youtubeProvider._player.pauseVideo;
-				}, function () {
+				App.loaded(youtubeProvider._playerLoaded, function () {
 					youtubeProvider._player.pauseVideo();
 				});
 			});
+		},
+
+		progress: function (container, callback) {
+			var timeout = 0;
+			var tick = function () {
+				clearTimeout(timeout);
+				var duration = youtubeProvider._player.getDuration();
+				var played = youtubeProvider._player.getCurrentTime();
+				App.callback(callback, [Math.max(0, (played / duration) * 100 || 0)]);
+				timeout = setTimeout(tick, 2000);
+			};
+			App.loaded(YT, function (Player) {
+				App.loaded(youtubeProvider._playerLoaded, function () {
+					youtubeProvider._player.addEventListener('onStateChange', function (newState) {
+						if (newState.data === global.YT.PlayerState.PLAYING) {
+							tick();
+						}
+						else {
+							clearTimeout(timeout);
+							timeout = 0;
 		}
+	});
+				});
+			});
+		},
+
+		finish: function (container, callback) {
+			App.loaded(YT, function (Player) {
+				App.loaded(youtubeProvider._playerLoaded, function () {
+					youtubeProvider._player.addEventListener('onStateChange', function (newState) {
+						if (newState.data === global.YT.PlayerState.ENDED) {
+							App.callback(callback, {
+								container: container
+							});
+						}
+					});
+				});
+			});
+		},
 	});
 
 	var providers = {
@@ -115,14 +188,15 @@
 		YouTube: youtubeProvider
 	};
 	
-	var loadVideo = function (key, videoContainer) {
-		var	videoId = videoContainer.data('videoId');
-		var videoProvider = providers[videoContainer.data('videoProvider')];
+	var loadVideo = function (key, data) {
+		var	videoId = data.player.data('videoId');
+		var videoProviderName = data.player.data('videoProvider');
+		var videoProvider = providers[videoProviderName];
 		
 		if (!videoProvider) {
 			App.log({args: ['Provider `%s` not found.', videoProvider], me: 'oEmbed', fx: 'warn'});
 		} else {
-			videoProvider.embed(videoContainer, videoId);
+			videoProvider.embed(data.player, videoId, data.autoplay);
 		}
 	};
 	
