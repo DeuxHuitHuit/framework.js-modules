@@ -199,7 +199,7 @@
 	var _currentStrategy = _strategies.hash;
 	
 	var _getLanguageIndex = function () {
-		return $('body').hasClass('fr') ? 1 : 0;
+		return $('body').hasClass('fr') ? 0 : 1;
 	};
 	
 	var _getNextRouteFromData = function (data) {
