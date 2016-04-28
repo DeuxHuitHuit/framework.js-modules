@@ -198,6 +198,26 @@
 		} else {
 			videoProvider.embed(data.player, videoId, data.autoplay);
 		}
+		// Track it
+		var checkpointEvent = App.components.create('checkpoint-event', {
+			category: 'Video',
+			action: 'view',
+			label: videoProviderName + ': ' + (data.player.attr('data-video-title') || videoId)
+		});
+		checkpointEvent.init();
+		videoProvider.ready(data.player, function (player) {
+			if (player) {
+				data.player.addClass('loaded');
+
+				videoProvider.progress(data.player, function (perc) {
+					checkpointEvent.track(perc);
+				});
+
+				if (!!data.finish) {
+					videoProvider.finish(data.player, data.finish);
+				}
+			}
+		});
 	};
 	
 	var playVideo = function (key, videoContainer) {
