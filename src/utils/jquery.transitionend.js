@@ -42,7 +42,7 @@
 			});
 			
 			// every selectors are on
-			if (_.every(q.selectors)) {
+			if (window._.every(q.selectors)) {
 				// remove from queue
 				queue.splice(index, 1);
 				// call callback
@@ -111,7 +111,7 @@
 						return !!~$.inArray(selector, selectors);
 					};
 					
-					localFound = _.some(q.selectors, eachCallbackSelector);
+					localFound = window._.some(q.selectors, eachCallbackSelector);
 					
 					if (localFound) {
 						// remove from queue
