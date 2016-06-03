@@ -19,9 +19,11 @@
 	var	abstractProvider = {
 		embed: function (container, id) {
 			var iAutoPlayParsed = parseInt(container.attr('data-autoplay'), 10);
+			var iLoopParsed = parseInt(container.attr('data-loop'), 10);
+			
 			var iRelatedVideo = container.attr('data-rel') === '1' ? 1 : 0;
 			var extra = container.attr('data-extra');
-			var iframe = this.getIframe(id, iAutoPlayParsed, iRelatedVideo, extra);
+			var iframe = this.getIframe(id, iAutoPlayParsed, iLoopParsed, iRelatedVideo, extra);
 			
 			iframe.attr('width', '100%');
 			iframe.attr('height', '100%');
@@ -46,18 +48,24 @@
 	};
 	
 	var vimeoProvider = $.extend({}, abstractProvider, {
-		getIframe: function (id, autoplay, rel, extra) {
+		getIframe: function (id, autoplay, loop, rel, extra) {
 			autoplay = autoplay !== undefined ? autoplay : 1;
+			loop = loop !== undefined ? loop : 1;
+			
 			return abstractProvider.getIframe()
 				.attr('src', '//player.vimeo.com/video/' + id +
-						'?autoplay=' + autoplay +
+						'?autoplay=' + autoplay + '&loop=' + loop + 
 						'&api=1&html5=1&rel=' + rel + (extra || ''));
 		},
 		
 		ready: function (container, callback) {
 			App.loaded($f, function ($f) {
 				var player = $f($('iframe', container).get(0));
+				
 				player.addEvent('ready', function () {
+					if (container.attr('data-volume')) {
+						player.api('setVolume', parseInt(container.attr('data-volume'), 10));
+					}
 					App.callback(callback, [player]);
 				});
 			});
@@ -96,6 +104,13 @@
 						container: container
 					});
 				});
+			});
+		}, 
+		
+		setVolume: function (container, value) {
+			App.loaded($f, function ($f) {
+				var player = global.$f($('iframe', container).get(0));
+				player.api('setVolume', value);
 			});
 		}
 	});
@@ -198,7 +213,7 @@
 		if (!videoProvider) {
 			App.log({args: ['Provider `%s` not found.', videoProvider], me: 'oEmbed', fx: 'warn'});
 		} else {
-			videoProvider.embed(data.player, videoId, data.autoplay);
+			videoProvider.embed(data.player, videoId, data.autoplay, data.loop);
 		}
 		// Track it
 		var checkpointEvent = App.components.create('checkpoint-event', {
@@ -211,6 +226,7 @@
 			if (player) {
 				data.player.addClass('loaded');
 
+				
 				videoProvider.progress(data.player, function (perc) {
 					checkpointEvent.track(perc);
 				});
@@ -220,6 +236,17 @@
 				}
 			}
 		});
+	};
+	
+	var setVideoVolume = function (key, data) {
+		var	videoId = data.player.data('videoId');
+		var videoProvider = providers[data.player.data('videoProvider')];
+		
+		if (!videoProvider) {
+			App.log({args: ['Provider `%s` not found.', videoProvider], me: 'oEmbed', fx: 'warn'});
+		} else {
+			videoProvider.setVolume(data.player, data.volume);
+		}
 	};
 	
 	var playVideo = function (key, videoContainer) {
@@ -268,7 +295,8 @@
 	var actions = {
 		loadVideo: loadVideo,
 		playVideo: playVideo,
-		pauseVideo: pauseVideo
+		pauseVideo: pauseVideo,
+		setVideoVolume: setVideoVolume
 	};
 	
 	var oEmbed = App.modules.exports('oEmbed', {
