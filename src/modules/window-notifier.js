@@ -36,7 +36,12 @@
 		notify('visibilitychange', e, state);
 	};
 	
+	var readyHandler = function (e) {
+		notify('ready', e);
+	};
+	
 	var init = function () {
+		$(readyHandler);
 		win
 			.load(loadHandler)
 			.scroll(scrollHandler)
