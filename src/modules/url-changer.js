@@ -206,6 +206,17 @@
 		return data.page.routes()[_getLanguageIndex()];
 	};
 	
+	var _extractQS = function () {
+		var QSIndex = _currentPageFragment.indexOf('?');
+		if (QSIndex > -1) {
+			_currentQsFragment = window.QueryStringParser.parse(
+				_currentPageFragment.substring(QSIndex)
+			);
+		} else {
+			_currentQsFragment = {};
+		}
+	};
+	
 	var _extractFragmentFromRoute = function (nextRoute, reelRoute) {
 		var	starIndex = !nextRoute ? -1 : nextRoute.indexOf('*');
 		
@@ -237,17 +248,6 @@
 			}
 		}
 		return nextRoute;
-	};
-	
-	var _extractQS = function () {
-		var QSIndex = _currentPageFragment.indexOf('?');
-		if (QSIndex > -1) {
-			_currentQsFragment = window.QueryStringParser.parse(
-				_currentPageFragment.substring(QSIndex)
-			);
-		} else {
-			_currentQsFragment = {};
-		}
 	};
 	
 	/** Module **/
