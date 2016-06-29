@@ -19,14 +19,6 @@
 
 	var dataIn = null;
 	
-	var defaultTransition = function (data, callback) {
-		loadCompleted = true;
-		dataIn = data;
-		if (beginCompleted) {
-			completeAnim(data, callback);
-		}
-	};
-	
 	var completeAnim = function (data, callback) {
 		var bgTransition = $('#bg-transition', body);
 		var leavingPage = data.currentPage;
@@ -81,6 +73,14 @@
 				completeAnim(dataIn);
 			}
 		});
+	};
+	
+	var defaultTransition = function (data, callback) {
+		loadCompleted = true;
+		dataIn = data;
+		if (beginCompleted) {
+			completeAnim(data, callback);
+		}
 	};
 	
 	App.transitions.exports({
