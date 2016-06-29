@@ -36,6 +36,29 @@
 		return ~~(i * 100) + '%';
 	};
 	
+	var progress = function (percent) {
+		clearTimeout(progressTimer);
+		if (isStarted) {
+			// increment current value
+			var incVal = currentValue + INCREMENT;
+			// use percent if greater then new incremented value
+			currentValue = Math.max(incVal, percent || currentValue);
+			// max out current value to 1
+			currentValue = Math.min(currentValue, 1);
+			// update ui
+			holder.width(p(currentValue));
+			// if we are running with the timer (not percent given)
+			// block before hitting 100%
+			if (!percent && currentValue < 1 - INCREMENT) {
+				progressTimer = setTimeout(progress, PROGRESS_DELAY);
+			}
+		}
+		App.log({
+			args: ['Progress %s %s', percent || 'timer', currentValue],
+			me: 'page-load'
+		});
+	};
+	
 	var start = function () {
 		clearTimeout(closeTimer);
 		
@@ -75,29 +98,6 @@
 		}, CLOSE_DELAY);
 		
 		App.log({args: 'End', me: 'page-load'});
-	};
-	
-	var progress = function (percent) {
-		clearTimeout(progressTimer);
-		if (isStarted) {
-			// increment current value
-			var incVal = currentValue + INCREMENT;
-			// use percent if greater then new incremented value
-			currentValue = Math.max(incVal, percent || currentValue);
-			// max out current value to 1
-			currentValue = Math.min(currentValue, 1);
-			// update ui
-			holder.width(p(currentValue));
-			// if we are running with the timer (not percent given)
-			// block before hitting 100%
-			if (!percent && currentValue < 1 - INCREMENT) {
-				progressTimer = setTimeout(progress, PROGRESS_DELAY);
-			}
-		}
-		App.log({
-			args: ['Progress %s %s', percent || 'timer', currentValue],
-			me: 'page-load'
-		});
 	};
 	
 	var loadprogress = function (key, data) {
