@@ -198,8 +198,17 @@
 	
 	var _currentStrategy = _strategies.hash;
 	
+	var langs = ['fr', 'en'];
 	var _getLanguageIndex = function () {
-		return $('body').hasClass('fr') ? 0 : 1;
+		var body  = $('body');
+		var index = 0;
+		$.each(langs, function (i, l) {
+			if (body.hasClass(l)) {
+				index = i;
+				return false;
+			}
+		});
+		return index;
 	};
 	
 	var _getNextRouteFromData = function (data) {
