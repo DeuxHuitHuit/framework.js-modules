@@ -20,9 +20,33 @@
 		App.log({args: ['%cga(' + args.join(',') + ');', 'color:navy']});
 	};
 	
+	var getGa = function () {
+		/* jshint ignore:start */
+		if (!!window.dataLayer && !!window.dataLayer.push) {
+			return function ga(gaAction, gaCat, cat, action, label, value, options) {
+				if (gaCat === 'pageview') {
+					dataLayer.push($.extend({}, cat, {
+						event: 'pageview'
+					}));
+				}
+				else if (gaCat === 'event') {
+					dataLayer.push({
+						event: cat,
+						eventAction: action,
+						eventLabel: label,
+						eventValue: value,
+						eventOptions: options
+					});
+				}
+			};
+		}
+		/* jshint ignore:end */
+		return window.ga || log;
+	};
+	
 	// ga facilitators
 	$.sendPageView = function (opts) {
-		var ga = window.ga || log;
+		var ga = getGa();
 		var defaults = {
 			page: window.location.pathname + window.location.search,
 			location: window.location.href,
@@ -39,7 +63,7 @@
 	};
 	
 	$.sendEvent = function (cat, action, label, value, options) {
-		var ga = window.ga || log;
+		var ga = getGa();
 		ga('send', 'event', cat, action, label, value, options || {nonInteraction: 1});
 	};
 	
