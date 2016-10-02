@@ -1,8 +1,8 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * css3 generators
- * 
+ *
  * Makes the use of CSS3 in javascript more easier
  */
 
@@ -41,7 +41,7 @@
 		z = intValue(z);
 		theta = !theta || $.isNumeric(theta) ? (theta || 0) + 'deg' : theta;
 		
-		var prefix = (HAS_3D ? '3d('  + x + ',' + y + ',' + z + ',' : 'Z(');
+		var prefix = (HAS_3D ? '3d(' + x + ',' + y + ',' + z + ',' : 'Z(');
 		var suffix = (HAS_3D ? ')' : ')');
 		
 		return 'rotate' + prefix + theta + suffix;

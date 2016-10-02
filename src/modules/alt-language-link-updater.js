@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  */
 (function ($, undefined) {
 	
@@ -25,7 +25,7 @@
 		if (data.data) {
 			var linkData = {};
 			
-			$(data.data).each(function (i, e) {  
+			$(data.data).each(function (i, e) {
 				if ($(e).is('link')) {
 					var t = $(e);
 					if (t.attr('hreflang')) {

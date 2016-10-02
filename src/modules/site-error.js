@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * Module Site Error
  */
 (function ($, global, undefined) {

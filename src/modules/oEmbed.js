@@ -1,9 +1,9 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * oEmbed module
  * Supports Youtube and Vimeo APIs
- * 
+ *
  * APIS for supported players
  * <!-- Vimeo - Froogaloop -->
  * <script src="//a.vimeocdn.com/js/froogaloop2.min.js"></script>
@@ -54,7 +54,7 @@
 			
 			return abstractProvider.getIframe()
 				.attr('src', '//player.vimeo.com/video/' + id +
-						'?autoplay=' + autoplay + '&loop=' + loop + 
+						'?autoplay=' + autoplay + '&loop=' + loop +
 						'&api=1&html5=1&rel=' + rel + (extra || ''));
 		},
 		
@@ -105,7 +105,7 @@
 					});
 				});
 			});
-		}, 
+		},
 		
 		setVolume: function (container, value) {
 			App.loaded($f, function ($f) {
@@ -117,13 +117,13 @@
 	
 	var youtubeProvider = $.extend({}, abstractProvider, {
 		getIframe: function (url, autoplay, rel, extra) {
-			var id = url.indexOf('v=') > 0 ? 
+			var id = url.indexOf('v=') > 0 ?
 				url.match(/v=([^\&]+)/mi)[1] : url.substring(url.lastIndexOf('/'));
 			var autoPlay = autoplay !== undefined ? autoplay : 1;
 			var iframe = abstractProvider.getIframe()
 				.attr('id', 'youtube-player-' + id)
-				.attr('src', '//www.youtube.com/embed/' + id + 
-					'?feature=oembed&autoplay=' + autoPlay + 
+				.attr('src', '//www.youtube.com/embed/' + id +
+					'?feature=oembed&autoplay=' + autoPlay +
 					'&enablejsapi=1&version=3&html5=1&rel=' + rel + (extra || ''));
 			
 			App.loaded(YT, function (Player) {
@@ -197,7 +197,7 @@
 					});
 				});
 			});
-		},
+		}
 	});
 
 	var providers = {
@@ -261,13 +261,13 @@
 	};
 
 	var pauseVideo = function (key, videoContainers) {
-		videoContainers.each(function eachVideoContainer(index, container) {
+		videoContainers.each(function eachVideoContainer (index, container) {
 			var videoContainer = $(container);
 			var videoId = videoContainer.data('videoId');
 			var videoProvider = providers[videoContainer.data('videoProvider')];
 			
-			if (!!videoProvider && 
-				!!videoId && 
+			if (!!videoProvider &&
+				!!videoId &&
 				!!videoContainer.find('iframe').length) {
 				videoProvider.pause(videoContainer);
 			}

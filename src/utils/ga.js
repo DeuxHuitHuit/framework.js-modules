@@ -23,7 +23,7 @@
 	var getGa = function () {
 		/* jshint ignore:start */
 		if (!!window.dataLayer && !!window.dataLayer.push) {
-			return function ga(gaAction, gaCat, cat, action, label, value, options) {
+			return function ga (gaAction, gaCat, cat, action, label, value, options) {
 				if (gaCat === 'pageview') {
 					dataLayer.push($.extend({}, cat, {
 						event: 'pageview'

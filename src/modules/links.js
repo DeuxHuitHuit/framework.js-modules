@@ -1,13 +1,13 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * Links modules
- * 
- * - Makes all external links added into the dom load in a new page 
+ *
+ * - Makes all external links added into the dom load in a new page
  * - Makes all internal links mapped to the mediator
  *
  * Listens to
- * 
+ *
  * - pages.loaded
  *
  */

@@ -1,11 +1,11 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * Blank link targets
  *
  * Listens to
- * 
- * - 
+ *
+ * -
  *
  */
 (function ($, undefined) {
@@ -14,13 +14,13 @@
 	
 	/**
 	 * @author Deux Huit Huit
-	 * 
+	 *
 	 * Link target : Add target blank to all outside link
 	 */
 	$.fn.extend({
 		blankLink: function () {
 			/* link target */
-			$(this).each(function _eachTarget() {
+			$(this).each(function _eachTarget () {
 				var t = $(this);
 				var href = t.attr('href');
 				

@@ -1,11 +1,11 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * Transition Modules
  *
  * Listens to
- * 
- * - 
+ *
+ * -
  *
  */
 (function ($, undefined) {
@@ -24,7 +24,7 @@
 			
 		var enterPageAnimation = function () {
 			//Notify intering page
-			App.modules.notify('page.entering', 
+			App.modules.notify('page.entering',
 				{page: enteringPage, route: data.route});
 			
 			domEnteringPage.css({opacity: 1, display: 'block'});
@@ -122,7 +122,7 @@
 	};
 	
 	var init = function () {
-		// append 
+		// append
 		$(App.root()).append($('<div id="bg-transition" ></div>'));
 	};
 	
@@ -141,7 +141,7 @@
 			defaultTransition = o.transition;
 			defaultBeginTransition = o.beginTransition;
 		} else {
-			transitionList.push(o);	
+			transitionList.push(o);
 		}
 	};
 	
