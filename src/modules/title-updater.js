@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * Title Updater
  *
  */
@@ -20,7 +20,7 @@
 	var onPageLoaded = function (key, data, e) {
 		if (data.data) {
 			var title = '';
-			$(data.data).each(function (i, e) {  
+			$(data.data).each(function (i, e) {
 				if ($(e).is('title')) {
 					title = $(e).text();
 					return true;
@@ -41,16 +41,10 @@
 	
 	var actions = {
 		pages : {
-			loaded : onPageLoaded,
-			internal : {
-				loaded : onPageLoaded
-			}
+			loaded : onPageLoaded
 		},
 		page : {
-			enter : onEnter,
-			internal : {
-				enter : onEnter
-			}
+			enter : onEnter
 		},
 		articleChanger: {
 			loaded: onPageLoaded,
