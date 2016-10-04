@@ -16,12 +16,12 @@
 	var animatingTo = '';
 	
 	var defaultTransition = function (data, callback) {
-			
+		
 		var leavingPage = data.currentPage;
 		var enteringPage = data.nextPage;
 		var domEnteringPage = $(enteringPage.key());
 		var domLeavingPage = $(leavingPage.key());
-			
+		
 		var enterPageAnimation = function () {
 			//Notify intering page
 			App.modules.notify('page.entering',
@@ -88,7 +88,6 @@
 			animation = anim.transition;
 		}
 		
-		
 		animation(data, function () {
 			animatingTo = '';
 		});
@@ -121,11 +120,6 @@
 		};
 	};
 	
-	var init = function () {
-		// append
-		$(App.root()).append($('<div id="bg-transition" ></div>'));
-	};
-	
 	var exportsTransition = function (options) {
 		var o = $.extend({
 			from : '*',
@@ -146,19 +140,14 @@
 	};
 	
 	var PageTransitionAnimation = App.modules.exports('pageTransitionAnimation', {
-		init: init,
 		actions: actions
 	});
 	
-	//register App.transitions
-	
-	/** Public Interfaces **/
+	/* Public Interfaces */
 	window.App = $.extend(window.App, {
-		
-		transitions : {
-			exports : exportsTransition
+		transitions: {
+			exports: exportsTransition
 		}
-		
 	});
 	
 })(jQuery);
