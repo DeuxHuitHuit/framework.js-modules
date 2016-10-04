@@ -13,7 +13,6 @@
 	var BUTTON_SELECTOR = '.js-merge-qs-value-button';
 	var KEY_ATTR = 'data-merge-qs-value-key';
 	var VALUE_ATTR = 'data-merge-qs-value';
-
 	
 	var buttonClicked = function (e) {
 		
@@ -23,35 +22,31 @@
 		var value = t.attr(VALUE_ATTR);
 		var qs = window.QueryStringParser.parse(document.location.search);
 		
-		//Minimal attribute needed for proceeding
-		if(key) {
-
+		// Minimal attribute needed for proceeding
+		if (!!key) {
 			//Build new qs
-			if (value) {
+			if (!!value) {
 				qs[key] = value;
 			} else {
 				qs[key] = null;
 			}
-
-			//Update Url and raise fragmentChanged
-			App.mediator.notify('page.updateQsFragment', {qs: qs, raiseFragmentChanged: true});
-
+			
+			// Update Url and raise fragmentChanged
+			App.mediator.notify('page.updateQsFragment', {
+				qs: qs,
+				raiseFragmentChanged: true
+			});
+			
 			return window.pd(e, true);
 		}
 	};
-
 	
 	var init = function () {
 		site.on($.click, BUTTON_SELECTOR, buttonClicked);
 	};
 	
-	var actions = function () {
-		return { };
-	};
-	
 	App.modules.exports('auto-merge-qs-value', {
-		init: init,
-		actions: actions
+		init: init
 	});
 	
 })(jQuery);
