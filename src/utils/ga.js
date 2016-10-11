@@ -8,7 +8,7 @@
 	'use strict';
 	
 	var lang = $('html').attr('lang');
-
+	
 	var log = function () {
 		var args = [];
 		$.each(arguments, function (i, a) {
@@ -107,9 +107,43 @@
 	
 	// auto-hook
 	$(function () {
-		$('#site').on($.click, '*[data-ga-cat]', function (e) {
+		var loc = window.location;
+		var origin = loc.origin || (loc.protocol + '//' + loc.hostname);
+		var internalLinksExclusion = ':not([href^="' + origin + '"])';
+		var externalLinks = 'a[href^="http://"]' + internalLinksExclusion +
+			', a[href^="https://"]' + internalLinksExclusion;
+		var mailtoLinks = 'a[href^="mailto:"]';
+		var telLinks = 'a[href^="tel:"]';
+		var downloadExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'xsl', 'xslx'];
+		var downloadLinks = _.map(downloadExtensions, function (ext) {
+			return 'a[href$=".' + ext + '"], ';
+		}).join('') + 'a[href$="?dl"]';
+		$('#site').on($.click, '[data-ga-cat]', function (e) {
 			$(this).sendClickEvent();
+		})
+		.on($.click, externalLinks, function (e) {
+			$(this).sendClickEvent({
+				cat: 'link-external'
+			});
+		})
+		.on($.click, downloadLinks, function (e) {
+			$(this).sendClickEvent({
+				cat: 'link-download'
+			});
+		})
+		.on($.click, mailtoLinks, function (e) {
+			$(this).sendClickEvent({
+				cat: 'link-mailto'
+			});
+		})
+		.on($.click, telLinks, function (e) {
+			$(this).sendClickEvent({
+				cat: 'link-tel'
+			});
 		});
+		if ($('body').hasClass('page-404')) {
+			$.sendEvent('erreur 404', 'erreur 404', document.referrer);
+		}
 	});
 	
 })(jQuery);
