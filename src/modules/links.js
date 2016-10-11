@@ -51,10 +51,13 @@
 	};
 	
 	var init = function () {
+		var loc = window.location;
+		var origin = loc.origin || (loc.protocol + '//' + loc.hostname);
 		var workspaceExclusion = ':not([href^="/workspace"])';
 		var dataAttrExclusions = ':not([data-action="full"])' +
 			':not([data-action="toggle"])' +
 			':not([data-action="none"])';
+		var localLinks = 'a[href^="' + origin + '"]';
 		var toggleLinks = '[data-action="toggle"]';
 		var absoluteLinks = 'a[href^="/"]';
 		var queryStringLinks = 'a[href^="?"]';
@@ -63,6 +66,7 @@
 		$('#site')
 			.on($.click, absoluteLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
 			.on($.click, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
+			.on($.click, localLinks, onClickGoto)
 			.on($.click, absoluteLinks + toggleLinks, onClickToggle)
 			.on($.click, queryStringLinks + toggleLinks, onClickToggle);
 	};
