@@ -117,7 +117,7 @@
 		var downloadExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'xsl', 'xslx'];
 		var downloadLinks = _.map(downloadExtensions, function (ext) {
 			return 'a[href$=".' + ext + '"], ';
-		}).join('') + 'a[href$="?dl"]';
+		}).join('') + 'a[href$="?dl"], a[download]';
 		$('#site').on($.click, '[data-ga-cat]', function (e) {
 			$(this).sendClickEvent();
 		})
