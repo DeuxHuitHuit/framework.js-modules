@@ -7,6 +7,8 @@
 (function ($) {
 	'use strict';
 	
+	var lang = $('html').attr('lang');
+
 	var log = function () {
 		var args = [];
 		$.each(arguments, function (i, a) {
@@ -23,20 +25,30 @@
 	var getGa = function () {
 		/* jshint ignore:start */
 		if (!!window.dataLayer && !!window.dataLayer.push) {
-			return function ga (gaAction, gaCat, cat, action, label, value, options) {
+			return function ga(gaAction, gaCat, cat, action, label, value, options, category) {
 				if (gaCat === 'pageview') {
 					dataLayer.push($.extend({}, cat, {
-						event: 'pageview'
+						event: 'pageview',
+						page: {
+							requestURI: cat.page || cat.location,
+							language: lang
+						}
 					}));
 				}
 				else if (gaCat === 'event') {
-					dataLayer.push({
+					var args = {
 						event: cat,
+						eventCategory: category,
 						eventAction: action,
 						eventLabel: label,
 						eventValue: value,
 						eventOptions: options
-					});
+					};
+					if ($.isPlainObject(cat)) {
+						args.event = undefined;
+						args = $.extend(true, {}, args, cat);
+					}
+					dataLayer.push(args);
 				}
 			};
 		}
@@ -62,9 +74,9 @@
 		ga('send', 'pageview', args);
 	};
 	
-	$.sendEvent = function (cat, action, label, value, options) {
+	$.sendEvent = function (cat, action, label, value, options, category) {
 		var ga = getGa();
-		ga('send', 'event', cat, action, label, value, options || {nonInteraction: 1});
+		ga('send', 'event', cat, action, label, value, options || {nonInteraction: 1}, category);
 	};
 	
 	$.fn.sendClickEvent = function (options) {
@@ -78,6 +90,7 @@
 		}
 		var o = $.extend({}, options, {
 			cat: t.attr('data-ga-cat') || undefined,
+			category: t.attr('data-ga-category') || undefined,
 			action: t.attr('data-ga-action') || undefined,
 			label: t.attr('data-ga-label') || undefined,
 			value: parseInt(t.attr('data-ga-value'), 10) || undefined
@@ -89,7 +102,7 @@
 		if (!o.label) {
 			App.log({fx: 'err', args: 'No ga-label found. Reverting to text'});
 		}
-		$.sendEvent(o.cat, o.action, o.label, o.value);
+		$.sendEvent(o.cat, o.action, o.label, o.value, undefined, o.category);
 	};
 	
 	// auto-hook
