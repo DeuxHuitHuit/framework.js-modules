@@ -14,6 +14,9 @@
 (function ($, undefined) {
 	
 	'use strict';
+	var loc = window.location;
+	var origin = loc.origin || (loc.protocol + '//' + loc.hostname);
+	var originRegExp = new RegExp('^' + origin, 'i');
 	
 	var onClickGoto = function (e) {
 		var t = $(this);
@@ -26,6 +29,9 @@
 		if (!e.metaKey && !e.ctrlKey) {
 			if (/^\?.+/.test(href)) {
 				href = window.location.pathname + href;
+			}
+			if (originRegExp.test(href)) {
+				href = href.replace(originRegExp, '');
 			}
 			App.mediator.goto(href);
 			return window.pd(e);
@@ -51,8 +57,6 @@
 	};
 	
 	var init = function () {
-		var loc = window.location;
-		var origin = loc.origin || (loc.protocol + '//' + loc.hostname);
 		var workspaceExclusion = ':not([href^="/workspace"])';
 		var dataAttrExclusions = ':not([data-action="full"])' +
 			':not([data-action="toggle"])' +
