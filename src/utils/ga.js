@@ -82,6 +82,7 @@
 	$.fn.sendClickEvent = function (options) {
 		options = options || {};
 		var t = $(this).eq(0);
+		var send = true;
 		if (!options.action) {
 			options.action = 'click';
 		}
@@ -102,7 +103,16 @@
 		if (!o.label) {
 			App.log({fx: 'err', args: 'No ga-label found. Reverting to text'});
 		}
-		$.sendEvent(o.cat, o.action, o.label, o.value, undefined, o.category);
+		if (!!options.event) {
+			if (!options.event._gaHandled) {
+				options.event._gaHandled = true;
+			} else {
+				send = false;
+			}
+		}
+		if (!!send) {
+			$.sendEvent(o.cat, o.action, o.label, o.value, undefined, o.category);
+		}
 	};
 	
 	// auto-hook
@@ -119,26 +129,32 @@
 			return 'a[href$=".' + ext + '"], ';
 		}).join('') + 'a[href$="?dl"], a[download]';
 		$('#site').on($.click, '[data-ga-cat]', function (e) {
-			$(this).sendClickEvent();
+			$(this).sendClickEvent({
+				event: e
+			});
 		})
 		.on($.click, externalLinks, function (e) {
 			$(this).sendClickEvent({
-				cat: 'link-external'
+				cat: 'link-external',
+				event: e
 			});
 		})
 		.on($.click, downloadLinks, function (e) {
 			$(this).sendClickEvent({
-				cat: 'link-download'
+				cat: 'link-download',
+				event: e
 			});
 		})
 		.on($.click, mailtoLinks, function (e) {
 			$(this).sendClickEvent({
-				cat: 'link-mailto'
+				cat: 'link-mailto',
+				event: e
 			});
 		})
 		.on($.click, telLinks, function (e) {
 			$(this).sendClickEvent({
-				cat: 'link-tel'
+				cat: 'link-tel',
+				event: e
 			});
 		});
 		if ($('body').hasClass('page-404')) {
