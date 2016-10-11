@@ -58,6 +58,7 @@
 			':not([data-action="toggle"])' +
 			':not([data-action="none"])';
 		var localLinks = 'a[href^="' + origin + '"]';
+		var localWorkspaceExclusion = ':not(a[href^="' + origin + '/workspace"])';
 		var toggleLinks = '[data-action="toggle"]';
 		var absoluteLinks = 'a[href^="/"]';
 		var queryStringLinks = 'a[href^="?"]';
@@ -66,7 +67,7 @@
 		$('#site')
 			.on($.click, absoluteLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
 			.on($.click, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
-			.on($.click, localLinks, onClickGoto)
+			.on($.click, localLinks + dataAttrExclusions + localWorkspaceExclusion, onClickGoto)
 			.on($.click, absoluteLinks + toggleLinks, onClickToggle)
 			.on($.click, queryStringLinks + toggleLinks, onClickToggle);
 	};
