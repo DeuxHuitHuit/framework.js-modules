@@ -13,6 +13,9 @@
 			try {
 				e = $(e);
 				var a = e.attr('href').split('#')[1];
+				if (a.indexOf('?') !== -1) {
+					a = a.split('?')[0];
+				}
 				if (a) {
 					var j,c,s='';
 					var r=parseInt(a.substr(0,2), 16);
