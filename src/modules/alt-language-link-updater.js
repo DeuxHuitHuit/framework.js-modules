@@ -10,14 +10,12 @@
 	var linkList = {};
 	
 	var init = function () {
-		
 		//Create initial value
 		var data = {};
 		$('link[rel=alternate][hreflang]', document).each(function () {
 			var t = $(this);
 			data[t.attr('hreflang')] = t.attr('href');
 		});
-	
 		linkList[document.location.pathname] = data;
 	};
 	
@@ -36,13 +34,16 @@
 					return true;
 				}
 			});
+			// remove query string
+			if (data.url.indexOf('?') !== -1) {
+				data.url = data.url.split('?')[0];
+			}
 			linkList[data.url] = linkData;
 		}
 	};
 	
 	var onEnter = function (key, data, e) {
 		if (linkList[document.location.pathname]) {
-			
 			//Update links
 			$(linkSelector).each(function () {
 				var t = $(this);
@@ -56,11 +57,11 @@
 	};
 	
 	var actions = {
-		pages : {
-			loaded : onPageLoaded
+		pages: {
+			loaded: onPageLoaded
 		},
-		page : {
-			enter : onEnter
+		page: {
+			enter: onEnter
 		},
 		articleChanger: {
 			loaded: onPageLoaded,
@@ -70,7 +71,7 @@
 	
 	var AltLanguageLinkUpdater = App.modules.exports('altLanguageLinkUpdater', {
 		init: init,
-		actions : function () {
+		actions: function () {
 			return actions;
 		}
 	});
