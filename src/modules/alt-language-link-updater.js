@@ -34,11 +34,13 @@
 					return true;
 				}
 			});
+			// add complete url
+			linkList[data.url] = linkData;
 			// remove query string
 			if (data.url.indexOf('?') !== -1) {
-				data.url = data.url.split('?')[0];
+				var url = data.url.split('?')[0];
+				linkList[url] = linkData;
 			}
-			linkList[data.url] = linkData;
 		}
 	};
 	
