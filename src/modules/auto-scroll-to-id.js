@@ -39,11 +39,9 @@
 				mobileHA: false,
 				container: scrollCtn
 			});
+			t.sendClickEvent({cat: 'Scroll to top'});
+			return window.pd(e);
 		}
-		
-		t.sendClickEvent();
-		
-		return window.pd(e);
 	};
 	
 	var init = function () {
