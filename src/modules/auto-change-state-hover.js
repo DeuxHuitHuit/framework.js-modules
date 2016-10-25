@@ -7,11 +7,10 @@
 	'use strict';
 	var win = $(window);
 	var site = $('#site');
-	var BUTTON_SELECTOR = '.js-change-state-click';
-	var BUTTON_TARGET_ATTR = 'data-change-state-click-target';
-	var BUTTON_STATE_ATTR = 'data-change-state-click';
-	var BUTTON_ACTION_ATTR = 'data-change-state-action';
-	
+	var BUTTON_SELECTOR = '.js-change-state-hover';
+	var BUTTON_STATE_ATTR = 'data-change-state-hover';
+	var BUTTON_TARGET_ATTR = 'data-change-state-hover-target';
+
 	var findTargetItemIfAvailable = function (item, target) {
 		//Find target if present
 		if (target) {
@@ -21,17 +20,16 @@
 		}
 	};
 
-	var buttonClicked = function (e) {
+	var mouseEnterLeave = function (e) {
 		var t = $(this);
 
 		var target = t.attr(BUTTON_TARGET_ATTR);
 		var state = t.attr(BUTTON_STATE_ATTR);
-		var action = t.attr(BUTTON_ACTION_ATTR);
 
 		var item = t;
 
 		//Valid needed info
-		if (state && action) {
+		if (state) {
 
 			item = findTargetItemIfAvailable(item, target);
 
@@ -39,7 +37,7 @@
 			App.modules.notify('changeState.update', {
 				item: item,
 				state: state,
-				action: action
+				action: 'toggle'
 			});
 		}
 
@@ -48,10 +46,11 @@
 
 	var init = function () {
 		//Attach click handler
-		site.on('click', BUTTON_SELECTOR, buttonClicked);
+		site.on('mouseenter', BUTTON_SELECTOR, mouseEnterLeave);
+		site.on('mouseleave', BUTTON_SELECTOR, mouseEnterLeave);
 	};
 	
-	App.modules.exports('auto-change-state-click', {
+	App.modules.exports('auto-change-state-on-hover', {
 		init: init
 	});
 	
