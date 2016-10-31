@@ -74,10 +74,12 @@
 		ga('send', 'pageview', args);
 	};
 	
+	/* jshint maxparams:6 */
 	$.sendEvent = function (cat, action, label, value, options, category) {
 		var ga = getGa();
 		ga('send', 'event', cat, action, label, value, options || {nonInteraction: 1}, category);
 	};
+	/* jshint maxparams:5 */
 	
 	$.fn.sendClickEvent = function (options) {
 		options = options || {};
