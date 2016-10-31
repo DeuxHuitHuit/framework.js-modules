@@ -33,6 +33,9 @@
 			if (originRegExp.test(href)) {
 				href = href.replace(originRegExp, '');
 			}
+
+			App.mediator.notify('links.gotoClicked', {item: t, url: href});
+
 			App.mediator.goto(href);
 			return window.pd(e);
 		}
@@ -46,6 +49,12 @@
 		if (!App.mediator._currentPage()) {
 			return true;
 		}
+		
+		App.mediator.notify('links.toggleClicked', {
+			item: t,
+			url: href,
+			fallback: fallback
+		});
 		
 		App.mediator.toggle(href, fallback);
 		
