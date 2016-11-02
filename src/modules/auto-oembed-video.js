@@ -33,6 +33,19 @@
 		
 	};
 	
+	var loadPageVideo = function () {
+		var p = getPage();
+		
+		p.find('.js-auto-oembed-video-ctn').each(function () {
+			var t = $(this);
+			var vPlayer = t.find('.js-auto-oembed-video-player');
+			
+			App.modules.notify('loadVideo', {
+				player: vPlayer
+			});
+		});
+	};
+	
 	var onPageEnter = function () {
 		if (!isFirstLoad && $.mobile) {
 			loadPageVideo();
@@ -57,19 +70,6 @@
 			loadPageVideo();
 		}
 		
-	};
-	
-	var loadPageVideo = function () {
-		var p = getPage();
-		
-		p.find('.js-auto-oembed-video-ctn').each(function () {
-			var t = $(this);
-			var vPlayer = t.find('.js-auto-oembed-video-player');
-			
-			App.modules.notify('loadVideo', {
-				player: vPlayer
-			});
-		});
 	};
 	
 	var init = function () {

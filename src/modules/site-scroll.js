@@ -16,6 +16,12 @@
 	var win = $(window);
 	var html = $('html');
 	
+	var fixScroll = function (value) {
+		$('.js-fix-scroll-pad').css({paddingRight: value || ''});
+		$('.js-fix-scroll-right').css({right: value || ''});
+		$('.js-fix-scroll-margin').css({marginRight: value || ''});
+	};
+	
 	var addScroll = function () {
 		html.removeClass('no-scroll');
 		fixScroll(0);
@@ -25,12 +31,6 @@
 		var x = win.width();
 		html.addClass('no-scroll');
 		fixScroll(win.width() - x);
-	};
-	
-	var fixScroll = function (value) {
-		$('.js-fix-scroll-pad').css({paddingRight: value || ''});
-		$('.js-fix-scroll-right').css({right: value || ''});
-		$('.js-fix-scroll-margin').css({marginRight: value || ''});
 	};
 	
 	var init = function () {

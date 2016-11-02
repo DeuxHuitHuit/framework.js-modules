@@ -57,7 +57,7 @@
 	var onPageLeave = function (key, data) {
 		if (!!data.canRemove) {
 			page.find(AUTO_VIDEO_SELECTOR, function () {
-				t.removeClass('is-loaded');
+				$(this).removeClass('is-loaded');
 			});
 
 			$.each(pageVideos, function () {
