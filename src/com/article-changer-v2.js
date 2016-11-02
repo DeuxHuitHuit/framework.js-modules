@@ -16,7 +16,9 @@
 				next.fadeTo(500, 1);
 				o.articleEnter(current, next, o);
 				setTimeout(function () {
-					App.mediator.notify('articleChanger.entering');
+					App.mediator.notify('articleChanger.entering', {
+						article: next
+					});
 				}, 100);
 			});
 		};
@@ -53,7 +55,9 @@
 			if (!o.trackHandle) {
 				oldItem.remove();
 			}
-			App.mediator.notify('articleChanger.enter');
+			App.mediator.notify('articleChanger.enter', {
+				article: newItem
+			});
 		}
 	};
 	
@@ -80,7 +84,10 @@
 				var cleanUrl = loc.href.substring(loc.hostname.length + loc.protocol.length + 2);
 				
 				App.mediator.notify('pageLoad.end');
-				App.mediator.notify('articleChanger.entering', {url : cleanUrl, data : dataLoaded});
+				App.mediator.notify('articleChanger.loaded', {
+					url: cleanUrl,
+					data: dataLoaded
+				});
 				
 				if (!nextPage.length) {
 					App.log({
