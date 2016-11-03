@@ -39,7 +39,10 @@
 				mobileHA: false,
 				container: scrollCtn
 			});
-			t.sendClickEvent({cat: 'Scroll to top'});
+			t.sendClickEvent({
+				cat: t.attr('data-ga-cat') || 'Scroll to top',
+				event: e
+			});
 			return window.pd(e);
 		}
 	};
