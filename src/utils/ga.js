@@ -28,7 +28,7 @@
 			return function ga(gaAction, gaCat, cat, action, label, value, options, category) {
 				if (gaCat === 'pageview') {
 					dataLayer.push($.extend({}, cat, {
-						event: 'pageview',
+						event: gaCat,
 						page: {
 							requestURI: cat.page || cat.location,
 							language: lang
@@ -37,16 +37,17 @@
 				}
 				else if (gaCat === 'event') {
 					var args = {
-						event: cat,
-						eventCategory: category,
+						event: gaCat,
+						eventCategory: cat || category,
 						eventAction: action,
 						eventLabel: label,
 						eventValue: value,
 						eventOptions: options
 					};
 					if ($.isPlainObject(cat)) {
-						args.event = undefined;
 						args = $.extend(true, {}, args, cat);
+						args.eventCategory = args.eventCategory || args.event;
+						args.event = gaCat;
 					}
 					dataLayer.push(args);
 				}
