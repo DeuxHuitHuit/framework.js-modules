@@ -14,7 +14,8 @@
 		onTimeUpdate: $.noop,
 		onCanplay: $.noop,
 		onPlaying: $.noop,
-		isVideoResized: true
+		resizable: true,
+		onLoaded: $.noop
 	};
 
 	// jQuery fun
@@ -59,6 +60,11 @@
 		var onPlaying = function (e) {
 			App.callback(o.onPlaying, [o.ctn, o.video]);
 		};
+		
+		var onLoaded = function (e) {
+			resizeVideo();
+			App.callback(o.onLoaded, [o.ctn, o.video]);
+		};
 
 
 		// METHODS
@@ -79,7 +85,7 @@
 		};
 
 		var resizeVideo = function () {
-			if (!!o.isVideoResized) {
+			if (!!o.resizable) {
 				var ref = !!o.video.closest(o.resizeContainerSelector).length ? 
 					o.video.closest(o.resizeContainerSelector) : o.ctn;
 				var refW = ref.width();
@@ -127,10 +133,8 @@
 			// attach events
 			o.video.on('timeupdate', onTimeUpdate)
 				.on('canplay', onCanplay)
-				.on('playing', onPlaying);
-
-			// trigger first resize
-			resizeVideo();
+				.on('playing', onPlaying)
+				.on('loadedmetadata', onLoaded);
 		};
 		
 		return {
