@@ -152,6 +152,12 @@
 			player.jPlayer('stop');
 		};
 		
+		var setVolume = function(playerCtn, volume) {
+			var player = playerCtn.find(options.playerSelector);
+			
+			player.jPlayer('volume', volume);
+		};
+		
 		//_container délimite ou je veux écouté mes évenement 
 		//(page ou site, ce qui a été spécifier lors du init)
 		var init = function (_container) {
@@ -168,7 +174,8 @@
 			pauseVideo: pauseVideo,
 			stopVideo: stopVideo,
 			resizeVideo: resizeVideo,
-			resizeAllVideo: resizeAllVideo
+			resizeAllVideo: resizeAllVideo,
+			setVolume: setVolume
 		};
 	});
 	
