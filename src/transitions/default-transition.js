@@ -27,6 +27,11 @@
 		var domEnteringPage = $(enteringPage.key());
 		var domLeavingPage = $(leavingPage.key());
 		
+		//Leave the current page
+		leavingPage.leave(data.leaveCurrent, {
+			canRemove: true
+		});
+		
 		body.addClass(enteringPage.key().substring(1));
 		//Notify intering page
 		App.modules.notify('page.entering', {page: enteringPage, route: data.route});
@@ -59,12 +64,12 @@
 		bgTransition.fadeIn(DEFAULT_DELAY).promise().then(function () {
 			//notify all module from leaving
 			body.removeClass(leavingPage.key().substring(1));
-			App.modules.notify('page.leaving', {page: leavingPage});
+			App.modules.notify('page.leaving', {
+				page: leavingPage,
+				canRemove: true
+			});
 			
 			win.scrollTop(0);
-			
-			//Leave the current page
-			leavingPage.leave(data.leaveCurrent);
 		
 			domLeavingPage.hide();
 			beginCompleted = true;
