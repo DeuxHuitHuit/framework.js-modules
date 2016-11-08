@@ -24,7 +24,7 @@
 		return !p || $.isNumeric(p) ? ~~(p || 0) + 'px' : p;
 	};
 	
-	var _getTranslation = function (x, y, z) {
+	var getTranslation = function (x, y, z) {
 		x = pixelValue(x);
 		y = pixelValue(y);
 		z = pixelValue(z);
@@ -35,7 +35,7 @@
 		return 'translate' + prefix + x + ',' + y + suffix;
 	};
 	
-	var _getRotation = function (x, y, z, theta) {
+	var getRotation = function (x, y, z, theta) {
 		x = intValue(x);
 		y = intValue(y);
 		z = intValue(z);
@@ -48,8 +48,8 @@
 	};
 	
 	global.CSS3 = {
-		translate: _getTranslation,
-		rotate: _getRotation,
+		translate: getTranslation,
+		rotate: getRotation,
 		prefix: function (key, value) {
 			var c = {};
 			c[key] = value;
