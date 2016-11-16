@@ -21,6 +21,12 @@
 		|		|- NAV BTNS: .js-auto-flickity-nav-btn
 		
 		
+		
+		Requirements:
+		
+		"https://cdnjs.cloudflare.com/ajax/libs/flickity/1.1.2/flickity.pkgd.min.js"
+		
+		
 		Notes:
 		
 		Flickity wont be activated if only one cell(o.cellSelector) is
