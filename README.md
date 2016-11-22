@@ -6,7 +6,7 @@
 
 Collections of files we frequently use with our framework.
 
-Files are seperated into groups:
+Files are separated into groups:
 
 ### Modules
 
