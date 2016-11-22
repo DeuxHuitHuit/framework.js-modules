@@ -1,4 +1,4 @@
-/*! framework.js-modules - v1.0.0 - build 332 - 2016-11-22
+/*! framework.js-modules - v1.0.0 - build 341 - 2016-11-22
  * https://github.com/DeuxHuitHuit/framework.js-modules
  * Copyright (c) 2016 Deux Huit Huit (https://deuxhuithuit.com/);
  * MIT *//**
@@ -64,7 +64,7 @@
 		}
 	};
 	
-	App.components.exports('articleChanger', function _articleChanger () {
+	App.components.exports('articleChanger', function _articleChanger() {
 		var o;
 		var page;
 		var articleCtn;
@@ -213,7 +213,7 @@
 		}
 	};
 	
-	App.components.exports('articleChanger', function _articleChanger () {
+	App.components.exports('articleChanger', function _articleChanger() {
 		
 		var o;
 		var page;
@@ -435,7 +435,7 @@
 		}
 	};
 	
-	App.components.exports('form-field', function _formField (options) {
+	App.components.exports('form-field', function _formField(options) {
 		var ctn;
 		var input;
 		var error;
@@ -505,7 +505,7 @@
 			ctn.empty();
 			if (!!file && !!w.FileReader) {
 				var reader = new w.FileReader();
-				reader.onload = function readerLoaded (event) {
+				reader.onload = function readerLoaded(event) {
 					var r = event.target.result;
 					if (!!r) {
 						var img = $('<img />')
@@ -719,7 +719,7 @@
 		}
 	};
 	
-	App.components.exports('form', function _form (options) {
+	App.components.exports('form', function _form(options) {
 		var ctn;
 		var validator;
 		var fields = [];
@@ -1653,7 +1653,7 @@
 	}
 	
 	/* Time Ago */
-	App.components.exports('timeAgo', function _searchBar () {
+	App.components.exports('timeAgo', function _searchBar() {
 		
 		var page;
 		var NB_JOURS = 30 * 24 * 60 * 60 * 1000;
@@ -3379,7 +3379,7 @@
 	$.fn.extend({
 		blankLink: function () {
 			/* link target */
-			$(this).each(function _eachTarget() {
+			$(this).each(function _eachTarget () {
 				var t = $(this);
 				var href = t.attr('href');
 				
@@ -5675,7 +5675,7 @@
 	var getGa = function () {
 		/* jshint ignore:start */
 		if (!!window.dataLayer && !!window.dataLayer.push) {
-			return function ga (gaAction, gaCat, cat, action, label, value, options, category) {
+			return function ga(gaAction, gaCat, cat, action, label, value, options, category) {
 				if (gaCat === 'pageview') {
 					dataLayer.push($.extend({}, cat, {
 						event: gaCat,
@@ -5877,13 +5877,13 @@
 				}
 			};
 			
-			elem.on(options.click, function elemClick (e) {
+			elem.on(options.click, function elemClick(e) {
 				showMenu();
 				
 				return window.pd(e, true);
 			});
 			
-			options.items.on(options.click, function itemClick (e) {
+			options.items.on(options.click, function itemClick(e) {
 				var t = $(this);
 				options.items.removeClass(options.selectedClass);
 				t.addClass(options.selectedClass);
@@ -5902,7 +5902,7 @@
 				//return window.pd(e, true);
 			});
 			
-			options.background.on(options.click, function bgClick (e) {
+			options.background.on(options.click, function bgClick(e) {
 				hideMenu();
 				
 				return window.pd(e, true);
@@ -5957,7 +5957,7 @@
 	
 	_forEachSelectorsInQueue = function (fn) {
 		if (!!queue.length) {
-			$.each(queue, function eachRemoveFromQueue(index, q) {
+			$.each(queue, function eachRemoveFromQueue (index, q) {
 				// check q since it may be undefined
 				// when the array removes it
 				if (!!q) {
@@ -5977,9 +5977,9 @@
 	$('body').on(transitionEndEvent, function (e) {
 		var target = $(e.target);
 		
-		_forEachSelectorsInQueue(function eachInQueue(q, index) {
+		_forEachSelectorsInQueue(function eachInQueue (q, index) {
 			
-			$.each(q.selectors, function eachCallbackSelector(selector, value) {
+			$.each(q.selectors, function eachCallbackSelector (selector, value) {
 				q.selectors[selector] = value || target.is(selector);
 			});
 			
@@ -6044,7 +6044,7 @@
 				selectors = [selectors];
 			}
 			
-			_forEachSelectorsInQueue(function eachInQueue(q, index) {
+			_forEachSelectorsInQueue(function eachInQueue (q, index) {
 				var localFound = false;
 				
 				if (!!q && !!q.selectors) {
@@ -6085,7 +6085,7 @@
 			
 			t.addClass(class1);
 			
-			timer = setTimeout(function addClassesTimer(class2, callback, selectors) {
+			timer = setTimeout(function addClassesTimer (class2, callback, selectors) {
 				// if class1 is still present
 				if (t.hasClass(class1)) {
 					if ($.isFunction(callback)) {
@@ -6107,7 +6107,7 @@
 		selectors = selectors || t.selector;
 		return t.each(function (index, element) {
 			var t = $(element);
-			t.transitionEnd(function tEnd() {
+			t.transitionEnd(function tEnd () {
 				t.removeClass(class1);
 				if ($.isFunction(callback)) {
 					callback();
