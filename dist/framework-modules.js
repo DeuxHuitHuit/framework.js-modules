@@ -1,4 +1,4 @@
-/*! framework.js-modules - v1.0.0 - build 341 - 2016-11-22
+/*! framework.js-modules - v1.0.0 - build 347 - 2016-11-22
  * https://github.com/DeuxHuitHuit/framework.js-modules
  * Copyright (c) 2016 Deux Huit Huit (https://deuxhuithuit.com/);
  * MIT *//**
@@ -64,14 +64,14 @@
 		}
 	};
 	
-	App.components.exports('articleChanger', function _articleChanger() {
+	App.components.exports('articleChanger', function articleChanger () {
 		var o;
 		var page;
 		var articleCtn;
 		var currentPageHandle;
 		
-		var init = function (_page, options) {
-			page = _page;
+		var init = function (p, options) {
+			page = p;
 			o = $.extend({}, defOptions, options);
 			articleCtn = $(o.containerSelector, page);
 			currentPageHandle = o.startPageHandle;
@@ -148,11 +148,11 @@
 		};
 		
 		return {
-			init : init,
-			clear : function () {
+			init: init,
+			clear: function () {
 				currentPageHandle = '';
 			},
-			navigateTo : navigateTo
+			navigateTo: navigateTo
 		};
 	
 	});
@@ -213,15 +213,14 @@
 		}
 	};
 	
-	App.components.exports('articleChanger', function _articleChanger() {
-		
+	App.components.exports('articleChanger', function articleChanger () {
 		var o;
 		var page;
 		var articleCtn;
 		var currentPageHandle;
 		
-		var init = function (_page, options) {
-			page = _page;
+		var init = function (p, options) {
+			page = p;
 			o = $.extend({}, defOptions, options);
 			articleCtn = $(o.containerSelector, page);
 		};
@@ -292,11 +291,11 @@
 		};
 		
 		return {
-			init : init,
-			clear : function () {
+			init: init,
+			clear: function () {
 				currentPageHandle = '';
 			},
-			navigateTo : navigateTo
+			navigateTo: navigateTo
 		};
 	
 	});
@@ -435,7 +434,7 @@
 		}
 	};
 	
-	App.components.exports('form-field', function _formField(options) {
+	App.components.exports('form-field', function formField (options) {
 		var ctn;
 		var input;
 		var error;
@@ -505,7 +504,7 @@
 			ctn.empty();
 			if (!!file && !!w.FileReader) {
 				var reader = new w.FileReader();
-				reader.onload = function readerLoaded(event) {
+				reader.onload = function readerLoaded (event) {
 					var r = event.target.result;
 					if (!!r) {
 						var img = $('<img />')
@@ -719,7 +718,7 @@
 		}
 	};
 	
-	App.components.exports('form', function _form(options) {
+	App.components.exports('form', function form (options) {
 		var ctn;
 		var validator;
 		var fields = [];
@@ -797,7 +796,7 @@
 			submitting(isSubmitting);
 			
 			window.Loader.load({
-				url : ctn.attr('action'),
+				url: ctn.attr('action'),
 				type: ctn.attr('method') || 'POST',
 				data: data,
 				processData: processData,
@@ -1413,7 +1412,7 @@
 			container.append(iframe);
 			return iframe;
 		},
-		getIframe : function (id) {
+		getIframe: function (id) {
 			return $('<iframe allowfullscreen="" />');
 		},
 		getTemplateContent: function (container) {
@@ -1636,30 +1635,30 @@
 	if ($('html').attr('lang') == 'fr') {
 		jQuery.timeago.settings.strings = {
 			// environ ~= about, it's optional
-			prefixAgo : 'Publié il y a',
-			prefixFromNow : 'd\'ici',
-			seconds : 'moins d\'une minute',
-			minute : 'environ une minute',
-			minutes : 'environ %d minutes',
-			hour : 'une heure',
-			hours : '%d heures',
-			day : 'un jour',
-			days : '%d jours',
-			month : 'un mois',
-			months : '%d mois',
-			year : 'un an',
-			years : '%d ans'
+			prefixAgo: 'Publié il y a',
+			prefixFromNow: 'd\'ici',
+			seconds: 'moins d\'une minute',
+			minute: 'environ une minute',
+			minutes: 'environ %d minutes',
+			hour: 'une heure',
+			hours: '%d heures',
+			day: 'un jour',
+			days: '%d jours',
+			month: 'un mois',
+			months: '%d mois',
+			year: 'un an',
+			years: '%d ans'
 		};
 	}
 	
 	/* Time Ago */
-	App.components.exports('timeAgo', function _searchBar() {
+	App.components.exports('timeAgo', function timeAgo () {
 		
 		var page;
 		var NB_JOURS = 30 * 24 * 60 * 60 * 1000;
 		
-		var init = function (_page) {
-			page = _page;
+		var init = function (p) {
+			page = p;
 			$('time.js-time-ago').each(function (i, e) {
 				var t = $(this);
 				var d = new Date(t.attr('datetime'));
@@ -1670,7 +1669,7 @@
 		};
 		
 		return {
-			init : init
+			init: init
 		};
 	
 	});
@@ -2762,11 +2761,11 @@
 	};
 	
 	var platforms = {
-		'all': true,
-		'desktop': !$.mobile,
-		'tablette': $.tablette,
-		'mobile': $.mobile,
-		'phone': $.phone
+		all: true,
+		desktop: !$.mobile,
+		tablette: $.tablette,
+		mobile: $.mobile,
+		phone: $.phone
 	};
 		
 	var getOffsetTotal = function (itemsArray) {
@@ -2987,7 +2986,7 @@
 	
 	App.modules.exports('autoShareThis', {
 		init: function () {},
-		actions : function () {
+		actions: function () {
 			return actions;
 		}
 	});
@@ -3379,7 +3378,7 @@
 	$.fn.extend({
 		blankLink: function () {
 			/* link target */
-			$(this).each(function _eachTarget () {
+			$(this).each(function eachTarget () {
 				var t = $(this);
 				var href = t.attr('href');
 				
@@ -3403,7 +3402,7 @@
 	
 	var actions = {
 		page: {
-			enter : onPageEnter
+			enter: onPageEnter
 		}
 	};
 	
@@ -3758,7 +3757,7 @@
 	};
 	
 	var FBParser = App.modules.exports('FB', {
-		actions : actions
+		actions: actions
 	});
 	
 })(jQuery);
@@ -4491,7 +4490,7 @@
 	
 	var PageLoad = App.modules.exports('page-load', {
 		init: init,
-		actions : actions
+		actions: actions
 	});
 	
 })(jQuery);
@@ -4520,7 +4519,7 @@
 	};
 	
 	var RouteNotFound = App.modules.exports('route-not-found', {
-		actions : actions
+		actions: actions
 	});
 	
 })(jQuery);
@@ -4566,14 +4565,14 @@
 	};
 	
 	var actions = {
-		shareThis : {
-			applyButton : onApplyButton
+		shareThis: {
+			applyButton: onApplyButton
 		}
 	};
 	
 	var Menu = App.modules.exports('shareThis', {
 		init: init,
-		actions : function () {
+		actions: function () {
 			return actions;
 		}
 	});
@@ -4776,11 +4775,11 @@
 	};
 	
 	var actions = {
-		pages : {
-			loaded : onPageLoaded
+		pages: {
+			loaded: onPageLoaded
 		},
-		page : {
-			enter : onEnter
+		page: {
+			enter: onEnter
 		},
 		articleChanger: {
 			loaded: onPageLoaded,
@@ -4790,7 +4789,7 @@
 	
 	var TitleUpdater = App.modules.exports('titleUpdater', {
 		init: init,
-		actions : function () {
+		actions: function () {
 			return actions;
 		}
 	});
@@ -4822,8 +4821,8 @@
 	
 	var actions = function () {
 		return {
-			page : {
-				toggleNoPreviousUrl : onToggleNoPreviousUrl
+			page: {
+				toggleNoPreviousUrl: onToggleNoPreviousUrl
 			}
 		};
 	};
@@ -4943,11 +4942,11 @@
 				requestPageTransition: onRequestPageTransition,
 				requestBeginPageTransition: onRequestBeginPageTransition
 			},
-			pageTransitionAnimation : {
-				getTargetPage : function (key, data, e) {
+			pageTransitionAnimation: {
+				getTargetPage: function (key, data, e) {
 					if (!data) {
 						data = {
-							result : {}
+							result: {}
 						};
 					}
 					if (!data.result) {
@@ -4963,11 +4962,11 @@
 	
 	var exportsTransition = function (options) {
 		var o = $.extend({
-			from : '*',
-			to : '*',
+			from: '*',
+			to: '*',
 			beginTransition: defaultBeginTransition,
-			transition : defaultTransition,
-			canAnimate : function () {
+			transition: defaultTransition,
+			canAnimate: function () {
 				return true;
 			}
 		}, options);
@@ -5287,7 +5286,7 @@
 				updateQsFragment: onUpdateQsFragment
 			},
 			pages: {
-				navigateToCurrent : onNavigateToCurrent
+				navigateToCurrent: onNavigateToCurrent
 			},
 			url: {
 				getUrl: getCurrentUrl,
@@ -5299,7 +5298,7 @@
 	
 	var urlChanger = App.modules.exports('urlChanger', {
 		init: init,
-		actions : actions
+		actions: actions
 	});
 	
 })(jQuery);
@@ -5675,7 +5674,7 @@
 	var getGa = function () {
 		/* jshint ignore:start */
 		if (!!window.dataLayer && !!window.dataLayer.push) {
-			return function ga(gaAction, gaCat, cat, action, label, value, options, category) {
+			return function ga (gaAction, gaCat, cat, action, label, value, options, category) {
 				if (gaCat === 'pageview') {
 					dataLayer.push($.extend({}, cat, {
 						event: gaCat,
@@ -5757,8 +5756,8 @@
 			App.log({fx: 'err', args: 'No ga-label found. Reverting to text'});
 		}
 		if (!!options.event) {
-			if (!options.event._gaHandled) {
-				options.event._gaHandled = true;
+			if (!options.event.gaHandled) {
+				options.event.gaHandled = true;
 			} else {
 				send = false;
 			}
@@ -5877,13 +5876,13 @@
 				}
 			};
 			
-			elem.on(options.click, function elemClick(e) {
+			elem.on(options.click, function elemClick (e) {
 				showMenu();
 				
 				return window.pd(e, true);
 			});
 			
-			options.items.on(options.click, function itemClick(e) {
+			options.items.on(options.click, function itemClick (e) {
 				var t = $(this);
 				options.items.removeClass(options.selectedClass);
 				t.addClass(options.selectedClass);
@@ -5902,7 +5901,7 @@
 				//return window.pd(e, true);
 			});
 			
-			options.background.on(options.click, function bgClick(e) {
+			options.background.on(options.click, function bgClick (e) {
 				hideMenu();
 				
 				return window.pd(e, true);
@@ -5951,11 +5950,11 @@
 	'use strict';
 	
 	var transitionEndEvent = 'transitionend ' +
-		'webkitTransitionEnd oTransitionEnd mozTransitionEnd MSTransitionEnd',
-	addClassTimer = 'add-class-timer',
-	queue = [],
+		'webkitTransitionEnd oTransitionEnd mozTransitionEnd MSTransitionEnd';
+	var addClassTimer = 'add-class-timer';
+	var queue = [];
 	
-	_forEachSelectorsInQueue = function (fn) {
+	var forEachSelectorsInQueue = function (fn) {
 		if (!!queue.length) {
 			$.each(queue, function eachRemoveFromQueue (index, q) {
 				// check q since it may be undefined
@@ -5977,7 +5976,7 @@
 	$('body').on(transitionEndEvent, function (e) {
 		var target = $(e.target);
 		
-		_forEachSelectorsInQueue(function eachInQueue (q, index) {
+		forEachSelectorsInQueue(function eachInQueue (q, index) {
 			
 			$.each(q.selectors, function eachCallbackSelector (selector, value) {
 				q.selectors[selector] = value || target.is(selector);
@@ -6044,7 +6043,7 @@
 				selectors = [selectors];
 			}
 			
-			_forEachSelectorsInQueue(function eachInQueue (q, index) {
+			forEachSelectorsInQueue(function eachInQueue (q, index) {
 				var localFound = false;
 				
 				if (!!q && !!q.selectors) {
