@@ -130,7 +130,7 @@ module.exports = function fxGruntConfig(grunt) {
 				options: {
 					//jsLintXML: 'report.xml', // create XML JSLint-like report
 					errorsOnly: false, // show only maintainability errors
-					cyclomatic: 10,
+					cyclomatic: 14,
 					halstead: 25,
 					maintainability: 100
 				}
