@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * auto jit image
  */
 (function ($, global, undefined) {
@@ -10,9 +10,8 @@
 	var firstTime = true;
 	var site = $('#site');
 	
-	var onJitLoaded = function(args) {
+	var onJitLoaded = function (args) {
 		var t = $(args.target);
-		
 		
 		if (t.hasClass('jit-image-bg-src')) {
 			var bg = t.closest('.jit-image-bg');
