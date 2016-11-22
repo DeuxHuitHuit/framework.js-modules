@@ -176,9 +176,9 @@ module.exports = function fxGruntConfig(grunt) {
 		});
 		
 		// Default task.
-		grunt.registerTask('default',  ['jshint', 'complexity', 'concat', 'uglify']);
-		grunt.registerTask('dev',      ['jshint', 'complexity']);
+		grunt.registerTask('dev',      ['jscs', 'jshint', 'complexity']);
 		grunt.registerTask('build',    ['buildnum', 'concat', 'uglify']);
+		grunt.registerTask('default',  ['dev', 'build']);
 	};
 	
 	var load = function (grunt) {
