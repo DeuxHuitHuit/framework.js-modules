@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * Toggle when no previous url are present
  *
  */

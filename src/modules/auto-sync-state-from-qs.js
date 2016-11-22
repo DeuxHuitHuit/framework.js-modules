@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  */
 (function ($, undefined) {
 	
@@ -36,7 +36,7 @@
 				if (qs[key] && qs[key] == value) {
 					isOn = true;
 				}
-			} else if(qs[key] && qs[key].length === 0 || !!!qs[key]) {
+			} else if (qs[key] && qs[key].length === 0 || !!!qs[key]) {
 				//Set state on when empty
 				isOn = true;
 			}

@@ -2,7 +2,7 @@
  * @author Deux Huit Huit
  *
  * Share This
- * 
+ *
  */
 (function ($, undefined) {
 	

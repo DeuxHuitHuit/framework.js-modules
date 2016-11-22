@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * oEmbed Dailymotion provider
  * requires https://api.dmcdn.net/all.js
  */
@@ -19,7 +19,7 @@
 			abstractProvider = p;
 		});
 		var dailymotionProvider = $.extend({}, abstractProvider, {
-			getIframe: function(url,autoplay, container) {
+			getIframe: function (url,autoplay, container) {
 				App.loaded(DM, function (Player) {
 					var id = url.indexOf('/video/') > 0 ?
 						url.substring(url.indexOf('/video/') + 7, url.indexOf('_')) :
@@ -31,7 +31,7 @@
 					// '&logo=on&hideInfos=1&highlight=b4b4b4&background=181818"></iframe>');
 					
 					container.append(div);
-					this._player = Player(div.get(0), {
+					this.playerInstance = Player(div.get(0), {
 						video: id,
 						height: '100%',
 						width: '100%',
@@ -47,11 +47,11 @@
 					});
 				});
 			},
-			play: function(container) {
-				this._player.play();
+			play: function (container) {
+				this.playerInstance.play();
 			},
-			pause: function(container) {
-				this._player.pause();
+			pause: function (container) {
+				this.playerInstance.pause();
 			}
 		});
 		App.modules.notify('oembed.providers.register', {

@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * Auto ratio size
  */
 (function ($, undefined) {
@@ -41,7 +41,7 @@
 	var updateElements = function (elements, callback) {
 		elements.each(function () {
 			var t = $(this);
-			var r =  parseRatio(t.attr('data-auto-ratio'));
+			var r = parseRatio(t.attr('data-auto-ratio'));
 			var fx = t.attr('data-auto-ratio-property') || 'height';
 			var val;
 			
@@ -67,7 +67,7 @@
 	var update = function (key, data) {
 		if (data && data.elements) {
 			updateElements(
-				data.elements, 
+				data.elements,
 				(data.callback ? data.callback : defaultCallback)
 			);
 		} else {

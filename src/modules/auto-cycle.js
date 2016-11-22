@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * Window Notifier
  */
 (function ($, undefined) {
@@ -123,7 +123,7 @@
 	};
 	
 	var actions = function () {
-		return { 
+		return {
 			site: {
 				loaded: onSiteLoaded
 			},
@@ -136,7 +136,7 @@
 		};
 	};
 
-	App.modules.exports('auto-cycle',  { 
+	App.modules.exports('auto-cycle', {
 		init: init,
 		actions: actions
 	});

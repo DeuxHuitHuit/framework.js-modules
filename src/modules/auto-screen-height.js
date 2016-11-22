@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * Auto screen height
  */
 (function ($, undefined) {
@@ -69,8 +69,8 @@
 				
 			t.css(fx, newHeight);
 			
-		} else if (platformsVal && 
-			useMediaQuery && 
+		} else if (platformsVal &&
+			useMediaQuery &&
 			window.matchMedia('(min-width: ' + minWidth + 'px)').matches) {
 			t.css(fx, newHeight);
 		} else {
@@ -109,7 +109,7 @@
 	};
 	
 	var actions = function () {
-		return { 
+		return {
 			site: {
 				resize: onResize
 			},

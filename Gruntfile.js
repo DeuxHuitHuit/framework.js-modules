@@ -5,7 +5,7 @@ var path = module.require('path');
 var os = module.require('os');
 var md = module.require('matchdep');
 
-module.exports = function fxGruntConfig(grunt) {
+module.exports = function fxGruntConfig (grunt) {
 
 	'use strict';
 	
@@ -67,7 +67,7 @@ module.exports = function fxGruntConfig(grunt) {
 				newcap: true, // capitalize ctos
 				noempty: true,
 				nonew: true, // no new ..()
-				noarg: true, 
+				noarg: true,
 				plusplus: false,
 				quotmark: 'single',
 				undef: true,
@@ -79,7 +79,7 @@ module.exports = function fxGruntConfig(grunt) {
 				
 				// relax options
 				//boss: true,
-				//eqnull: true, 
+				//eqnull: true,
 				esnext: true,
 				regexp: true,
 				strict: true,
@@ -104,7 +104,7 @@ module.exports = function fxGruntConfig(grunt) {
 		uglify: {
 			prod: {
 				files: {
-					'dist/<%= pkg.name %>.min.js': '<%= concat.dist.dest %>' 
+					'dist/<%= pkg.name %>.min.js': '<%= concat.dist.dest %>'
 				}
 			},
 			options: {
@@ -153,7 +153,7 @@ module.exports = function fxGruntConfig(grunt) {
 		grunt.initConfig(config);
 
 		// generate build number
-		grunt.registerTask('buildnum', 
+		grunt.registerTask('buildnum',
 			'Generates and updates the current build number', function () {
 			var options = this.options();
 			var getBuildNumber = function () {
@@ -176,9 +176,9 @@ module.exports = function fxGruntConfig(grunt) {
 		});
 		
 		// Default task.
-		grunt.registerTask('dev',      ['jscs', 'jshint', 'complexity']);
-		grunt.registerTask('build',    ['buildnum', 'concat', 'uglify']);
-		grunt.registerTask('default',  ['dev', 'build']);
+		grunt.registerTask('dev', ['jscs', 'jshint', 'complexity']);
+		grunt.registerTask('build', ['buildnum', 'concat', 'uglify']);
+		grunt.registerTask('default', ['dev', 'build']);
 	};
 	
 	var load = function (grunt) {

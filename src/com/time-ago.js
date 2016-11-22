@@ -11,7 +11,7 @@
 	// French
 	if ($('html').attr('lang') == 'fr') {
 		jQuery.timeago.settings.strings = {
-		   // environ ~= about, it's optional
+			// environ ~= about, it's optional
 			prefixAgo : 'Publié il y a',
 			prefixFromNow : 'd\'ici',
 			seconds : 'moins d\'une minute',
@@ -29,7 +29,7 @@
 	}
 	
 	/* Time Ago */
-	App.components.exports('timeAgo', function _searchBar() {
+	App.components.exports('timeAgo', function _searchBar () {
 		
 		var page;
 		var NB_JOURS = 30 * 24 * 60 * 60 * 1000;

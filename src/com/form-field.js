@@ -81,7 +81,7 @@
 		}
 	};
 	
-	App.components.exports('form-field', function _formField(options) {
+	App.components.exports('form-field', function _formField (options) {
 		var ctn;
 		var input;
 		var error;
@@ -151,7 +151,7 @@
 			ctn.empty();
 			if (!!file && !!w.FileReader) {
 				var reader = new w.FileReader();
-				reader.onload = function readerLoaded(event) {
+				reader.onload = function readerLoaded (event) {
 					var r = event.target.result;
 					if (!!r) {
 						var img = $('<img />')

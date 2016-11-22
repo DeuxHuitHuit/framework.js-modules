@@ -9,9 +9,9 @@
 	'use strict';
 	
 	var twitterlink = function (t) {
-		return t.replace(/[a-z]+:\/\/([a-z0-9-_]+\.[a-z0-9-_:~\+#%&\?\/.=^>^<]+[^:\.,\)\s*$])/gi, 
+		return t.replace(/[a-z]+:\/\/([a-z0-9-_]+\.[a-z0-9-_:~\+#%&\?\/.=^>^<]+[^:\.,\)\s*$])/gi,
 			function (m, link) {
-				return '<a title="' + m + '" href="' + m + '" target="_blank">' + 
+				return '<a title="' + m + '" href="' + m + '" target="_blank">' +
 					((link.length > 36) ? link.substr(0, 35) + '&hellip;' : link) + '</a>';
 			}
 		);
@@ -28,15 +28,15 @@
 	};
 	
 	var twitterhash = function (t) {
-		return t.replace(/(^|[^&\w'"]+)\#([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ^"^<^>]+)/gi, 
+		return t.replace(/(^|[^&\w'"]+)\#([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ^"^<^>]+)/gi,
 			function (m, m1, m2) {
-				return m.substr(-1) === '"' || m.substr(-1) == '<' ? 
+				return m.substr(-1) === '"' || m.substr(-1) == '<' ?
 					m : m1 + '<a href="https://twitter.com/search?q=%23' + m2 +
 						'&src=hash" target="_blank">#' + m2 + '</a>';
 			}
 		);
 	};
-	 
+	
 	window.formatTwitter = function () {
 		var t = $(this);
 		var text = t.html(); // keep the existing html

@@ -52,7 +52,7 @@
 		}
 	};
 	
-	App.components.exports('articleChanger', function _articleChanger() {
+	App.components.exports('articleChanger', function _articleChanger () {
 		
 		var o;
 		var page;
@@ -132,7 +132,9 @@
 		
 		return {
 			init : init,
-			clear : function () { currentPageHandle = ''; },
+			clear : function () {
+				currentPageHandle = '';
+			},
 			navigateTo : navigateTo
 		};
 	

@@ -24,7 +24,7 @@
 				map.panTo(reelPosition);
 				
 				closeAllPopup();
-				this['infowindow'].open(map, this);
+				this.infowindow.open(map, this);
 				openedMarker = this;
 			},
 			beforeCreate: null,
@@ -73,11 +73,9 @@
 			
 			//If we have content add the infoWindow
 			if (markerOption.content && markerOption.content.length) {
-				marker['infowindow'] = new google.maps.InfoWindow(
-					{
-						content: markerOption.content
-					}
-				);
+				marker.infowindow = new google.maps.InfoWindow({
+					content: markerOption.content
+				});
 				
 				google.maps.event.addListener(marker, 'click', mapOptions.markerAction);
 			} else if (mapOptions.markerCustomAction) {
@@ -86,8 +84,8 @@
 		};
 		
 		var closeAllPopup = function () {
-			if (openedMarker) { 
-				openedMarker['infowindow'].close();
+			if (openedMarker) {
+				openedMarker.infowindow.close();
 			}
 		};
 		
@@ -124,8 +122,8 @@
 			}
 		};
 		
-		var init = function (_page, selector) {
-			container = $(selector, _page);
+		var init = function (p, selector) {
+			container = $(selector, p);
 			App.loaded(googleMap, function () {
 				initMap();
 			});

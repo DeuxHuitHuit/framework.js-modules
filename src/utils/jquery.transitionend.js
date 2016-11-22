@@ -15,7 +15,7 @@
 	
 	_forEachSelectorsInQueue = function (fn) {
 		if (!!queue.length) {
-			$.each(queue, function eachRemoveFromQueue (index, q) {
+			$.each(queue, function eachRemoveFromQueue(index, q) {
 				// check q since it may be undefined
 				// when the array removes it
 				if (!!q) {
@@ -35,9 +35,9 @@
 	$('body').on(transitionEndEvent, function (e) {
 		var target = $(e.target);
 		
-		_forEachSelectorsInQueue(function eachInQueue (q, index) {
+		_forEachSelectorsInQueue(function eachInQueue(q, index) {
 			
-			$.each(q.selectors, function eachCallbackSelector (selector, value) {
+			$.each(q.selectors, function eachCallbackSelector(selector, value) {
 				q.selectors[selector] = value || target.is(selector);
 			});
 			
@@ -102,7 +102,7 @@
 				selectors = [selectors];
 			}
 			
-			_forEachSelectorsInQueue(function eachInQueue (q, index) {
+			_forEachSelectorsInQueue(function eachInQueue(q, index) {
 				var localFound = false;
 				
 				if (!!q && !!q.selectors) {
@@ -143,7 +143,7 @@
 			
 			t.addClass(class1);
 			
-			timer = setTimeout(function addClassesTimer (class2, callback, selectors) {
+			timer = setTimeout(function addClassesTimer(class2, callback, selectors) {
 				// if class1 is still present
 				if (t.hasClass(class1)) {
 					if ($.isFunction(callback)) {
@@ -165,7 +165,7 @@
 		selectors = selectors || t.selector;
 		return t.each(function (index, element) {
 			var t = $(element);
-			t.transitionEnd(function tEnd () {
+			t.transitionEnd(function tEnd() {
 				t.removeClass(class1);
 				if ($.isFunction(callback)) {
 					callback();

@@ -39,7 +39,7 @@
 	
 	var findArticleDefault = function (articleCtn, pageHandle, o) {
 		pageHandle = pageHandle || '';
-		var selector = o.articleSelector + 
+		var selector = o.articleSelector +
 			(o.trackHandle ? '[data-handle="' + pageHandle + '"]' : '');
 		return $(selector, $(articleCtn));
 	};
@@ -61,7 +61,7 @@
 		}
 	};
 	
-	App.components.exports('articleChanger', function _articleChanger() {
+	App.components.exports('articleChanger', function _articleChanger () {
 		var o;
 		var page;
 		var articleCtn;

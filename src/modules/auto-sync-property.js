@@ -2,7 +2,7 @@
  * @author Deux Huit Huit
  *
  *	Allow to set local property with an external element target by the source attribute.
- *	The value will be keep it in sync with the element on each resize of the window and 
+ *	The value will be keep it in sync with the element on each resize of the window and
  *	in each pageEnter.
  *
  *	JS Selector :
@@ -15,7 +15,7 @@
  *				: Property to change on the element
  *
  *		data-sync-property-from :
- *				: JQuery Selector to identify the element used to read the value. 
+ *				: JQuery Selector to identify the element used to read the value.
  *				: By default will use a scope from the #site element
  *				: (see common ancestor for alternative selection)
  *

@@ -1,9 +1,9 @@
 /**
  * @author Deux Huit Huit
- * 
- * Site scrollBar add-remove with scrollbar size fix algo 
+ *
+ * Site scrollBar add-remove with scrollbar size fix algo
  * (pad, right, margin)
- * 
+ *
  * Use .js-fix-scroll
  *		-pad : Add/remove padding-right scrollbar size fix
  * 		-right : Add/remove right scrollbar size fix
@@ -38,7 +38,7 @@
 	};
 	
 	var actions = function () {
-		return { 
+		return {
 			site: {
 				removeScroll: removeScroll,
 				addScroll: addScroll

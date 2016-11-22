@@ -3,7 +3,7 @@
  *
  *	ATTRIBUTES :
  *		(MINIMAL)
- *		- data-{state}-state-flag-class 
+ *		- data-{state}-state-flag-class
  *		(OPTIONAL)
  *		- data-{state}-state-add-class
  *		- data-{state}-state-rem-class

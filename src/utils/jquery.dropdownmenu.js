@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  */
 (function ($, undefined) {
 	
@@ -58,13 +58,13 @@
 				options.popup.css(tOffset);
 			};
 			
-			elem.on(options.click, function elemClick(e) {
+			elem.on(options.click, function elemClick (e) {
 				showMenu();
 				
 				return window.pd(e, true);
 			});
 			
-			options.items.on(options.click, function itemClick(e) {
+			options.items.on(options.click, function itemClick (e) {
 				var t = $(this);
 				options.items.removeClass(options.selectedClass);
 				t.addClass(options.selectedClass);
@@ -83,7 +83,7 @@
 				//return window.pd(e, true);
 			});
 			
-			options.background.on(options.click, function bgClick(e) {
+			options.background.on(options.click, function bgClick (e) {
 				hideMenu();
 				
 				return window.pd(e, true);

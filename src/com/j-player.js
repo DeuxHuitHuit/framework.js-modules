@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * jPlayer
  */
  
@@ -152,16 +152,16 @@
 			player.jPlayer('stop');
 		};
 		
-		var setVolume = function(playerCtn, volume) {
+		var setVolume = function (playerCtn, volume) {
 			var player = playerCtn.find(options.playerSelector);
 			
 			player.jPlayer('volume', volume);
 		};
 		
-		//_container délimite ou je veux écouté mes évenement 
-		//(page ou site, ce qui a été spécifier lors du init)
-		var init = function (_container) {
-			container = $(_container);
+		// c délimite ou je veux écouté mes évenement
+		// (page ou site, ce qui a été spécifier lors du init)
+		var init = function (c) {
+			container = $(c);
 		};
 		
 		return {

@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  */
 (function ($, undefined) {
 	
@@ -34,7 +34,7 @@
 		
 		if (!!target.length) {
 			offset += target.offset().top;
-			html.velocity('scroll', { 
+			html.velocity('scroll', {
 				offset: offset + 'px',
 				mobileHA: false,
 				container: scrollCtn
@@ -48,7 +48,7 @@
 	};
 	
 	var init = function () {
-		site.on($.click, '.js-scroll-to-id-button' , scrollToIdClicked);
+		site.on($.click, '.js-scroll-to-id-button', scrollToIdClicked);
 	};
 	
 	App.modules.exports('auto-scroll-to-id', {

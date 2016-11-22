@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * Cloudflare email protection
  */
 (function ($, undefined) {
@@ -17,12 +17,12 @@
 					a = a.split('?')[0];
 				}
 				if (a) {
-					var j,c,s='';
-					var r=parseInt(a.substr(0,2), 16);
+					var j,c,s = '';
+					var r = parseInt(a.substr(0, 2), 16);
 					if (r) {
-						for(j=2;j < a.length;j+=2){
-							c=parseInt(a.substr(j,2), 16)^r;
-							s+=String.fromCharCode(c);
+						for (j = 2; j < a.length; j += 2) {
+							c = parseInt(a.substr(j, 2), 16) ^ r;
+							s += String.fromCharCode(c);
 						}
 						e.attr('href', 'mailto:' + s);
 						e.find('script').remove();

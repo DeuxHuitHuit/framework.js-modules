@@ -20,7 +20,7 @@
 	$.fn.extend({
 		blankLink: function () {
 			/* link target */
-			$(this).each(function _eachTarget () {
+			$(this).each(function _eachTarget() {
 				var t = $(this);
 				var href = t.attr('href');
 				

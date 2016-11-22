@@ -172,13 +172,13 @@
 	
 	var onUpdateQsFragment = function (key, options, e) {
 		if ($.isPlainObject(options.qs)) {
-			var oldQsFragmentString = window.QueryStringParser.stringify(_currentQsFragment);
+			var oldQsFragmentString = window.QueryStringParser.stringify(currentQsFragment);
 
 			//Update currentQsFragment
 			$.extend(currentQsFragment, options.qs);
 			
-			var currentUrlWithoutHash = _currentPageFragment.split('#')[0];
-			var currentHash = _currentPageFragment.split('#')[1];
+			var currentUrlWithoutHash = currentPageFragment.split('#')[0];
+			var currentHash = currentPageFragment.split('#')[1];
 
 			var currentQsIndex = currentPageFragment.indexOf('?'),
 			newQsString = generateQsString();
@@ -189,10 +189,10 @@
 
 					//Trim all existing qs
 					if (currentQsIndex !== -1) {
-						_currentPageFragment = currentUrlWithoutHash.split('?')[0];
+						currentPageFragment = currentUrlWithoutHash.split('?')[0];
 					}
 				} else if (currentQsIndex === -1) {
-					_currentPageFragment = currentUrlWithoutHash + '?' + newQsString;
+					currentPageFragment = currentUrlWithoutHash + '?' + newQsString;
 
 				} else {
 					currentPageFragment = currentUrlWithoutHash.substring(0, currentQsIndex + 1) +
@@ -201,10 +201,10 @@
 
 				//Append back hash value
 				if (currentHash.length) {
-					_currentPageFragment += '#' + currentHash;
+					currentPageFragment += '#' + currentHash;
 				}
 
-				//_currentPage
+				// currentPage
 				updateUrlFragment();
 
 				if (options.raiseFragmentChanged) {

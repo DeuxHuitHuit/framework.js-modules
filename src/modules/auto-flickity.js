@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * Auto flickity module
  */
 (function ($, undefined) {
@@ -39,13 +39,13 @@
 	
 	var o = {
 		sliderCtn: '.js-auto-flickity-slider-ctn',
-		cellCtn:'.js-auto-flickity-ctn',
+		cellCtn: '.js-auto-flickity-ctn',
 		cellSelector: '.js-auto-flickity-item',
-		navBtnSelector:'.js-auto-flickity-nav-btn',
+		navBtnSelector: '.js-auto-flickity-nav-btn',
 		
-		abortedClass:'is-flickity-cancelled',
-		initedClass:'is-flickity-inited',
-		selectedClass:'is-selected',
+		abortedClass: 'is-flickity-cancelled',
+		initedClass: 'is-flickity-inited',
+		selectedClass: 'is-selected',
 		
 		pageDots: false,
 		prevNextButtons: false,
@@ -62,7 +62,7 @@
 	var pageEnter = function (key, data) {
 		page = $(data.page.key());
 		
-		page.find(o.cellCtn + ':not('+ o.initedClass +')').each(function() {
+		page.find(o.cellCtn + ':not(' + o.initedClass + ')').each(function () {
 			var t = $(this);
 			
 			if (t.find(o.cellSelector).length > 1) {
@@ -79,7 +79,7 @@
 	};
 	
 	var pageLeave = function () {
-		page.find(o.initedClass).each(function(){
+		page.find(o.initedClass).each(function () {
 			$(this).flickity('destroy').removeClass(o.initedClass);
 		});
 		
@@ -103,9 +103,9 @@
 	};
 	
 	var actions = function () {
-		return { 
+		return {
 			site: {
-				resize:onResize
+				resize: onResize
 			},
 			page: {
 				enter: pageEnter,

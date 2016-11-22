@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  *
  */
 (function ($, undefined) {
@@ -14,7 +14,7 @@
 	
 	var AUTO_VIDEO_SELECTOR = '.js-auto-video';
 	
-	var onVideoPlaying = function(ctn, video) {
+	var onVideoPlaying = function (ctn, video) {
 		ctn.addClass('is-playing');
 	}
 

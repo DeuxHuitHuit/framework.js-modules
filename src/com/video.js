@@ -86,7 +86,7 @@
 
 		var resizeVideo = function () {
 			if (!!o.resizable) {
-				var ref = !!o.video.closest(o.resizeContainerSelector).length ? 
+				var ref = !!o.video.closest(o.resizeContainerSelector).length ?
 					o.video.closest(o.resizeContainerSelector) : o.ctn;
 				var refW = ref.width();
 				var refH = ref.height();
