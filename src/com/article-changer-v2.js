@@ -61,7 +61,7 @@
 		}
 	};
 	
-	App.components.exports('articleChanger', function _articleChanger () {
+	App.components.exports('articleChanger', function _articleChanger() {
 		var o;
 		var page;
 		var articleCtn;

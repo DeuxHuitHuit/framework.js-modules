@@ -5,7 +5,7 @@ var path = module.require('path');
 var os = module.require('os');
 var md = module.require('matchdep');
 
-module.exports = function fxGruntConfig(grunt) {
+module.exports = function fxGruntConfig (grunt) {
 
 	'use strict';
 	

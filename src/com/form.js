@@ -27,7 +27,7 @@
 		}
 	};
 	
-	App.components.exports('form', function _form (options) {
+	App.components.exports('form', function _form(options) {
 		var ctn;
 		var validator;
 		var fields = [];
