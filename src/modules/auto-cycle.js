@@ -11,40 +11,6 @@
 	var site = $('#site');
 	var isFirstLoad = true;
 	var page = $('.page');
-	
-	var pageEnter = function (key, data) {
-		page = $(data.page.key());
-		
-		$('.js-cycle:not(.cycle-inited)').each(function () {
-			var t = $(this);
-			
-			if (!t.data('cycle-disable-mobile') || !$.mobile) {
-				var o = {
-					slides: t.attr('data-cycle-slides') || '>img',
-					pager: t.attr('data-cycle-pager') || '> .cycle-pager',
-					pagerTemplate: t.attr('data-cycle-pager-template') || '<span><span>',
-					next: t.attr('data-cycle-next') || '> .cycle-next',
-					prev: t.attr('data-cycle-prev') || '> .cycle-prev',
-					timeout: parseInt(t.attr('data-cycle-timeout'), 10) || 4000,
-					paused: $.mobile ? true : t.attr('data-cycle-paused') || false,
-					pauseOnHover: t.attr('data-cycle-pause-on-hover') || true,
-					fx: t.attr('data-cycle-fx') || 'fade',
-					caption: t.attr('data-cycle-caption') || '> .cycle-caption',
-					log: App.debug()
-				};
-				
-				t.cycle(o);
-				t.on('cycle-before', onCycleBefore);
-				t.on('cycle-after', onCycleAfter);
-				
-				t.addClass('cycle-inited');
-			}
-		});
-
-		if (!isFirstLoad && $.mobile) {
-			loadCycleVideo();
-		}
-	};
 
 	// stop videos when changinf slide
 	var onCycleBefore = function (e, o, outSlide, inSlide, foward) {
@@ -56,7 +22,6 @@
 	};
 
 	var onCycleAfter = function (e, o, outSlide, inSlide, foward) {
-		
 		if (!$.mobile) {
 			$(this).cycle('resume');
 
@@ -98,14 +63,6 @@
 		return window.pd(e);
 	};
 
-	var onSiteLoaded = function () {
-		isFirstLoad = false;
-		if ($.mobile) {
-			loadCycleVideo();
-		}
-		
-	};
-
 	var loadCycleVideo = function () {
 		page.find('.js-cycle-slide.video .js-oembed-video-ctn').each(function () {
 			var t = $(this);
@@ -116,6 +73,48 @@
 				finish: onOembedFinish
 			});
 		});
+	};
+
+	var pageEnter = function (key, data) {
+		page = $(data.page.key());
+		
+		$('.js-cycle:not(.cycle-inited)').each(function () {
+			var t = $(this);
+			
+			if (!t.data('cycle-disable-mobile') || !$.mobile) {
+				var o = {
+					slides: t.attr('data-cycle-slides') || '>img',
+					pager: t.attr('data-cycle-pager') || '> .cycle-pager',
+					pagerTemplate: t.attr('data-cycle-pager-template') || '<span><span>',
+					next: t.attr('data-cycle-next') || '> .cycle-next',
+					prev: t.attr('data-cycle-prev') || '> .cycle-prev',
+					timeout: parseInt(t.attr('data-cycle-timeout'), 10) || 4000,
+					paused: $.mobile ? true : t.attr('data-cycle-paused') || false,
+					pauseOnHover: t.attr('data-cycle-pause-on-hover') || true,
+					fx: t.attr('data-cycle-fx') || 'fade',
+					caption: t.attr('data-cycle-caption') || '> .cycle-caption',
+					log: App.debug()
+				};
+				
+				t.cycle(o);
+				t.on('cycle-before', onCycleBefore);
+				t.on('cycle-after', onCycleAfter);
+				
+				t.addClass('cycle-inited');
+			}
+		});
+
+		if (!isFirstLoad && $.mobile) {
+			loadCycleVideo();
+		}
+	};
+
+	var onSiteLoaded = function () {
+		isFirstLoad = false;
+		if ($.mobile) {
+			loadCycleVideo();
+		}
+		
 	};
 	
 	var init = function () {

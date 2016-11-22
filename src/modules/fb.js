@@ -8,17 +8,6 @@
 (function ($, undefined) {
 	'use strict';
 	
-	var facebookParse = function (key, data) {
-		if (!!window.FB && !!window.FB.XFBML) {
-			data = data || {};
-			window.FB.XFBML.parse(data.elem || document, function () {
-				facebookResize(key, {
-					elem: data.elem || $('.page:visible', App.root())
-				});
-			});
-		}
-	};
-	
 	var facebookResize = function (key, data) {
 		if (!data) {
 			return;
@@ -33,6 +22,17 @@
 					.find('>span>iframe, >span:first-child').width(w);
 			}
 		});
+	};
+	
+	var facebookParse = function (key, data) {
+		if (!!window.FB && !!window.FB.XFBML) {
+			data = data || {};
+			window.FB.XFBML.parse(data.elem || document, function () {
+				facebookResize(key, {
+					elem: data.elem || $('.page:visible', App.root())
+				});
+			});
+		}
 	};
 	
 	var actions = function () {

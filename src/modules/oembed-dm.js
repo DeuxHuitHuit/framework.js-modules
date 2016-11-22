@@ -20,18 +20,15 @@
 		});
 		var dailymotionProvider = $.extend({}, abstractProvider, {
 			getIframe: function (url,autoplay, container) {
-				App.loaded(DM, function (Player) {
+				App.loaded(DM, function (playerFactory) {
 					var id = url.indexOf('/video/') > 0 ?
 						url.substring(url.indexOf('/video/') + 7, url.indexOf('_')) :
-						url.substring(url.lastIndexOf("/")),
-					div = $('<div/>');
+						url.substring(url.lastIndexOf('/'));
+					var div = $('<div/>');
 					autoplay = autoplay !== undefined ? autoplay : 1;
-					//iframe = DM.. $('<iframe frameborder="0"
-					// src="http://www.dailymotion.com/embed/video/' + id + '?autoplay=' + autoplay +
-					// '&logo=on&hideInfos=1&highlight=b4b4b4&background=181818"></iframe>');
 					
 					container.append(div);
-					this.playerInstance = Player(div.get(0), {
+					this.playerInstance = playerFactory(div.get(0), {
 						video: id,
 						height: '100%',
 						width: '100%',

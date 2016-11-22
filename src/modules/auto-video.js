@@ -16,7 +16,7 @@
 	
 	var onVideoPlaying = function (ctn, video) {
 		ctn.addClass('is-playing');
-	}
+	};
 
 	var initVideos = function (ctn) {
 		ctn.find(AUTO_VIDEO_SELECTOR).each(function () {
@@ -66,10 +66,6 @@
 		}
 	};
 
-	var init = function () {
-		
-	};
-	
 	var actions = function () {
 		return {
 			page: {
@@ -86,7 +82,6 @@
 	};
 	
 	App.modules.exports('auto-video', {
-		init: init,
 		actions: actions
 	});
 	

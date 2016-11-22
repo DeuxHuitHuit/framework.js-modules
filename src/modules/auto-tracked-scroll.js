@@ -20,6 +20,12 @@
 	var bodyH = body.height();
 	var scrollH = bodyH - winH;
 	
+	var onResize = function () {
+		winH = win.height();
+		bodyH = body.height();
+		scrollH = bodyH - winH;
+	};
+	
 	var onEnter = function (next, data) {
 		page = $(data.page.key());
 		tracker.init();
@@ -32,20 +38,10 @@
 		App.callback(next);
 	};
 	
-	var onResize = function () {
-		winH = win.height();
-		bodyH = body.height();
-		scrollH = bodyH - winH;
-	};
-	
 	var onScroll = function () {
 		if (scrollH > 0) {
 			tracker.track(win.scrollTop() / scrollH * 100);
 		}
-	}
-	
-	var init = function () {
-		
 	};
 	
 	var actions = function () {
@@ -62,7 +58,6 @@
 	};
 	
 	App.modules.exports('auto-tracked-scroll', {
-		init: init,
 		actions: actions
 	});
 	

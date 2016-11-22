@@ -7,7 +7,6 @@
 	'use strict';
 	
 	var dropdownmenu = function (opts) {
-	
 		
 		var init = function (index) {
 			
@@ -27,6 +26,12 @@
 			options.popup = $(options.popup);
 			options.background = $(options.background);
 			options.items = options.popup.find(options.items);
+			
+			var positionMenu = function () {
+				var tOffset = elem.offset();
+				
+				options.popup.css(tOffset);
+			};
 			
 			var showMenu = function () {
 				if (!isPoped) {
@@ -50,12 +55,6 @@
 					options.popup.removeClasses(options.showClass, options.popupClass);
 					isPoped = false;
 				}
-			};
-			
-			var positionMenu = function () {
-				var tOffset = elem.offset();
-				
-				options.popup.css(tOffset);
 			};
 			
 			elem.on(options.click, function elemClick (e) {

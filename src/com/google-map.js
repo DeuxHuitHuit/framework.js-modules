@@ -14,6 +14,12 @@
 		var map;
 		var openedMarker;
 		
+		var closeAllPopup = function () {
+			if (!!openedMarker) {
+				openedMarker.infowindow.close();
+			}
+		};
+		
 		var defaultMapOptions = {
 			defaultMarkerOptions: {},
 			mapTypeId: null,
@@ -83,17 +89,14 @@
 			}
 		};
 		
-		var closeAllPopup = function () {
-			if (openedMarker) {
-				openedMarker.infowindow.close();
-			}
-		};
-		
 		var createMap = function () {
 			App.callback(mapOptions.beforeCreate, [google.maps, mapOptions, container]);
 			
 			if (mapOptions.center) {
-				mapOptions.center = new google.maps.LatLng(mapOptions.center.latitude, mapOptions.center.longitude);
+				mapOptions.center = new google.maps.LatLng(
+					mapOptions.center.latitude,
+					mapOptions.center.longitude
+				);
 			}
 			if (!!google.maps.MapTypeId[mapOptions.mapTypeId]) {
 				mapOptions.mapTypeId = google.maps.MapTypeId[mapOptions.mapTypeId];

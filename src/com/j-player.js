@@ -26,12 +26,39 @@
 		var options = $.extend({}, defaultOptions, o);
 		
 		//Partie pour les players video
-		var loadAllVideo = function () {
-			var playerCtn = container.find(options.playerContainerSelector);
+		
+		var resizeVideo = function (playerCtn) {
+			var ctnWidth = playerCtn.width();
+			var ctnHeight = playerCtn.height();
+			var player = playerCtn.find(options.playerSelector);
 			
-			playerCtn.each(function () {
-				var ctn = $(this);
-				loadVideo(ctn);
+			var newSize = $.sizing.aspectFill({
+				width: ctnWidth,
+				height: ctnHeight,
+				preferWidth: false
+			}, options.width / options.height);
+			
+			//Round size to avoid part of pixel
+			newSize.height = Math.ceil(newSize.height);
+			newSize.width = Math.ceil(newSize.width);
+			
+			var newPosition = $.positioning.autoPosition({
+				position: 'center',
+				left: 'left',
+				top: 'top'
+			}, $.size(ctnWidth, ctnHeight), newSize);
+
+			player.size(newSize).css(newPosition).data({
+				size: newSize,
+				position: newPosition
+			});
+
+			player.jPlayer('option', {size: newSize});
+		};
+		
+		var resizeAllVideo = function () {
+			container.find(options.playerContainerSelector).each(function () {
+				resizeVideo($(this));
 			});
 		};
 		
@@ -83,38 +110,12 @@
 			});
 		};
 		
-		var resizeVideo = function (playerCtn) {
-			var ctnWidth = playerCtn.width();
-			var ctnHeight = playerCtn.height();
-			var player = playerCtn.find(options.playerSelector);
+		var loadAllVideo = function () {
+			var playerCtn = container.find(options.playerContainerSelector);
 			
-			var newSize = $.sizing.aspectFill({
-				width: ctnWidth,
-				height: ctnHeight,
-				preferWidth: false
-			}, options.width / options.height);
-			
-			//Round size to avoid part of pixel
-			newSize.height = Math.ceil(newSize.height);
-			newSize.width = Math.ceil(newSize.width);
-			
-			var newPosition = $.positioning.autoPosition({
-				position: 'center',
-				left: 'left',
-				top: 'top'
-			}, $.size(ctnWidth, ctnHeight), newSize);
-
-			player.size(newSize).css(newPosition).data({
-				size: newSize,
-				position: newPosition
-			});
-
-			player.jPlayer('option', {size: newSize});
-		};
-		
-		var resizeAllVideo = function () {
-			container.find(options.playerContainerSelector).each(function () {
-				resizeVideo($(this));
+			playerCtn.each(function () {
+				var ctn = $(this);
+				loadVideo(ctn);
 			});
 		};
 		

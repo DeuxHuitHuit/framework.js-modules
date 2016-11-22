@@ -125,7 +125,7 @@
 			} else {
 				ieBehavior();
 			}
-		}
+		};
 
 		if (isSvgElement(item)) {
 			setSvgItemState();
@@ -183,8 +183,6 @@
 		}
 	};
 	
-	var init = function () {};
-	
 	var actions = function () {
 		return {
 			changeState: {
@@ -194,7 +192,6 @@
 	};
 	
 	App.modules.exports('change-state', {
-		init: init,
 		actions: actions
 	});
 	

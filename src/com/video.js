@@ -60,29 +60,6 @@
 		var onPlaying = function (e) {
 			App.callback(o.onPlaying, [o.ctn, o.video]);
 		};
-		
-		var onLoaded = function (e) {
-			resizeVideo();
-			App.callback(o.onLoaded, [o.ctn, o.video]);
-		};
-
-
-		// METHODS
-		var loadVideo = function () {
-			o.video.mediaLoad();
-		};
-
-		var playVideo = function () {
-			o.video.mediaPlay();
-		};
-
-		var pauseVideo = function () {
-			o.video.mediaPause();
-		};
-
-		var seekVideo = function (time) {
-			o.video.mediaCurrentTime(time);
-		};
 
 		var resizeVideo = function () {
 			if (!!o.resizable) {
@@ -113,6 +90,29 @@
 					position: newPosition
 				});
 			}
+		};
+
+		var onLoaded = function (e) {
+			resizeVideo();
+			App.callback(o.onLoaded, [o.ctn, o.video]);
+		};
+
+
+		// METHODS
+		var loadVideo = function () {
+			o.video.mediaLoad();
+		};
+
+		var playVideo = function () {
+			o.video.mediaPlay();
+		};
+
+		var pauseVideo = function () {
+			o.video.mediaPause();
+		};
+
+		var seekVideo = function (time) {
+			o.video.mediaCurrentTime(time);
 		};
 
 		var destroy = function () {

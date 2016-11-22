@@ -34,10 +34,6 @@
 		App.mediator.notifyCurrentPage('autoRatio.resizeCompleted');
 	};
 	
-	var onResize = function () {
-		updateElements($('*[data-auto-ratio]', getPage()), defaultCallback);
-	};
-	
 	var updateElements = function (elements, callback) {
 		elements.each(function () {
 			var t = $(this);
@@ -58,6 +54,10 @@
 		});
 		
 		App.callback(callback);
+	};
+	
+	var onResize = function () {
+		updateElements($('*[data-auto-ratio]', getPage()), defaultCallback);
 	};
 	
 	var onPageEnter = function () {
