@@ -9,7 +9,6 @@ module.exports = function fxGruntConfig(grunt) {
 
 	'use strict';
 	
-	// VAR
 	var GRUNT_FILE = 'Gruntfile.js';
 	
 	var BUILD_FILE = './dist/build.json';
@@ -21,6 +20,8 @@ module.exports = function fxGruntConfig(grunt) {
 		'./src/pages/*.js',
 		'./src/utils/*.js'
 	];
+	
+	var JSCS_FILE = '.jscsrc';
 	
 	var config = {
 		pkg: grunt.file.readJSON('package.json'),
@@ -120,7 +121,7 @@ module.exports = function fxGruntConfig(grunt) {
 					unused: true,
 					warnings: true
 				},
-				preserveComments: false
+				preserveComments: 'some'
 			}
 		},
 		complexity: {
@@ -132,6 +133,16 @@ module.exports = function fxGruntConfig(grunt) {
 					cyclomatic: 10,
 					halstead: 25,
 					maintainability: 100
+				}
+			}
+		},
+		jscs: {
+			src: SRC_FILES.concat(GRUNT_FILE),
+			options: {
+				config: JSCS_FILE,
+				fix: true,
+				disallowDanglingUnderscores: {
+					'allExcept': ['_currentPage']
 				}
 			}
 		}
