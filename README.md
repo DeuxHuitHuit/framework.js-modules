@@ -1,8 +1,8 @@
 # framework.js: Modules [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
 
-> Version 0.6.x
+> Version 1.0.x
 
-##### Works with the latest version of [Deux Huit Huit's framework version 1.3.x](https://github.com/DeuxHuitHuit/framework.js).
+##### Works with the latest version of [Deux Huit Huit's framework](https://github.com/DeuxHuitHuit/framework.js).
 
 Collections of files we frequently use with our framework.
 
