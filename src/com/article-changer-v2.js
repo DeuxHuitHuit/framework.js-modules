@@ -146,7 +146,9 @@
 		
 		return {
 			init : init,
-			clear : function () { currentPageHandle = ''; },
+			clear : function () {
+				currentPageHandle = '';
+			},
 			navigateTo : navigateTo
 		};
 	
