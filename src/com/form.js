@@ -4,7 +4,7 @@
  * Form
  *
  */
-(function ($, w, doc, undefined) {
+(function ($, w, doc, moment, undefined) {
 
 	'use strict';
 	
@@ -12,6 +12,7 @@
 		root: 'body',
 		container: '.js-form',
 		fields: '.js-form-field',
+		fieldsGroupSelector: '.js-form-field-group',
 		fieldsOptions: {
 			
 		},
@@ -31,12 +32,18 @@
 		var validator;
 		var fields = [];
 		var isSubmitting = false;
-		options = $.extend({}, options, defaults);
+		options = $.extend(true, {}, defaults, options);
 		
 		var reset = function () {
 			ctn[0].reset();
 			_.each(fields, function (f) {
 				f.reset();
+			});
+		};
+		
+		var preview = function () {
+			_.each(fields, function (f) {
+				f.preview();
 			});
 		};
 		
@@ -48,12 +55,32 @@
 		
 		var isValid = function (results) {
 			results = results || validate();
-			return !!results.length && !_.some(results);
+			return (!!results.length && !_.some(results)) || !results.length;
+		};
+		
+		var validateGroup = function (group) {
+			var groupFields = [];
+
+			$.each(fields, function () {
+				if (this.group().is(group)) {
+					groupFields.push(this);
+				}
+			});
+
+			return isValid(_.map(groupFields, function (f) {
+				return f.validate();
+			}));
 		};
 		
 		var enable = function (enabl) {
 			_.each(fields, function (f) {
 				f.enable(enabl);
+			});
+		};
+		
+		var submitting = function (submitting) {
+			_.each(fields, function (f) {
+				f.submitting(submitting);
 			});
 		};
 		
@@ -75,6 +102,7 @@
 			}
 			
 			isSubmitting = true;
+			submitting(isSubmitting);
 			
 			window.Loader.load({
 				url : ctn.attr('action'),
@@ -88,6 +116,7 @@
 				complete: function () {
 					App.callback(options.post.complete);
 					isSubmitting = false;
+					submitting(isSubmitting);
 					if (options.disableOnSubmit) {
 						enable(true);
 					}
@@ -120,7 +149,10 @@
 					results: results
 				});
 				if (options.focusOnError) {
-					_.filter(results)[0].field.focus();
+					results = _.filter(results);
+					if (!!results.length) {
+						results[0].field.focus();
+					}
 				}
 				
 				return w.pd(e);
@@ -130,8 +162,10 @@
 		var initField = function (i, t) {
 			t = $(t);
 			var field = App.components.create('form-field', options.fieldsOptions);
+
 			field.init({
-				container: t
+				container: t,
+				group: t.closest(options.fieldsGroupSelector)
 			});
 			fields.push(field);
 		};
@@ -142,12 +176,55 @@
 			ctn = options.root.find(options.container);
 			ctn.find(options.fields).each(initField);
 			ctn.submit(onSubmit);
+			// Default validators message
 			w.validate.validators.presence.options = {
 				message: ctn.attr('data-msg-required')
 			};
 			w.validate.validators.email.options = {
-				message: ctn.attr('data-msg-email-invalid')
+				message: ctn.attr('data-msg-email-invalid') || ctn.attr('data-msg-invalid')
 			};
+			w.validate.validators.format.options = {
+				message: ctn.attr('data-msg-invalid')
+			};
+			w.validate.validators.numericality.options = {
+				message: ctn.attr('data-msg-invalid')
+			};
+			w.validate.validators.url.options = {
+				message: ctn.attr('data-msg-invalid')
+			};
+			var dateFormat = 'DD-MM-YYYY';
+			w.validate.extend(w.validate.validators.datetime, {
+				// must return a millisecond timestamp
+				// also used to parse earlier and latest options
+				parse: function (value, options) {
+					if (!value) {
+						return NaN;
+					}
+					if (moment.isMoment(value)) {
+						return +value;
+					}
+					if (/[^\d-\/]/.test(value)) {
+						return NaN;
+					}
+					var date = moment.utc(value, dateFormat);
+					if (!date.isValid()) {
+						return NaN;
+					}
+					// coerce to ms timestamp
+					return +date;
+				},
+				// must return a string
+				format: function (value, options) {
+					if (!moment.isMoment(value)) {
+						value = moment(value);
+					}
+					return value.format(dateFormat);
+				},
+				message: ctn.attr('data-msg-date-invalid') || ctn.attr('data-msg-invalid'),
+				notValid: ctn.attr('data-msg-date-invalid') || ctn.attr('data-msg-invalid'),
+				tooEarly: ctn.attr('data-msg-date-too-early') || ctn.attr('data-msg-invalid'),
+				tooLate: ctn.attr('data-msg-date-too-late') || ctn.attr('data-msg-invalid')
+			});
 		};
 		
 		return {
@@ -155,11 +232,17 @@
 			enable: enable,
 			validate: validate,
 			reset: reset,
+			preview: preview,
 			post: post,
+			submitting: submitting,
+			validateGroup: validateGroup,
 			container: function () {
 				return ctn;
+			},
+			eachFields: function (cb) {
+				return _.each(fields, cb);
 			}
 		};
 	});
 	
-})(jQuery, window, document);
+})(jQuery, window, document, window.moment);

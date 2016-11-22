@@ -4,7 +4,7 @@
  * Form Field
  *
  */
-(function ($, w, doc, undefined) {
+(function ($, w, doc, moment, undefined) {
 
 	'use strict';
 	
@@ -15,16 +15,69 @@
 		label: '.js-form-label',
 		states: '.js-form-state',
 		clear: '.js-form-clear',
+		preview: '.js-form-preview',
 		progress: '.js-form-progress',
-		validationEvents: 'blur',
-		emptinessEvents: 'blur keyup',
+		validationEvents: 'blur change',
+		emptinessEvents: 'blur keyup change',
+		previewEvents: 'change input',
+		onlyShowFirstError: false,
+		group: null,
 		rules: {
 			required: {
 				presence: true
 			},
 			email: {
 				email: true
+			},
+			money: {
+				numericality: {
+					onlyInteger: false,
+					greaterThan: 0
+				}
+			},
+			integer: {
+				numericality: {
+					onlyInteger: true,
+					greaterThan: 0
+				}
+			},
+			document: {
+				format: {
+					pattern: '^.+\\.(?:docx?|pdf)$',
+					flags: 'i'
+				}
+			},
+			image: {
+				format: {
+					pattern: '^.+\\.(?:jpe?g|png)$',
+					flags: 'i'
+				}
+			},
+			dateNaissance: {
+				datetime: {
+					dateOnly: true,
+					earliest: moment.utc().subtract(30, 'years'),
+					latest: moment.utc().subtract(18, 'years')
+				}
+			},
+			phone: {
+				format: {
+					pattern: '\\(?[0-9]{3}\\)?[- ]?([0-9]{3})[- ]?([0-9]{4})',
+					flags: 'i'
+				}
+			},
+			url: {
+				url: true
+			},
+			embed: {
+				format: {
+					pattern: '^http(.+)(youtube\\.com|youtu\\.be|vimeo\\.com|facebook\\.com)(.+)$',
+					flags: 'i'
+				}
 			}
+		},
+		rulesOptions: {
+			
 		}
 	};
 	
@@ -39,14 +92,15 @@
 		var rules = [];
 		var self;
 
-		options = $.extend(true, {}, options, defaults);
+		options = $.extend(true, {}, defaults, options);
 
 		var getStateClasses = function (t) {
 			return {
 				error: t.attr('data-error-class'),
 				valid: t.attr('data-valid-class'),
 				empty: t.attr('data-empty-class'),
-				notEmpty: t.attr('data-not-empty-class')
+				notEmpty: t.attr('data-not-empty-class'),
+				submitting: t.attr('data-submitting-class')
 			};
 		};
 		
@@ -93,36 +147,84 @@
 			setStateClass('removeClass', 'valid');
 		};
 		
-		// jshint maxstatements:40
-		var validate = function () {
-			var constraints = {};
-			_.each(rules, function (rule) {
-				if (options.rules[rule]) {
-					constraints = $.extend(constraints, options.rules[rule]);
+		var previewFile = function (ctn, file) {
+			ctn.empty();
+			if (!!file && !!w.FileReader) {
+				var reader = new w.FileReader();
+				reader.onload = function readerLoaded(event) {
+					var r = event.target.result;
+					if (!!r) {
+						var img = $('<img />')
+							.attr('class', ctn.attr('data-preview-class'))
+							.attr('src', r)
+							.on('error', function () {
+								img.remove();
+							});
+						ctn.append(img);
+					}
+				};
+				reader.readAsDataURL(file);
+			}
+		};
+		
+		var preview = function (e) {
+			var p = ctn.find(options.preview);
+			if (!!p.length) {
+				if (input.attr('type') == 'file') {
+					var file = !!e && !!e.target.files && e.target.files[0];
+					file = file || (input[0].files && input[0].files[0]);
+					previewFile(p, file);
 				}
-			});
-			
-			var result = true;
-			
-			//Check type
+			}
+		};
+		
+		var tryValidate = function (value) {
+			try {
+				var constraints = {};
+				var rulesOptions = {};
+				_.each(rules, function (rule) {
+					if (!!options.rules[rule]) {
+						constraints = $.extend(constraints, options.rules[rule]);
+					}
+					if (!!options.rulesOptions[rule]) {
+						rulesOptions = $.extend(rulesOptions, options.rulesOptions[rule]);
+					}
+				});
+				
+				return w.validate.single(value, constraints, rulesOptions);
+			}
+			catch (ex) {
+				App.log({fx: 'error', args: [ex]});
+			}
+			return false;
+		};
+		
+		var value = function () {
+			var value;
 			if (input.attr('type') == 'checkbox') {
-				result = w.validate.single(input.prop('checked') ? 'true' : '', constraints);
+				value = input.prop('checked') ? 'true' : '';
 			} else if (input.attr('type') == 'radio') {
 				//Get grouped item
-				var goodInput = input.closest('form').find('input[type=\'radio\'][name=\'' + input.attr('name') +'\']:checked');
-				if (goodInput.length) {
-					result = w.validate.single(goodInput.prop('checked') ? 'true' : '', constraints);
+				var goodInput = input.closest('form').
+					find('input[type=\'radio\'][name=\'' + input.attr('name') + '\']:checked');
+				if (!!goodInput.length) {
+					value = goodInput.prop('checked') ? 'true' : '';
 				} else {
-					result = w.validate.single(input.prop('checked') ? 'true' : '', constraints);
+					value = input.prop('checked') ? 'true' : '';
 				}
 			} else {
-				var value = input.val();
-				result = w.validate.single(value, constraints);
+				value = input.val();
 			}
+			return value;
+		};
+		
+		var validate = function () {
+			var result = tryValidate(value());
 			
 			var errorFx = !result ? 'removeClass' : 'addClass';
 			var validFx = !result ? 'addClass' : 'removeClass';
-			var errorMessages = !result ? '' : result.join('<br />');
+			var errorMessages = !result ? '' :
+				(options.onlyShowFirstError ? result[0] : result.join('<br />'));
 			var inputClasses = getStateClasses(input);
 			var ctnClasses = getStateClasses(ctn);
 			var labelClasses = getStateClasses(label);
@@ -155,8 +257,7 @@
 		};
 		
 		var checkEmptiness = function () {
-			var value = input.val();
-			var valueIsEmpty = w.validate.isEmpty(value);
+			var valueIsEmpty = w.validate.isEmpty(value());
 			var emptyFx = valueIsEmpty ? 'addClass' : 'removeClass';
 			var notEmptyFx = valueIsEmpty ? 'removeClass' : 'addClass';
 			var inputClasses = getStateClasses(input);
@@ -169,13 +270,15 @@
 			label[emptyFx](labelClasses.empty);
 			label[notEmptyFx](labelClasses.notEmpty);
 		};
-
-		var onInputFocus = function () {
-			label.addClass(getStateClasses(label).notEmpty);
+		
+		var submitting = function (submitting) {
+			var submittingFx = submitting ? 'addClass' : 'removeClass';
+			var inputClasses = getStateClasses(input);
+			input[submittingFx](inputClasses.submitting);
 		};
 		
 		var init = function (o) {
-			options = $.extend(options, o);
+			options = $.extend(true, options, o);
 			ctn = $(options.container);
 			input = ctn.find(options.input);
 			error = ctn.find(options.error);
@@ -191,8 +294,9 @@
 			if (!!options.emptinessEvents) {
 				input.on(options.emptinessEvents, checkEmptiness);
 			}
-
-			input.on('focus', onInputFocus);
+			if (!!options.previewEvents) {
+				input.on(options.previewEvents, preview);
+			}
 		};
 		
 		self = {
@@ -201,9 +305,33 @@
 			enable: enable,
 			focus: focus,
 			reset: reset,
-			checkEmptiness: checkEmptiness
+			preview: preview,
+			checkEmptiness: checkEmptiness,
+			group: function () {
+				return options.group;
+			},
+			submitting: submitting,
+			value: value,
+			name: function () {
+				return input.attr('name');
+			},
+			label: function () {
+				return label.text();
+			},
+			find: function (sel) {
+				if (ctn.is(sel)) {
+					return ctn;
+				}
+				return ctn.find(sel);
+			},
+			hasClass: function (cla) {
+				return ctn.hasClass(cla);
+			},
+			required: function () {
+				return !!~rules.indexOf('required');
+			}
 		};
 		return self;
 	});
 	
-})(jQuery, window, document);
+})(jQuery, window, document, window.moment);
