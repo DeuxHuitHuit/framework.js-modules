@@ -39,14 +39,14 @@
 	};
 	
 	var actions = {
-		shareThis : {
-			applyButton : onApplyButton
+		shareThis: {
+			applyButton: onApplyButton
 		}
 	};
 	
 	var Menu = App.modules.exports('shareThis', {
 		init: init,
-		actions : function () {
+		actions: function () {
 			return actions;
 		}
 	});

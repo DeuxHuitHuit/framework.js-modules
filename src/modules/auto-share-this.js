@@ -48,7 +48,7 @@
 	
 	App.modules.exports('autoShareThis', {
 		init: function () {},
-		actions : function () {
+		actions: function () {
 			return actions;
 		}
 	});

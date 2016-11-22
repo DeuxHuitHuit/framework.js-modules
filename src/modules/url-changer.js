@@ -292,7 +292,7 @@
 				updateQsFragment: onUpdateQsFragment
 			},
 			pages: {
-				navigateToCurrent : onNavigateToCurrent
+				navigateToCurrent: onNavigateToCurrent
 			},
 			url: {
 				getUrl: getCurrentUrl,
@@ -304,7 +304,7 @@
 	
 	var urlChanger = App.modules.exports('urlChanger', {
 		init: init,
-		actions : actions
+		actions: actions
 	});
 	
 })(jQuery);

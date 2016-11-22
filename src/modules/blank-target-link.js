@@ -20,7 +20,7 @@
 	$.fn.extend({
 		blankLink: function () {
 			/* link target */
-			$(this).each(function _eachTarget () {
+			$(this).each(function eachTarget () {
 				var t = $(this);
 				var href = t.attr('href');
 				
@@ -44,7 +44,7 @@
 	
 	var actions = {
 		page: {
-			enter : onPageEnter
+			enter: onPageEnter
 		}
 	};
 	

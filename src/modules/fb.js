@@ -54,7 +54,7 @@
 	};
 	
 	var FBParser = App.modules.exports('FB', {
-		actions : actions
+		actions: actions
 	});
 	
 })(jQuery);

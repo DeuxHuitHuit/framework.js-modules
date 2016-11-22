@@ -128,7 +128,7 @@
 	
 	var PageLoad = App.modules.exports('page-load', {
 		init: init,
-		actions : actions
+		actions: actions
 	});
 	
 })(jQuery);

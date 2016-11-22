@@ -22,7 +22,7 @@
 	};
 	
 	var RouteNotFound = App.modules.exports('route-not-found', {
-		actions : actions
+		actions: actions
 	});
 	
 })(jQuery);

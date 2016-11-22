@@ -61,14 +61,14 @@
 		}
 	};
 	
-	App.components.exports('articleChanger', function _articleChanger() {
+	App.components.exports('articleChanger', function articleChanger () {
 		var o;
 		var page;
 		var articleCtn;
 		var currentPageHandle;
 		
-		var init = function (_page, options) {
-			page = _page;
+		var init = function (p, options) {
+			page = p;
 			o = $.extend({}, defOptions, options);
 			articleCtn = $(o.containerSelector, page);
 			currentPageHandle = o.startPageHandle;
@@ -145,11 +145,11 @@
 		};
 		
 		return {
-			init : init,
-			clear : function () {
+			init: init,
+			clear: function () {
 				currentPageHandle = '';
 			},
-			navigateTo : navigateTo
+			navigateTo: navigateTo
 		};
 	
 	});

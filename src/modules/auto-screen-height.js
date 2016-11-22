@@ -16,11 +16,11 @@
 	};
 	
 	var platforms = {
-		'all': true,
-		'desktop': !$.mobile,
-		'tablette': $.tablette,
-		'mobile': $.mobile,
-		'phone': $.phone
+		all: true,
+		desktop: !$.mobile,
+		tablette: $.tablette,
+		mobile: $.mobile,
+		phone: $.phone
 	};
 		
 	var getOffsetTotal = function (itemsArray) {

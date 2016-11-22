@@ -116,7 +116,7 @@ module.exports = function fxGruntConfig (grunt) {
 				mangle: true,
 				compress: {
 					global_defs: {
-						'DEBUG': false
+						DEBUG: false
 					},
 					dead_code: true,
 					unused: true,
@@ -143,7 +143,7 @@ module.exports = function fxGruntConfig (grunt) {
 				config: JSCS_FILE,
 				fix: true,
 				disallowDanglingUnderscores: {
-					'allExcept': ['_currentPage']
+					allExcept: ['_currentPage']
 				}
 			}
 		}

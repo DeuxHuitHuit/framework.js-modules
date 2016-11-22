@@ -23,8 +23,8 @@
 	
 	var actions = function () {
 		return {
-			page : {
-				toggleNoPreviousUrl : onToggleNoPreviousUrl
+			page: {
+				toggleNoPreviousUrl: onToggleNoPreviousUrl
 			}
 		};
 	};

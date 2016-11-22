@@ -25,7 +25,7 @@
 	var getGa = function () {
 		/* jshint ignore:start */
 		if (!!window.dataLayer && !!window.dataLayer.push) {
-			return function ga(gaAction, gaCat, cat, action, label, value, options, category) {
+			return function ga (gaAction, gaCat, cat, action, label, value, options, category) {
 				if (gaCat === 'pageview') {
 					dataLayer.push($.extend({}, cat, {
 						event: gaCat,
@@ -107,8 +107,8 @@
 			App.log({fx: 'err', args: 'No ga-label found. Reverting to text'});
 		}
 		if (!!options.event) {
-			if (!options.event._gaHandled) {
-				options.event._gaHandled = true;
+			if (!options.event.gaHandled) {
+				options.event.gaHandled = true;
 			} else {
 				send = false;
 			}

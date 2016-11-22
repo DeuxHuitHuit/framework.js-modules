@@ -27,7 +27,7 @@
 		}
 	};
 	
-	App.components.exports('form', function _form(options) {
+	App.components.exports('form', function form (options) {
 		var ctn;
 		var validator;
 		var fields = [];
@@ -105,7 +105,7 @@
 			submitting(isSubmitting);
 			
 			window.Loader.load({
-				url : ctn.attr('action'),
+				url: ctn.attr('action'),
 				type: ctn.attr('method') || 'POST',
 				data: data,
 				processData: processData,

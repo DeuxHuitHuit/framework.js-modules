@@ -40,11 +40,11 @@
 	};
 	
 	var actions = {
-		pages : {
-			loaded : onPageLoaded
+		pages: {
+			loaded: onPageLoaded
 		},
-		page : {
-			enter : onEnter
+		page: {
+			enter: onEnter
 		},
 		articleChanger: {
 			loaded: onPageLoaded,
@@ -54,7 +54,7 @@
 	
 	var TitleUpdater = App.modules.exports('titleUpdater', {
 		init: init,
-		actions : function () {
+		actions: function () {
 			return actions;
 		}
 	});

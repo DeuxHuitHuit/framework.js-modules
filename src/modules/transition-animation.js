@@ -102,11 +102,11 @@
 				requestPageTransition: onRequestPageTransition,
 				requestBeginPageTransition: onRequestBeginPageTransition
 			},
-			pageTransitionAnimation : {
-				getTargetPage : function (key, data, e) {
+			pageTransitionAnimation: {
+				getTargetPage: function (key, data, e) {
 					if (!data) {
 						data = {
-							result : {}
+							result: {}
 						};
 					}
 					if (!data.result) {
@@ -122,11 +122,11 @@
 	
 	var exportsTransition = function (options) {
 		var o = $.extend({
-			from : '*',
-			to : '*',
+			from: '*',
+			to: '*',
 			beginTransition: defaultBeginTransition,
-			transition : defaultTransition,
-			canAnimate : function () {
+			transition: defaultTransition,
+			canAnimate: function () {
 				return true;
 			}
 		}, options);

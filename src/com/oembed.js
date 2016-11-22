@@ -30,7 +30,7 @@
 			container.append(iframe);
 			return iframe;
 		},
-		getIframe : function (id) {
+		getIframe: function (id) {
 			return $('<iframe allowfullscreen="" />');
 		},
 		getTemplateContent: function (container) {
