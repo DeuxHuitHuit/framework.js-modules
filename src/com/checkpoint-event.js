@@ -1,5 +1,8 @@
 /**
  * @author Deux Huit Huit
+ *
+ * Checkpoint event
+ *  Sends a analytic event when a certain gate is reached.
  */
 
 (function ($, win, undefined) {
