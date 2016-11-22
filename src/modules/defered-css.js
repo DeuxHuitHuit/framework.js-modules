@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * Defered css
  */
 (function ($, global, undefined) {
