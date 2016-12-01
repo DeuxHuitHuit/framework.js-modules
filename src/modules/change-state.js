@@ -2,14 +2,11 @@
  * @author Deux Huit Huit
  *
  *	ATTRIBUTES :
- *		(MINIMAL)
- *		- data-{state}-state-flag-class
  *		(OPTIONAL)
  *		- data-{state}-state-add-class
  *		- data-{state}-state-rem-class
  *
  *		- data-{state}-state-follower (Not functionnal)
- *
  *
  *	NOTIFY IN :
  *		- changeState.update
@@ -33,16 +30,22 @@
 			item[0].nodeName == 'polygon' ||
 			item[0].nodeName == 'polyline' ||
 			item[0].nodeName == 'path' ||
-			item[0].nodeName == 'g';
+			item[0].nodeName == 'g' ||
+			item[0].nodeName == 'circle' ||
+			item[0].nodeName == 'rect' ||
+			item[0].nodeName == 'text';
 	};
 
 	var setItemState = function (item, state, flag) {
 		//Flag class
-		var flagClass = item.attr('data-' + state + '-state-flag-class');
+
+		var flagClass = 'is-' + state;
 		var addClass = item.attr('data-' + state + '-state-add-class');
 		var remClass = item.attr('data-' + state + '-state-rem-class');
 
 		var followerSelector = item.attr('data-' + state + '-state-follower');
+		var followers = item.find(followerSelector);
+
 
 		App.modules.notify('changeState.begin', {item: item, state: state, flag: flag});
 
@@ -130,7 +133,6 @@
 		if (isSvgElement(item)) {
 			setSvgItemState();
 		} else {
-	
 			if (flag) {
 				//Set state
 				item.addClass(addClass);
@@ -143,6 +145,25 @@
 				item.removeClass(flagClass);
 			}
 		}
+
+		//Process followers
+		followers.each(function () {
+			var it = $(this);
+			var itAddClass = it.attr('data-' + state + '-state-add-class');
+			var itRemClass = it.attr('data-' + state + '-state-rem-class');
+
+			//if (isSvgElement(item)) {
+
+			//} else {
+				if (flag) {
+					it.addClass(itAddClass);
+					it.removeClass(itRemClass);
+				} else {
+					it.removeClass(itAddClass);
+					it.addClass(itRemClass);
+				}
+			//}
+		});
 		
 		App.modules.notify('changeState.end', {item: item, state: state, flag: flag});
 	};
@@ -179,7 +200,14 @@
 
 	var onUpdateState = function (key, data) {
 		if (data && data.item && data.state && data.action) {
-			processItem(data.item, data.state, data.action);
+			var minWidth = data.item.attr('data-' + data.state + '-state-min-width');
+			var maxWidth = data.item.attr('data-' + data.state + '-state-max-width');
+			var isMinWidthValid = (!!minWidth && window.mediaQueryMinWidth(minWidth)) || !minWidth;
+			var isMaxWidthValid = (!!maxWidth && window.mediaQueryMaxWidth(maxWidth)) || !maxWidth;
+			
+			if (isMinWidthValid && isMaxWidthValid) {
+				processItem(data.item, data.state, data.action)
+			}
 		}
 	};
 	
