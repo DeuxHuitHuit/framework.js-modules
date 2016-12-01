@@ -48,7 +48,11 @@
 	};
 	
 	var getNextRouteFromData = function (data) {
-		return data.page.routes()[getLanguageIndex()];
+		var result = data.page.routes()[0];
+		if (data.page.routes().length > 1) {
+			result = data.page.routes()[_getLanguageIndex()];
+		}
+		return result;
 	};
 	
 	var extractFragmentFromRoute = function (nextRoute, reelRoute) {
