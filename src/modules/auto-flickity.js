@@ -2,6 +2,23 @@
  * @author Deux Huit Huit
  *
  * Auto flickity module
+ * Front-end Integration Hierarchy:
+ *
+ *  |- FLICKITY CTN : .js-auto-flickity-slider-ctn
+ *  |    |- CELL-CTN : .js-auto-flickity-ctn
+ *  |    |    |- CELL (REPEATED): .js-auto-flickity-item
+ *  |    |    |
+ *  |    |- NAV BTNS: .js-auto-flickity-nav-btn
+ *  
+ *  requires https://cdnjs.cloudflare.com/ajax/libs/flickity/1.1.2/flickity.pkgd.min.js
+ *  
+ *  Notes:
+ *  
+ *  Flickity wont be activated if only one cell(o.cellSelector) is
+ *  detected. It will add the aborted class(o.abortedCl) on the cell-ctn(o.cellCtn)
+ *  
+ *  You can have more info on the options of Flickity at
+ *  http://flickity.metafizzy.co/
  */
 (function ($, undefined) {
 	
@@ -10,32 +27,6 @@
 	var win = $(window);
 	var site = $('#site');
 	var page = $('.page');
-	
-	/*
-		Front-end Integration Hierarchy:
-		
-		|- FLICKITY CTN : .js-auto-flickity-slider-ctn
-		|		|- CELL-CTN : .js-auto-flickity-ctn
-		|		|		|- CELL (REPEATED): .js-auto-flickity-item
-		|		|		|
-		|		|- NAV BTNS: .js-auto-flickity-nav-btn
-		
-		
-		
-		Requirements:
-		
-		"https://cdnjs.cloudflare.com/ajax/libs/flickity/1.1.2/flickity.pkgd.min.js"
-		
-		
-		Notes:
-		
-		Flickity wont be activated if only one cell(o.cellSelector) is
-		detected. It will add the aborted class(o.abortedCl) on the cell-ctn(o.cellCtn)
-		
-		You can have more info on the options of Flickity at
-		http://flickity.metafizzy.co/
-		
-	*/
 	
 	var o = {
 		sliderCtn: '.js-auto-flickity-slider-ctn',

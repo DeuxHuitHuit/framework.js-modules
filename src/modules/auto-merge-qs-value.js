@@ -2,33 +2,32 @@
  * @author Deux Huit Huit
  *
  *  Allow a link or a button to append a key and value in the Querystring.
- * 	If used with a link. the href should be corresponding to the js behavior
- * 	It Need to be used with data-action="none" or the links modules will also trigger.
- * 	It will automatically raise the page.updateQsFragment with the new querystring builded.
- * 	If the value is "" then the key will be removed from the QS (Filter all);
+ *  If used with a link. the href should be corresponding to the js behavior
+ *  It Need to be used with data-action="none" or the links modules will also trigger.
+ *  It will automatically raise the page.updateQsFragment with the new querystring builded.
+ *  If the value is "" then the key will be removed from the QS (Filter all);
  *  Optionnaly you can make a key exclusif by removing other key when setting a key with the remove-keys attribute
  *
- *	Query string example
- *	?{key}={value}
- * 	
+ *  Query string example
+ *  ?{key}={value}
+ *
  *  SELECTOR :
- * 		.js-merge-qs-value-button
- * 	
+ *    .js-merge-qs-value-button
+ *
  *  ATTRIBUTES :
- *  	- data-merge-qs-value-key
- *			Define the key for the querystring )
+ *      - data-merge-qs-value-key
+ *          Define the key for the querystring )
  *
- *		- data-merge-qs-value
- *			Define the value associated to the key 
+ *      - data-merge-qs-value
+ *          Define the value associated to the key 
  *
- *		- data-merge-qs-value-remove-keys
- *			List of keys separated by ',' 
- *			to be removed when the key-value is set
- *		
- *		- data-merge-qs-value-prevent-default
- *			If present. will prevent default
+ *      - data-merge-qs-value-remove-keys
+ *          List of keys separated by ',' 
+ *          to be removed when the key-value is set
+ *
+ *      - data-merge-qs-value-prevent-default
+ *          If present. will prevent default
  */
-
 (function ($, undefined) {
 	'use strict';
 	var win = $(window);
