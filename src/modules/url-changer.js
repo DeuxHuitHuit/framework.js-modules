@@ -50,7 +50,7 @@
 	var getNextRouteFromData = function (data) {
 		var result = data.page.routes()[0];
 		if (data.page.routes().length > 1) {
-			result = data.page.routes()[_getLanguageIndex()];
+			result = data.page.routes()[getLanguageIndex()];
 		}
 		return result;
 	};
