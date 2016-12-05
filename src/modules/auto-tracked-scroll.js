@@ -54,6 +54,9 @@
 				scroll: onScroll,
 				resize: onResize,
 				loaded: onResize
+			},
+			articleChanger: {
+				enter: onEnter
 			}
 		};
 	};
