@@ -52,7 +52,8 @@
 			},
 			site: {
 				scroll: onScroll,
-				resize: onResize
+				resize: onResize,
+				loaded: onResize
 			}
 		};
 	};
