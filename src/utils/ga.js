@@ -34,11 +34,10 @@
 							language: lang
 						}
 					}));
-				}
-				else if (gaCat === 'event') {
+				} else if (gaCat === 'event') {
 					var args = {
 						event: gaCat,
-						eventCategory: cat || category,
+						eventCategory: category || cat,
 						eventAction: action,
 						eventLabel: label,
 						eventValue: value,
@@ -78,7 +77,9 @@
 	/* jshint maxparams:6 */
 	$.sendEvent = function (cat, action, label, value, options, category) {
 		var ga = getGa();
-		ga('send', 'event', cat, action, label, value, options || {nonInteraction: 1}, category);
+		cat = cat || '';
+		options = cat.options || options || {nonInteraction: 1};
+		ga('send', 'event', cat, action, label, value, options, category);
 	};
 	/* jshint maxparams:5 */
 	
