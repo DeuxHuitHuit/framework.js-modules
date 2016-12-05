@@ -155,13 +155,13 @@
 			//if (isSvgElement(item)) {
 
 			//} else {
-				if (flag) {
-					it.addClass(itAddClass);
-					it.removeClass(itRemClass);
-				} else {
-					it.removeClass(itAddClass);
-					it.addClass(itRemClass);
-				}
+			if (flag) {
+				it.addClass(itAddClass);
+				it.removeClass(itRemClass);
+			} else {
+				it.removeClass(itAddClass);
+				it.addClass(itRemClass);
+			}
 			//}
 		});
 		
@@ -206,7 +206,7 @@
 			var isMaxWidthValid = (!!maxWidth && window.mediaQueryMaxWidth(maxWidth)) || !maxWidth;
 			
 			if (isMinWidthValid && isMaxWidthValid) {
-				processItem(data.item, data.state, data.action)
+				processItem(data.item, data.state, data.action);
 			}
 		}
 	};

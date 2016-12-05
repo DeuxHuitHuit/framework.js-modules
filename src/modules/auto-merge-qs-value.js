@@ -6,7 +6,8 @@
  *  It Need to be used with data-action="none" or the links modules will also trigger.
  *  It will automatically raise the page.updateQsFragment with the new querystring builded.
  *  If the value is "" then the key will be removed from the QS (Filter all);
- *  Optionnaly you can make a key exclusif by removing other key when setting a key with the remove-keys attribute
+ *  Optionnaly you can make a key exclusif by removing other key when setting a key with
+ *  the remove-keys attribute
  *
  *  Query string example
  *  ?{key}={value}
@@ -19,10 +20,10 @@
  *          Define the key for the querystring )
  *
  *      - data-merge-qs-value
- *          Define the value associated to the key 
+ *          Define the value associated to the key
  *
  *      - data-merge-qs-value-remove-keys
- *          List of keys separated by ',' 
+ *          List of keys separated by ','
  *          to be removed when the key-value is set
  *
  *      - data-merge-qs-value-prevent-default
@@ -58,7 +59,7 @@
 				qs[key] = null;
 			}
 			
-			if(!!removeKeys) {
+			if (!!removeKeys) {
 				var removeKeysArray = removeKeys.split(',');
 				$.each(removeKeysArray, function (i, e) {
 					qs[e] = null;
