@@ -75,14 +75,15 @@
 		var toggleLinks = '[data-action="toggle"]';
 		var absoluteLinks = 'a[href^="/"]';
 		var queryStringLinks = 'a[href^="?"]';
+		var click = App.device.events.click;
 
 		// capture all click in #site
 		$('#site')
-			.on(App.device.events.click, absoluteLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
-			.on(App.device.events.click, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
-			.on(App.device.events.click, localLinks + dataAttrExclusions + localWorkspaceExclusion, onClickGoto)
-			.on(App.device.events.click, absoluteLinks + toggleLinks, onClickToggle)
-			.on(App.device.events.click, queryStringLinks + toggleLinks, onClickToggle);
+			.on(click, absoluteLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
+			.on(click, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
+			.on(click, localLinks + dataAttrExclusions + localWorkspaceExclusion, onClickGoto)
+			.on(click, absoluteLinks + toggleLinks, onClickToggle)
+			.on(click, queryStringLinks + toggleLinks, onClickToggle);
 	};
 	
 	var Links = App.modules.exports('links', {
