@@ -1,4 +1,4 @@
-/*! framework.js-modules - v1.0.0 - build 347 - 2016-11-22
+/*! framework.js-modules - v1.0.0 - build 348 - 2016-12-07
  * https://github.com/DeuxHuitHuit/framework.js-modules
  * Copyright (c) 2016 Deux Huit Huit (https://deuxhuithuit.com/);
  * MIT *//**
@@ -1923,6 +1923,10 @@
 	var BUTTON_TARGET_ATTR = 'data-change-state-click-target';
 	var BUTTON_STATE_ATTR = 'data-change-state-click';
 	var BUTTON_ACTION_ATTR = 'data-change-state-action';
+	var BUTTON_MAX_WIDTH_ATTR = 'data-change-state-max-width';
+	var BUTTON_MIN_WIDTH_ATTR = 'data-change-state-min-width';
+	var BUTTON_PREVENT_DEFAULT_ATTR = 'data-change-state-click-prevent-default';
+
 	
 	var findTargetItemIfAvailable = function (item, target) {
 		//Find target if present
@@ -1939,11 +1943,15 @@
 		var target = t.attr(BUTTON_TARGET_ATTR);
 		var state = t.attr(BUTTON_STATE_ATTR);
 		var action = t.attr(BUTTON_ACTION_ATTR);
+		var minWidth = t.attr(BUTTON_MIN_WIDTH_ATTR);
+		var maxWidth = t.attr(BUTTON_MAX_WIDTH_ATTR);
 
 		var item = t;
+		var isMinWidthValid = (!!minWidth && window.mediaQueryMinWidth(minWidth)) || !minWidth;
+		var isMaxWidthValid = (!!maxWidth && window.mediaQueryMaxWidth(maxWidth)) || !maxWidth;
 
 		//Valid needed info
-		if (state && action) {
+		if (state && action && isMinWidthValid && isMaxWidthValid) {
 
 			item = findTargetItemIfAvailable(item, target);
 
@@ -1955,12 +1963,14 @@
 			});
 		}
 
-		return window.pd(e);
+		if (t.filter('[' + BUTTON_PREVENT_DEFAULT_ATTR + ']').length) {
+			return window.pd(e);
+		}
 	};
 
 	var init = function () {
 		//Attach click handler
-		site.on($.click, BUTTON_SELECTOR, buttonClicked);
+		site.on(App.device.events.click, BUTTON_SELECTOR, buttonClicked);
 	};
 	
 	App.modules.exports('auto-change-state-click', {
@@ -2147,7 +2157,11 @@
 	};
 	
 	var init = function () {
-		site.on($.click, '.js-cycle-slide.video .js-oembed-video-play', onOembedPlayClick);
+		site.on(
+			App.device.events.click,
+			'.js-cycle-slide.video .js-oembed-video-play',
+			onOembedPlayClick
+		);
 	};
 	
 	var actions = function () {
@@ -2175,6 +2189,23 @@
  * @author Deux Huit Huit
  *
  * Auto flickity module
+ * Front-end Integration Hierarchy:
+ *
+ *  |- FLICKITY CTN : .js-auto-flickity-slider-ctn
+ *  |    |- CELL-CTN : .js-auto-flickity-ctn
+ *  |    |    |- CELL (REPEATED): .js-auto-flickity-item
+ *  |    |    |
+ *  |    |- NAV BTNS: .js-auto-flickity-nav-btn
+ *
+ *  requires https://cdnjs.cloudflare.com/ajax/libs/flickity/1.1.2/flickity.pkgd.min.js
+ *
+ *  Notes:
+ *
+ *  Flickity wont be activated if only one cell(o.cellSelector) is
+ *  detected. It will add the aborted class(o.abortedCl) on the cell-ctn(o.cellCtn)
+ *
+ *  You can have more info on the options of Flickity at
+ *  http://flickity.metafizzy.co/
  */
 (function ($, undefined) {
 	
@@ -2183,32 +2214,6 @@
 	var win = $(window);
 	var site = $('#site');
 	var page = $('.page');
-	
-	/*
-		Front-end Integration Hierarchy:
-		
-		|- FLICKITY CTN : .js-auto-flickity-slider-ctn
-		|		|- CELL-CTN : .js-auto-flickity-ctn
-		|		|		|- CELL (REPEATED): .js-auto-flickity-item
-		|		|		|
-		|		|- NAV BTNS: .js-auto-flickity-nav-btn
-		
-		
-		
-		Requirements:
-		
-		"https://cdnjs.cloudflare.com/ajax/libs/flickity/1.1.2/flickity.pkgd.min.js"
-		
-		
-		Notes:
-		
-		Flickity wont be activated if only one cell(o.cellSelector) is
-		detected. It will add the aborted class(o.abortedCl) on the cell-ctn(o.cellCtn)
-		
-		You can have more info on the options of Flickity at
-		http://flickity.metafizzy.co/
-		
-	*/
 	
 	var o = {
 		sliderCtn: '.js-auto-flickity-slider-ctn',
@@ -2272,7 +2277,7 @@
 	};
 	
 	var init = function () {
-		site.on($.click, o.navBtnSelector, onNavBtnClick);
+		site.on(App.device.events.click, o.navBtnSelector, onNavBtnClick);
 	};
 	
 	var actions = function () {
@@ -2353,10 +2358,35 @@
 /**
  * @author Deux Huit Huit
  *
+ *  Allow a link or a button to append a key and value in the Querystring.
+ *  If used with a link. the href should be corresponding to the js behavior
+ *  It Need to be used with data-action="none" or the links modules will also trigger.
+ *  It will automatically raise the page.updateQsFragment with the new querystring builded.
+ *  If the value is "" then the key will be removed from the QS (Filter all);
+ *  Optionnaly you can make a key exclusif by removing other key when setting a key with
+ *  the remove-keys attribute
  *
+ *  Query string example
+ *  ?{key}={value}
+ *
+ *  SELECTOR :
+ *    .js-merge-qs-value-button
+ *
+ *  ATTRIBUTES :
+ *      - data-merge-qs-value-key
+ *          Define the key for the querystring )
+ *
+ *      - data-merge-qs-value
+ *          Define the value associated to the key
+ *
+ *      - data-merge-qs-value-remove-keys
+ *          List of keys separated by ','
+ *          to be removed when the key-value is set
+ *
+ *      - data-merge-qs-value-prevent-default
+ *          If present. will prevent default
  */
 (function ($, undefined) {
-	
 	'use strict';
 	var win = $(window);
 	var site = $('#site');
@@ -2364,13 +2394,16 @@
 	
 	var BUTTON_SELECTOR = '.js-merge-qs-value-button';
 	var KEY_ATTR = 'data-merge-qs-value-key';
+	var REMOVE_KEYS_ATTR = 'data-merge-qs-value-remove-keys';
 	var VALUE_ATTR = 'data-merge-qs-value';
+	var PREVENT_DEFAULT_ATTR = 'data-merge-qs-value-prevent-default';
 	
 	var buttonClicked = function (e) {
 		
 		//Scroll To hash
 		var t = $(this);
 		var key = t.attr(KEY_ATTR);
+		var removeKeys = t.attr(REMOVE_KEYS_ATTR);
 		var value = t.attr(VALUE_ATTR);
 		var qs = window.QueryStringParser.parse(document.location.search);
 		
@@ -2383,18 +2416,27 @@
 				qs[key] = null;
 			}
 			
+			if (!!removeKeys) {
+				var removeKeysArray = removeKeys.split(',');
+				$.each(removeKeysArray, function (i, e) {
+					qs[e] = null;
+				});
+			}
+
 			// Update Url and raise fragmentChanged
 			App.mediator.notify('page.updateQsFragment', {
 				qs: qs,
 				raiseFragmentChanged: true
 			});
 			
-			return window.pd(e, true);
+			if (t.filter('[' + PREVENT_DEFAULT_ATTR + ']').length) {
+				return window.pd(e, true);
+			}
 		}
 	};
 	
 	var init = function () {
-		site.on($.click, BUTTON_SELECTOR, buttonClicked);
+		site.on(App.device.events.click, BUTTON_SELECTOR, buttonClicked);
 	};
 	
 	App.modules.exports('auto-merge-qs-value', {
@@ -2480,7 +2522,7 @@
 	var init = function () {
 		site = $('#site');
 		
-		site.on($.click, '.js-auto-oembed-video-play', onPlayBtnClick);
+		site.on(App.device.events.click, '.js-auto-oembed-video-play', onPlayBtnClick);
 	};
 	
 	var actions = function () {
@@ -2608,7 +2650,7 @@
 	};
 	
 	var init = function () {
-		site.on($.click, BTN_PLAY_SEL, onPlayBtnClick);
+		site.on(App.device.events.click, BTN_PLAY_SEL, onPlayBtnClick);
 	};
 	
 	var actions = function () {
@@ -2927,7 +2969,7 @@
 	};
 	
 	var init = function () {
-		site.on($.click, '.js-scroll-to-id-button', scrollToIdClicked);
+		site.on(App.device.events.click, '.js-scroll-to-id-button', scrollToIdClicked);
 	};
 	
 	App.modules.exports('auto-scroll-to-id', {
@@ -2996,33 +3038,33 @@
 /**
  * @author Deux Huit Huit
  *
- *	Allow to set local property with an external element target by the source attribute.
- *	The value will be keep it in sync with the element on each resize of the window and
- *	in each pageEnter.
+ *  Allow to set local property with an external element target by the source attribute.
+ *  The value will be keep it in sync with the element on each resize of the window and
+ *  in each pageEnter.
  *
- *	JS Selector :
- *		.js-auto-sync-property:
+ *  JS Selector :
+ *    .js-auto-sync-property:
  *
- *	DATA ATTRIBUTES :
- *		REQUIRED
+ *  DATA ATTRIBUTES :
+ *    REQUIRED
  *
- *		data-sync-property :
- *				: Property to change on the element
+ *    - data-sync-property :
+ *        : Property to change on the element
  *
- *		data-sync-property-from :
- *				: JQuery Selector to identify the element used to read the value.
- *				: By default will use a scope from the #site element
- *				: (see common ancestor for alternative selection)
+ *    - data-sync-property-from :
+ *        : JQuery Selector to identify the element used to read the value.
+ *        : By default will use a scope from the #site element
+ *        : (see common ancestor for alternative selection)
  *
- *		OPTIONAL :
+ *    OPTIONAL :
  *
- *		data-sync-property-with :
- *				: Property to read if different than the set property
+ *    - data-sync-property-with :
+ *        : Property to read if different than the set property
  *
- *		data-sync-property-from-common-ancestor :
- *				: To specify a closer scope between the target and the current element.
- *				: Will find the scope with
- *				: 		element.closest({value}).find({from})
+ *    - data-sync-property-from-common-ancestor :
+ *        : To specify a closer scope between the target and the current element.
+ *        : Will find the scope with
+ *        :     element.closest({value}).find({from})
  *
  */
 (function ($, undefined) {
@@ -3256,7 +3298,11 @@
 			},
 			site: {
 				scroll: onScroll,
-				resize: onResize
+				resize: onResize,
+				loaded: onResize
+			},
+			articleChanger: {
+				enter: onEnter
 			}
 		};
 	};
@@ -3419,14 +3465,11 @@
  * @author Deux Huit Huit
  *
  *	ATTRIBUTES :
- *		(MINIMAL)
- *		- data-{state}-state-flag-class
  *		(OPTIONAL)
  *		- data-{state}-state-add-class
  *		- data-{state}-state-rem-class
  *
  *		- data-{state}-state-follower (Not functionnal)
- *
  *
  *	NOTIFY IN :
  *		- changeState.update
@@ -3450,16 +3493,22 @@
 			item[0].nodeName == 'polygon' ||
 			item[0].nodeName == 'polyline' ||
 			item[0].nodeName == 'path' ||
-			item[0].nodeName == 'g';
+			item[0].nodeName == 'g' ||
+			item[0].nodeName == 'circle' ||
+			item[0].nodeName == 'rect' ||
+			item[0].nodeName == 'text';
 	};
 
 	var setItemState = function (item, state, flag) {
 		//Flag class
-		var flagClass = item.attr('data-' + state + '-state-flag-class');
+
+		var flagClass = 'is-' + state;
 		var addClass = item.attr('data-' + state + '-state-add-class');
 		var remClass = item.attr('data-' + state + '-state-rem-class');
 
 		var followerSelector = item.attr('data-' + state + '-state-follower');
+		var followers = item.find(followerSelector);
+
 
 		App.modules.notify('changeState.begin', {item: item, state: state, flag: flag});
 
@@ -3547,7 +3596,6 @@
 		if (isSvgElement(item)) {
 			setSvgItemState();
 		} else {
-	
 			if (flag) {
 				//Set state
 				item.addClass(addClass);
@@ -3560,6 +3608,25 @@
 				item.removeClass(flagClass);
 			}
 		}
+
+		//Process followers
+		followers.each(function () {
+			var it = $(this);
+			var itAddClass = it.attr('data-' + state + '-state-add-class');
+			var itRemClass = it.attr('data-' + state + '-state-rem-class');
+
+			//if (isSvgElement(item)) {
+
+			//} else {
+			if (flag) {
+				it.addClass(itAddClass);
+				it.removeClass(itRemClass);
+			} else {
+				it.removeClass(itAddClass);
+				it.addClass(itRemClass);
+			}
+			//}
+		});
 		
 		App.modules.notify('changeState.end', {item: item, state: state, flag: flag});
 	};
@@ -3596,7 +3663,14 @@
 
 	var onUpdateState = function (key, data) {
 		if (data && data.item && data.state && data.action) {
-			processItem(data.item, data.state, data.action);
+			var minWidth = data.item.attr('data-' + data.state + '-state-min-width');
+			var maxWidth = data.item.attr('data-' + data.state + '-state-max-width');
+			var isMinWidthValid = (!!minWidth && window.mediaQueryMinWidth(minWidth)) || !minWidth;
+			var isMaxWidthValid = (!!maxWidth && window.mediaQueryMaxWidth(maxWidth)) || !maxWidth;
+			
+			if (isMinWidthValid && isMaxWidthValid) {
+				processItem(data.item, data.state, data.action);
+			}
 		}
 	};
 	
@@ -3896,14 +3970,15 @@
 		var toggleLinks = '[data-action="toggle"]';
 		var absoluteLinks = 'a[href^="/"]';
 		var queryStringLinks = 'a[href^="?"]';
+		var click = App.device.events.click;
 
 		// capture all click in #site
 		$('#site')
-			.on($.click, absoluteLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
-			.on($.click, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
-			.on($.click, localLinks + dataAttrExclusions + localWorkspaceExclusion, onClickGoto)
-			.on($.click, absoluteLinks + toggleLinks, onClickToggle)
-			.on($.click, queryStringLinks + toggleLinks, onClickToggle);
+			.on(click, absoluteLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
+			.on(click, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
+			.on(click, localLinks + dataAttrExclusions + localWorkspaceExclusion, onClickGoto)
+			.on(click, absoluteLinks + toggleLinks, onClickToggle)
+			.on(click, queryStringLinks + toggleLinks, onClickToggle);
 	};
 	
 	var Links = App.modules.exports('links', {
@@ -4365,6 +4440,39 @@
  ******************************/
 
 /**
+ * Page load error handling
+ */
+(function ($, undefined) {
+
+	'use strict';
+	
+	var actions = function () {
+		return {
+			pages: {
+				failedtoparse: function (key, data) {
+					
+				},
+				loaderror: function (key, data) {
+					
+				},
+				loadfatalerror: function (key, data) {
+					
+				}
+			}
+		};
+	};
+	
+	var PageLoadErrors = App.modules.exports('page-load-errors', {
+		actions: actions
+	});
+	
+})(jQuery);
+
+/******************************
+ * @author Deux Huit Huit
+ ******************************/
+
+/**
  * Page loading handling
  *
  * Use load progress if available, reverts to good old timer if not.
@@ -4500,6 +4608,35 @@
  ******************************/
 
 /**
+ * Page not found handling
+ */
+(function ($, undefined) {
+
+	'use strict';
+	
+	var actions = function () {
+		return {
+			pages: {
+				notfound: function (key, data) {
+					if (!!data && !!data.url && data.url !== document.location.pathname) {
+						document.location = data.url;
+					}
+				}
+			}
+		};
+	};
+	
+	var PageNotFound = App.modules.exports('page-not-found', {
+		actions: actions
+	});
+	
+})(jQuery);
+
+/******************************
+ * @author Deux Huit Huit
+ ******************************/
+
+/**
  * Route not found handling
  */
 (function ($, undefined) {
@@ -4555,7 +4692,7 @@
 		}
 		
 		// block clicks
-		$(o.element).on($.click, function (e) {
+		$(o.element).on(App.device.events.click, function (e) {
 			return window.pd(e, false);
 		});
 	};
@@ -5042,7 +5179,11 @@
 	};
 	
 	var getNextRouteFromData = function (data) {
-		return data.page.routes()[getLanguageIndex()];
+		var result = data.page.routes()[0];
+		if (data.page.routes().length > 1) {
+			result = data.page.routes()[getLanguageIndex()];
+		}
+		return result;
 	};
 	
 	var extractFragmentFromRoute = function (nextRoute, reelRoute) {
@@ -5683,11 +5824,10 @@
 							language: lang
 						}
 					}));
-				}
-				else if (gaCat === 'event') {
+				} else if (gaCat === 'event') {
 					var args = {
 						event: gaCat,
-						eventCategory: cat || category,
+						eventCategory: category || cat,
 						eventAction: action,
 						eventLabel: label,
 						eventValue: value,
@@ -5727,7 +5867,9 @@
 	/* jshint maxparams:6 */
 	$.sendEvent = function (cat, action, label, value, options, category) {
 		var ga = getGa();
-		ga('send', 'event', cat, action, label, value, options || {nonInteraction: 1}, category);
+		cat = cat || '';
+		options = cat.options || options || {nonInteraction: 1};
+		ga('send', 'event', cat, action, label, value, options, category);
 	};
 	/* jshint maxparams:5 */
 	
@@ -5781,30 +5923,30 @@
 			return 'a[href$=".' + ext + '"], ';
 		}).join('') + 'a[href$="?dl"], a[download]';
 		var notAlreadyTagged = ':not([data-ga-cat])';
-		$('#site').on($.click, '[data-ga-cat]', function (e) {
+		$('#site').on(App.device.events.click, '[data-ga-cat]', function (e) {
 			$(this).sendClickEvent({
 				event: e
 			});
 		})
-		.on($.click, externalLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, externalLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-external',
 				event: e
 			});
 		})
-		.on($.click, downloadLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, downloadLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-download',
 				event: e
 			});
 		})
-		.on($.click, mailtoLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, mailtoLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-mailto',
 				event: e
 			});
 		})
-		.on($.click, telLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, telLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-tel',
 				event: e
@@ -5838,7 +5980,7 @@
 				popup: elem.attr('data-popup'),
 				items: elem.attr('data-items'),
 				background: elem.attr('data-background'),
-				click: $.click || 'click'
+				click: App.device.events.click
 			}, opts);
 			
 			// Ensure we are dealing with jQuery objects
