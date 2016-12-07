@@ -79,7 +79,7 @@
 	};
 	
 	var init = function () {
-		site.on($.click, BUTTON_SELECTOR, buttonClicked);
+		site.on(App.device.events.click, BUTTON_SELECTOR, buttonClicked);
 	};
 	
 	App.modules.exports('auto-merge-qs-value', {

@@ -104,7 +104,7 @@
 	};
 	
 	var init = function () {
-		site.on($.click, BTN_PLAY_SEL, onPlayBtnClick);
+		site.on(App.device.events.click, BTN_PLAY_SEL, onPlayBtnClick);
 	};
 	
 	var actions = function () {

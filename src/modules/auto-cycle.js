@@ -118,7 +118,7 @@
 	};
 	
 	var init = function () {
-		site.on($.click, '.js-cycle-slide.video .js-oembed-video-play', onOembedPlayClick);
+		site.on(App.device.events.click, '.js-cycle-slide.video .js-oembed-video-play', onOembedPlayClick);
 	};
 	
 	var actions = function () {

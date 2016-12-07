@@ -29,7 +29,7 @@
 		}
 		
 		// block clicks
-		$(o.element).on($.click, function (e) {
+		$(o.element).on(App.device.events.click, function (e) {
 			return window.pd(e, false);
 		});
 	};

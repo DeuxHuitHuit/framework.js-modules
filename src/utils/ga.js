@@ -133,30 +133,30 @@
 			return 'a[href$=".' + ext + '"], ';
 		}).join('') + 'a[href$="?dl"], a[download]';
 		var notAlreadyTagged = ':not([data-ga-cat])';
-		$('#site').on($.click, '[data-ga-cat]', function (e) {
+		$('#site').on(App.device.events.click, '[data-ga-cat]', function (e) {
 			$(this).sendClickEvent({
 				event: e
 			});
 		})
-		.on($.click, externalLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, externalLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-external',
 				event: e
 			});
 		})
-		.on($.click, downloadLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, downloadLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-download',
 				event: e
 			});
 		})
-		.on($.click, mailtoLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, mailtoLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-mailto',
 				event: e
 			});
 		})
-		.on($.click, telLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, telLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-tel',
 				event: e

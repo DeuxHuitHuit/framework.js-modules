@@ -58,7 +58,7 @@
 
 	var init = function () {
 		//Attach click handler
-		site.on($.click, BUTTON_SELECTOR, buttonClicked);
+		site.on(App.device.events.click, BUTTON_SELECTOR, buttonClicked);
 	};
 	
 	App.modules.exports('auto-change-state-click', {
