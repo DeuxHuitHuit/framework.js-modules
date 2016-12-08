@@ -1,6 +1,6 @@
 # framework.js: Modules [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
 
-> Version 1.0.x
+> Version 1.1.x
 
 ##### Works with the latest version of [Deux Huit Huit's framework](https://github.com/DeuxHuitHuit/framework.js).
 

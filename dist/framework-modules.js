@@ -1,4 +1,4 @@
-/*! framework.js-modules - v1.0.0 - build 348 - 2016-12-07
+/*! framework.js-modules - v1.1.0 - build 350 - 2016-12-08
  * https://github.com/DeuxHuitHuit/framework.js-modules
  * Copyright (c) 2016 Deux Huit Huit (https://deuxhuithuit.com/);
  * MIT *//**
@@ -180,7 +180,7 @@
 					o.articleEnter(next);
 				});
 			};
-			if ($.mobile) {
+			if (App.device.mobile) {
 				afterScroll();
 			} else {
 				$.scrollTo(0, Math.min(500, $(w).scrollTop()), afterScroll);
@@ -2061,7 +2061,7 @@
 	};
 
 	var onCycleAfter = function (e, o, outSlide, inSlide, foward) {
-		if (!$.mobile) {
+		if (!App.device.mobile) {
 			$(this).cycle('resume');
 
 			var oembedCtn = $(outSlide).find('.js-oembed-video-ctn');
@@ -2076,7 +2076,7 @@
 
 	// GESTION DES VIDEOS OEMBED DANS UN CYCLE
 	var onOembedFinish = function (data) {
-		if (!$.mobile) {
+		if (!App.device.mobile) {
 			data.container.closest('.js-cycle').cycle('resume');
 		}
 	};
@@ -2086,7 +2086,7 @@
 		var vCtn = t.closest('.js-oembed-video-ctn');
 		var vPlayer = vCtn.find('.js-oembed-video-player');
 		
-		if (!$.mobile) {
+		if (!App.device.mobile) {
 			App.modules.notify('loadVideo', {
 				player: vPlayer,
 				autoplay: true,
@@ -2095,7 +2095,7 @@
 		}
 		
 		vCtn.addClass('is-playing');
-		if (!$.mobile) {
+		if (!App.device.mobile) {
 			t.closest('.js-cycle').cycle('pause');
 		}
 		
@@ -2120,7 +2120,7 @@
 		$('.js-cycle:not(.cycle-inited)').each(function () {
 			var t = $(this);
 			
-			if (!t.data('cycle-disable-mobile') || !$.mobile) {
+			if (!t.data('cycle-disable-mobile') || !App.device.mobile) {
 				var o = {
 					slides: t.attr('data-cycle-slides') || '>img',
 					pager: t.attr('data-cycle-pager') || '> .cycle-pager',
@@ -2128,7 +2128,7 @@
 					next: t.attr('data-cycle-next') || '> .cycle-next',
 					prev: t.attr('data-cycle-prev') || '> .cycle-prev',
 					timeout: parseInt(t.attr('data-cycle-timeout'), 10) || 4000,
-					paused: $.mobile ? true : t.attr('data-cycle-paused') || false,
+					paused: App.device.mobile ? true : t.attr('data-cycle-paused') || false,
 					pauseOnHover: t.attr('data-cycle-pause-on-hover') || true,
 					fx: t.attr('data-cycle-fx') || 'fade',
 					caption: t.attr('data-cycle-caption') || '> .cycle-caption',
@@ -2143,14 +2143,14 @@
 			}
 		});
 
-		if (!isFirstLoad && $.mobile) {
+		if (!isFirstLoad && App.device.mobile) {
 			loadCycleVideo();
 		}
 	};
 
 	var onSiteLoaded = function () {
 		isFirstLoad = false;
-		if ($.mobile) {
+		if (App.device.mobile) {
 			loadCycleVideo();
 		}
 		
@@ -2405,7 +2405,7 @@
 		var key = t.attr(KEY_ATTR);
 		var removeKeys = t.attr(REMOVE_KEYS_ATTR);
 		var value = t.attr(VALUE_ATTR);
-		var qs = window.QueryStringParser.parse(document.location.search);
+		var qs = App.routing.querystring.parse(document.location.search);
 		
 		// Minimal attribute needed for proceeding
 		if (!!key) {
@@ -2467,7 +2467,7 @@
 		var vCtn = t.closest('.js-auto-oembed-video-ctn');
 		var vPlayer = vCtn.find('.js-auto-oembed-video-player');
 		
-		if (!$.mobile) {
+		if (!App.device.mobile) {
 			App.modules.notify('loadVideo', {
 				player: vPlayer,
 				autoplay: true
@@ -2494,7 +2494,7 @@
 	};
 	
 	var onPageEnter = function () {
-		if (!isFirstLoad && $.mobile) {
+		if (!isFirstLoad && App.device.mobile) {
 			loadPageVideo();
 		}
 	};
@@ -2513,7 +2513,7 @@
 	
 	var onSiteLoaded = function () {
 		isFirstLoad = false;
-		if ($.mobile) {
+		if (App.device.mobile) {
 			loadPageVideo();
 		}
 		
@@ -2569,10 +2569,10 @@
 		var autoLoad = vPlayer.attr('data-autoload');
 		
 		if (!force) {
-			if ($.mobile && autoLoad !== 'mobile' && autoLoad !== 'all') {
+			if (App.device.mobile && autoLoad !== 'mobile' && autoLoad !== 'all') {
 				return;
 			}
-			if (!$.mobile && autoLoad === 'none') {
+			if (!App.device.mobile && autoLoad === 'none') {
 				return;
 			}
 		}
@@ -2804,17 +2804,16 @@
 	
 	var platforms = {
 		all: true,
-		desktop: !$.mobile,
-		tablette: $.tablette,
-		mobile: $.mobile,
+		desktop: !App.device.mobile,
+		tablette: App.device.tablet,
+		mobile: App.device.mobile,
 		phone: $.phone
 	};
-		
+	
 	var getOffsetTotal = function (itemsArray) {
 		var total = 0;
 		
 		if (itemsArray) {
-		
 			var its = itemsArray.split(',');
 			$.each(its, function (i, value) {
 				total += $(value).height();
@@ -2870,7 +2869,8 @@
 	
 	var onResize = function (e) {
 		var p = getPage();
-		if (($.mobile && Math.abs(mobileHeight - win.height()) > 120) || !$.mobile) {
+		if ((App.device.mobile && Math.abs(mobileHeight - win.height()) > 120) ||
+			!App.device.mobile) {
 			p.filter('.js-auto-screen-height')
 				.add($('.js-auto-screen-height', p))
 				.each(resizeItem);
@@ -2881,7 +2881,7 @@
 	var onEnter = function () {
 		mobileHeight = 0;
 		onResize();
-		if ($.mobile) {
+		if (App.device.mobile) {
 			mobileHeight = win.height();
 		}
 		
@@ -2890,7 +2890,7 @@
 	
 	var init = function () {
 		onResize();
-		if ($.mobile) {
+		if (App.device.mobile) {
 			mobileHeight = win.height();
 		}
 	};
@@ -3185,7 +3185,7 @@
 	var processItemState = function (item, state, conditions) {
 
 		var isOn = false;
-		var qs = window.QueryStringParser.parse(document.location.search);
+		var qs = App.routing.querystring.parse(document.location.search);
 
 		$.each(conditions.split(','), function (i, e) {
 			var splitedCondition = e.split('=');
@@ -5166,7 +5166,7 @@
 	var extractQS = function () {
 		var QSIndex = currentPageFragment.indexOf('?');
 		if (QSIndex > -1) {
-			currentQsFragment = window.QueryStringParser.parse(
+			currentQsFragment = App.routing.querystring.parse(
 				currentPageFragment.substring(QSIndex)
 			);
 		} else {
@@ -5307,7 +5307,7 @@
 	
 	var onUpdateQsFragment = function (key, options, e) {
 		if ($.isPlainObject(options.qs)) {
-			var oldQsFragmentString = window.QueryStringParser.stringify(currentQsFragment);
+			var oldQsFragmentString = App.routing.querystring.stringify(currentQsFragment);
 
 			//Update currentQsFragment
 			$.extend(currentQsFragment, options.qs);
