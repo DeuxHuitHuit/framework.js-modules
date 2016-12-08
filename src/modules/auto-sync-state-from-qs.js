@@ -26,7 +26,7 @@
 	var processItemState = function (item, state, conditions) {
 
 		var isOn = false;
-		var qs = window.QueryStringParser.parse(document.location.search);
+		var qs = App.routing.querystring.parse(document.location.search);
 
 		$.each(conditions.split(','), function (i, e) {
 			var splitedCondition = e.split('=');

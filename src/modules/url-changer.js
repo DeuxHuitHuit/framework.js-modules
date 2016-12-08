@@ -35,7 +35,7 @@
 	var extractQS = function () {
 		var QSIndex = currentPageFragment.indexOf('?');
 		if (QSIndex > -1) {
-			currentQsFragment = window.QueryStringParser.parse(
+			currentQsFragment = App.routing.querystring.parse(
 				currentPageFragment.substring(QSIndex)
 			);
 		} else {
@@ -176,7 +176,7 @@
 	
 	var onUpdateQsFragment = function (key, options, e) {
 		if ($.isPlainObject(options.qs)) {
-			var oldQsFragmentString = window.QueryStringParser.stringify(currentQsFragment);
+			var oldQsFragmentString = App.routing.querystring.stringify(currentQsFragment);
 
 			//Update currentQsFragment
 			$.extend(currentQsFragment, options.qs);

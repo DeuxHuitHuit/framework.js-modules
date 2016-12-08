@@ -20,7 +20,7 @@
 		var vCtn = t.closest('.js-auto-oembed-video-ctn');
 		var vPlayer = vCtn.find('.js-auto-oembed-video-player');
 		
-		if (!$.mobile) {
+		if (!App.device.mobile) {
 			App.modules.notify('loadVideo', {
 				player: vPlayer,
 				autoplay: true
@@ -47,7 +47,7 @@
 	};
 	
 	var onPageEnter = function () {
-		if (!isFirstLoad && $.mobile) {
+		if (!isFirstLoad && App.device.mobile) {
 			loadPageVideo();
 		}
 	};
@@ -66,7 +66,7 @@
 	
 	var onSiteLoaded = function () {
 		isFirstLoad = false;
-		if ($.mobile) {
+		if (App.device.mobile) {
 			loadPageVideo();
 		}
 		

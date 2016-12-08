@@ -23,10 +23,10 @@
 		var autoLoad = vPlayer.attr('data-autoload');
 		
 		if (!force) {
-			if ($.mobile && autoLoad !== 'mobile' && autoLoad !== 'all') {
+			if (App.device.mobile && autoLoad !== 'mobile' && autoLoad !== 'all') {
 				return;
 			}
-			if (!$.mobile && autoLoad === 'none') {
+			if (!App.device.mobile && autoLoad === 'none') {
 				return;
 			}
 		}

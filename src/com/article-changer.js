@@ -19,7 +19,7 @@
 					o.articleEnter(next);
 				});
 			};
-			if ($.mobile) {
+			if (App.device.mobile) {
 				afterScroll();
 			} else {
 				$.scrollTo(0, Math.min(500, $(w).scrollTop()), afterScroll);

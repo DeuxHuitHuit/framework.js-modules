@@ -17,17 +17,16 @@
 	
 	var platforms = {
 		all: true,
-		desktop: !$.mobile,
-		tablette: $.tablette,
-		mobile: $.mobile,
+		desktop: !App.device.mobile,
+		tablette: App.device.tablet,
+		mobile: App.device.mobile,
 		phone: $.phone
 	};
-		
+	
 	var getOffsetTotal = function (itemsArray) {
 		var total = 0;
 		
 		if (itemsArray) {
-		
 			var its = itemsArray.split(',');
 			$.each(its, function (i, value) {
 				total += $(value).height();
@@ -83,7 +82,8 @@
 	
 	var onResize = function (e) {
 		var p = getPage();
-		if (($.mobile && Math.abs(mobileHeight - win.height()) > 120) || !$.mobile) {
+		if ((App.device.mobile && Math.abs(mobileHeight - win.height()) > 120) ||
+			!App.device.mobile) {
 			p.filter('.js-auto-screen-height')
 				.add($('.js-auto-screen-height', p))
 				.each(resizeItem);
@@ -94,7 +94,7 @@
 	var onEnter = function () {
 		mobileHeight = 0;
 		onResize();
-		if ($.mobile) {
+		if (App.device.mobile) {
 			mobileHeight = win.height();
 		}
 		
@@ -103,7 +103,7 @@
 	
 	var init = function () {
 		onResize();
-		if ($.mobile) {
+		if (App.device.mobile) {
 			mobileHeight = win.height();
 		}
 	};
