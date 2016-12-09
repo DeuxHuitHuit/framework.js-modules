@@ -169,7 +169,7 @@
 	};
 
 	var processItem = function (item, state, action) {
-		var flagClass = item.attr('data-' + state + '-state-flag-class');
+		var flagClass = 'is-' + state;
 		var curBoolState = item.hasClass(flagClass);
 
 		if (isSvgElement(item)) {
