@@ -1,4 +1,4 @@
-/*! framework.js-modules - v1.1.0 - build 350 - 2016-12-08
+/*! framework.js-modules - v1.2.0 - build 351 - 2016-12-09
  * https://github.com/DeuxHuitHuit/framework.js-modules
  * Copyright (c) 2016 Deux Huit Huit (https://deuxhuithuit.com/);
  * MIT *//**
@@ -794,6 +794,7 @@
 			
 			isSubmitting = true;
 			submitting(isSubmitting);
+			App.callback(options.post.submitting);
 			
 			window.Loader.load({
 				url: ctn.attr('action'),
@@ -1970,7 +1971,7 @@
 
 	var init = function () {
 		//Attach click handler
-		site.on(App.device.events.click, BUTTON_SELECTOR, buttonClicked);
+		site.on(App.device.events.pick, BUTTON_SELECTOR, buttonClicked);
 	};
 	
 	App.modules.exports('auto-change-state-click', {
@@ -2158,7 +2159,7 @@
 	
 	var init = function () {
 		site.on(
-			App.device.events.click,
+			App.device.events.pick,
 			'.js-cycle-slide.video .js-oembed-video-play',
 			onOembedPlayClick
 		);
@@ -2277,7 +2278,7 @@
 	};
 	
 	var init = function () {
-		site.on(App.device.events.click, o.navBtnSelector, onNavBtnClick);
+		site.on(App.device.events.pick, o.navBtnSelector, onNavBtnClick);
 	};
 	
 	var actions = function () {
@@ -2436,7 +2437,7 @@
 	};
 	
 	var init = function () {
-		site.on(App.device.events.click, BUTTON_SELECTOR, buttonClicked);
+		site.on(App.device.events.pick, BUTTON_SELECTOR, buttonClicked);
 	};
 	
 	App.modules.exports('auto-merge-qs-value', {
@@ -2522,7 +2523,7 @@
 	var init = function () {
 		site = $('#site');
 		
-		site.on(App.device.events.click, '.js-auto-oembed-video-play', onPlayBtnClick);
+		site.on(App.device.events.pick, '.js-auto-oembed-video-play', onPlayBtnClick);
 	};
 	
 	var actions = function () {
@@ -2650,7 +2651,7 @@
 	};
 	
 	var init = function () {
-		site.on(App.device.events.click, BTN_PLAY_SEL, onPlayBtnClick);
+		site.on(App.device.events.pick, BTN_PLAY_SEL, onPlayBtnClick);
 	};
 	
 	var actions = function () {
@@ -2969,7 +2970,7 @@
 	};
 	
 	var init = function () {
-		site.on(App.device.events.click, '.js-scroll-to-id-button', scrollToIdClicked);
+		site.on(App.device.events.pick, '.js-scroll-to-id-button', scrollToIdClicked);
 	};
 	
 	App.modules.exports('auto-scroll-to-id', {
@@ -3243,6 +3244,378 @@
 	});
 	
 })(jQuery);
+
+/**
+ * @author Deux Huit Huit
+ *
+ */
+(function ($, undefined) {
+	
+	'use strict';
+	var win = $(window);
+	var site = $('#site');
+	var page = $('.page');
+	var scrollTimer = 0;
+	var resizeTimer = 0;
+	var curY = 0;
+	var winH = 0;
+	var scrollOffsetTop = 0;
+
+	var CTN_SELECTOR = '.js-tcos-3-state-ctn';
+	var CONTENT_SELECTOR = '.js-tcos-3-state-content';
+	var SECOND_CLASS_ATTR = 'data-tcos-second-state-class';
+	var THIRD_CLASS_ATTR = 'data-tcos-third-state-class';
+
+	var OFFSET_SELECTOR = '.js-site-nav';
+	var OFFSET_TOP = 'data-tcos-offset-top';
+	var OFFSET_BOTTOM = 'data-tcos-offset-bottom';
+
+	var updatePageDock = function () {
+		page.find(CONTENT_SELECTOR).each(function () {
+			var t = $(this);
+			App.callback(t.data('tcosFx'));
+		});
+	};
+
+	var setPageDockData = function () {
+		page.find(CONTENT_SELECTOR).each(function () {
+			var t = $(this);
+			var ctn = t.closest(CTN_SELECTOR);
+
+			var ctnOffTop = Math.floor(ctn.offset().top);
+			var ctnH = Math.floor(ctn.outerHeight());
+			var offTop = Math.floor(t.offset().top);
+			var height = Math.floor(t.outerHeight());
+
+			var doIt = function () {
+				var fixedClass = !!t.attr(SECOND_CLASS_ATTR) ?
+					t.attr(SECOND_CLASS_ATTR) : '';
+				var absClass = !!t.attr(THIRD_CLASS_ATTR) ?
+					t.attr(THIRD_CLASS_ATTR) : '';
+
+				var offsetTopElement = $();
+				if (t.attr('data-tcos-offset-top-selector')) {
+					offsetTopElement = $(t.attr('data-tcos-offset-top-selector'));
+				}
+
+				var extraOffsetTop = winH * (t.attr('data-tcos-offset-top') || 0) ;
+				var extraOffsetBottom = winH * (t.attr('data-tcos-offset-bottom') || 0);
+
+				if (offsetTopElement.length) {
+					extraOffsetTop -= offsetTopElement.outerHeight();
+				}
+
+				var oTop = ctnOffTop;
+				var oBot = ctnOffTop + ctnH;
+
+				var fx = function () {
+					t.removeClass(absClass + ' ' + fixedClass);
+				};
+
+				if (((oTop + extraOffsetTop) <= curY) &&
+					((oBot + extraOffsetBottom) - curY) > height) {
+					t.data('tcosFx', function () {
+						//Remove step 3
+						t.removeClass(absClass);
+						//Add Step 2
+						t.addClass(fixedClass);
+					});
+				} else if (((oBot + extraOffsetBottom) - curY) <= height) {
+					t.data('tcosFx', function () {
+						//Remove Step 2
+						t.removeClass(fixedClass);
+						//Add Step 3
+						t.addClass(absClass);
+					});
+				} else {
+					t.data('tcosFx', function () {
+						t.removeClass(absClass + ' ' + fixedClass);
+					});
+				}
+			};
+
+			if (ctn.height() > t.height()) {
+				doIt();
+			}
+		});
+	};
+
+	var resetPageDock = function () {
+		page.find(CONTENT_SELECTOR).each(function () {
+			var t = $(this);
+			var fixedClass = !!t.attr(SECOND_CLASS_ATTR) ?
+				t.attr(SECOND_CLASS_ATTR) : '';
+			var absClass = !!t.attr(THIRD_CLASS_ATTR) ?
+				t.attr(THIRD_CLASS_ATTR) : '';
+			t.removeClass(fixedClass + ' ' + absClass);
+		});
+	};
+
+	// SCROLL
+	var onScroll = function () {
+		scrollOffsetTop = $(OFFSET_SELECTOR).height();
+
+		curY = Math.floor(win.scrollTop() + scrollOffsetTop);
+		winH = Math.floor(win.height() - scrollOffsetTop);
+		setPageDockData();
+	};
+
+	var onPostscroll = function () {
+		window.craf(scrollTimer);
+
+		scrollTimer = window.raf(function () {
+			updatePageDock();
+		});
+	};
+
+	var onResize = function () {
+		window.craf(resizeTimer);
+
+		resizeTimer = window.raf(function () {
+			onScroll();
+			onPostscroll();
+		});
+	};
+
+	// PAGE / ARTICLE CHANGER EVENTS
+	var onPageEnter = function (key, data) {
+		page = $(data.page.key());
+
+		onScroll();
+		onPostscroll();
+	};
+
+	var onPageLeave = function (key, data) {
+		if (data.canRemove) {
+			resetPageDock();
+		}
+	};
+
+	var onArticleEnter = function () {
+		onScroll();
+		onPostscroll();
+	};
+
+	var onArticleLeave = function () {
+		resetPageDock();
+	};
+	
+	var init = function () {
+		
+	};
+	
+	var actions = function () {
+		return {
+			site: {
+				scroll: onScroll,
+				postscroll: onPostscroll,
+				resize: onResize
+			},
+			page: {
+				enter: onPageEnter,
+				leave: onPageLeave
+			},
+			articleChanger: {
+				enter: onArticleEnter,
+				leave: onArticleLeave
+			},
+			autoDockedSide: {
+				updatePageDocks: updatePageDock
+			}
+		};
+	};
+	
+	App.modules.exports('auto-toggle-class-on-scroll-3-state', {
+		init: init,
+		actions: actions
+	});
+	
+})(jQuery);
+
+/**
+ * @author Deux Huit Huit
+ *
+ * auto toggle class on scroll
+ */
+(function ($, global, undefined) {
+	
+	'use strict';
+	
+	var win = $(window);
+	var winHeight = win.height();
+	var html = $('html');
+	var htmlHeight = html.height();
+	var site = $('#site');
+	var elements = $();
+	var curPage = $();
+
+	var SELECTOR = '.js-auto-toggle-class-on-scroll';
+
+	var ATTR_PREFIX = 'data-toggle-class-on-scroll-';
+
+	var ATTR_ADD_BEFORE = ATTR_PREFIX + 'add-before';
+	var ATTR_REM_BEFORE = ATTR_PREFIX + 'remove-before';
+	var ATTR_ADD_AFTER = ATTR_PREFIX + 'add-after';
+	var ATTR_REM_AFTER = ATTR_PREFIX + 'remove-after';
+	var ATTR_REF_COMMON_ANCESTOR = ATTR_PREFIX + 'ref-common-ancestor';
+	var ATTR_REF = ATTR_PREFIX + 'ref';
+	var ATTR_SCREEN_OFFSET = ATTR_PREFIX + 'screen-offset';
+	var ATTR_CTN = ATTR_PREFIX + 'scroll-ctn';
+	var ATTR_ELEMENT_OFFSET = ATTR_PREFIX + 'element-offset';
+
+	var scroll = function () {
+		htmlHeight = html.height();
+		elements.each(function () {
+			var t = $(this);
+			
+			var clab = t.attr(ATTR_ADD_BEFORE);
+			var clrb = t.attr(ATTR_REM_BEFORE);
+			
+			var claa = t.attr(ATTR_ADD_AFTER);
+			var clra = t.attr(ATTR_REM_AFTER);
+			
+			var ref = $(t.attr(ATTR_REF));
+
+			if (!!t.attr(ATTR_REF_COMMON_ANCESTOR)) {
+				ref = t.closest(t.attr(ATTR_REF_COMMON_ANCESTOR))
+					.find(t.attr(ATTR_REF));
+			}
+			
+
+			var reelRef = ref.length ? ref : t;
+			var screenOffset = t.attr(ATTR_SCREEN_OFFSET) || 0;
+
+			var scrollCtn = win;
+			
+			if (!!t.attr(ATTR_CTN)) {
+				scrollCtn = t.closest('.page').find(t.attr(ATTR_CTN));
+			}
+
+			var scrollPos = scrollCtn.scrollTop();
+
+			if (!!reelRef.length) {
+				var fx = function () {
+					t.addClass(clab);
+					t.removeClass(clrb);
+					
+					App.mediator.notify('autoToggleClassOnScroll.executed', {
+						item: t,
+						trigger: 'before',
+						addedClass: clab,
+						removeClass: clrb
+					});
+				};
+				
+				var refOffset = reelRef.offset().top;
+				var screenOffsetInPx = winHeight * screenOffset;
+				var elementOffsetInPx = 0;
+				if (!!t.attr(ATTR_ELEMENT_OFFSET)) {
+					elementOffsetInPx = site.find(t.attr(ATTR_ELEMENT_OFFSET)).outerHeight();
+				}
+				
+				if (refOffset - screenOffsetInPx - elementOffsetInPx < scrollPos ||
+					(!ref.length && // reference is itself
+						scrollPos !== 0 && // we have scrolled
+						scrollPos === htmlHeight - winHeight && // scrolled to end
+						refOffset >= scrollPos // element is below
+					)
+				) {
+					fx = function () {
+						t.addClass(claa);
+						t.removeClass(clra);
+						
+						App.mediator.notify('autoToggleClassOnScroll.executed', {
+							item: t,
+							trigger: 'after',
+							addedClass: claa,
+							removeClass: clra
+						});
+					};
+				}
+				t.data('autoToggleClassOnScroll', fx);
+			}
+		});
+	};
+
+	var scrollTimer = null;
+	
+	var postscroll = function () {
+		global.craf(scrollTimer);
+		scrollTimer = global.raf(function () {
+			elements.each(function () {
+				var t = $(this);
+				App.callback(t.data('autoToggleClassOnScroll'));
+			});
+		});
+	};
+	
+	var resizeOnly = function () {
+		winHeight = Math.max(1, win.height());
+		htmlHeight = Math.max(1, html.height());
+	};
+
+	var resize = function () {
+		resizeOnly();
+		scroll();
+		postscroll();
+	};
+
+	var refreshElementsList = function () {
+		elements = site.find(SELECTOR);
+	};
+	
+	var enter = function (key, data) {
+		
+		curPage = $(data.page.key());
+		//Check if we have other Scroll to follow
+		/*curPage.find('.js-popup-inner-scroll').on('scroll', function () {
+			scroll();
+			postscroll();
+		});*/
+
+		refreshElementsList();
+		resizeOnly();
+		setTimeout(resize, 500);
+	};
+
+	var leave = function (key, data) {
+		//curPage.find('.js-popup-inner-scroll').off('scroll');
+	};
+
+	var refreshAndRun = function () {
+		refreshElementsList();
+		scroll();
+		postscroll();
+	};
+	
+	var actions = function () {
+		return {
+			site: {
+				scroll: scroll,
+				postscroll: postscroll,
+				resize: resize
+			},
+			page: {
+				enter: enter,
+				leave: leave
+			},
+			infiniteScroll: {
+				newListPage: refreshElementsList
+			},
+			articleChanger: {
+				enter: refreshAndRun
+			},
+			search: {
+				complete: refreshAndRun
+			}
+		};
+	};
+	
+	var AutoFadeOnScroll = App.modules.exports('auto-toggle-class-on-scroll', {
+		actions: actions
+	});
+	
+})(jQuery, window);
 
 /**
  * @author Deux Huit Huit
@@ -3632,7 +4005,7 @@
 	};
 
 	var processItem = function (item, state, action) {
-		var flagClass = item.attr('data-' + state + '-state-flag-class');
+		var flagClass = 'is-' + state;
 		var curBoolState = item.hasClass(flagClass);
 
 		if (isSvgElement(item)) {
@@ -3913,27 +4286,47 @@
 	var origin = loc.origin || (loc.protocol + '//' + loc.hostname);
 	var originRegExp = new RegExp('^' + origin, 'i');
 	
-	var onClickGoto = function (e) {
-		var t = $(this);
-		var href = t.attr('href');
-		
+	var mustIgnore = function (t, e) {
+		// ignore click since there are no current page
 		if (!App.mediator._currentPage()) {
 			return true;
 		}
 		
-		if (!e.metaKey && !e.ctrlKey) {
-			if (/^\?.+/.test(href)) {
-				href = window.location.pathname + href;
-			}
-			if (originRegExp.test(href)) {
-				href = href.replace(originRegExp, '');
-			}
-
-			App.mediator.notify('links.gotoClicked', {item: t, url: href});
-
-			App.mediator.goto(href);
-			return window.pd(e);
+		// ignore click since it's not http
+		var href = t.attr('href');
+		if (/^(mailto|skype|tel|ftps?|#)/im.test(href)) {
+			return true;
 		}
+		
+		// no keys on the keyboard
+		if (!!e.metaKey || !!e.ctrlKey) {
+			return true;
+		}
+		return false;
+	};
+	
+	var onClickGoto = function (e) {
+		var t = $(this);
+		var href = t.attr('href');
+		
+		if (mustIgnore(t, e)) {
+			return true;
+		}
+		
+		if (/^\?.+/.test(href)) {
+			href = window.location.pathname + href;
+		}
+		if (originRegExp.test(href)) {
+			href = href.replace(originRegExp, '');
+		}
+		
+		App.mediator.notify('links.gotoClicked', {
+			item: t, url: href
+		});
+		
+		App.mediator.goto(href);
+		
+		return window.pd(e);
 	};
 	
 	var onClickToggle = function (e) {
@@ -3941,7 +4334,7 @@
 		var href = t.attr('href');
 		var fallback = t.attr('data-toggle-fallback-url');
 		
-		if (!App.mediator._currentPage()) {
+		if (mustIgnore(t, e)) {
 			return true;
 		}
 		
@@ -3956,8 +4349,12 @@
 		return window.pd(e);
 	};
 	
-	var actions = function () {
-		return {};
+	var onClickCancel = function (e) {
+		var t = $(this);
+		if (mustIgnore(t, e)) {
+			return true;
+		}
+		return window.pd(e);
 	};
 	
 	var init = function () {
@@ -3970,20 +4367,25 @@
 		var toggleLinks = '[data-action="toggle"]';
 		var absoluteLinks = 'a[href^="/"]';
 		var queryStringLinks = 'a[href^="?"]';
+		var pick = App.device.events.pick;
 		var click = App.device.events.click;
 
 		// capture all click in #site
 		$('#site')
-			.on(click, absoluteLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
-			.on(click, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
-			.on(click, localLinks + dataAttrExclusions + localWorkspaceExclusion, onClickGoto)
-			.on(click, absoluteLinks + toggleLinks, onClickToggle)
-			.on(click, queryStringLinks + toggleLinks, onClickToggle);
+			.on(pick, absoluteLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
+			.on(pick, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
+			.on(pick, localLinks + dataAttrExclusions + localWorkspaceExclusion, onClickGoto)
+			.on(pick, absoluteLinks + toggleLinks, onClickToggle)
+			.on(pick, queryStringLinks + toggleLinks, onClickToggle)
+			.on(click, absoluteLinks + workspaceExclusion + dataAttrExclusions, onClickCancel)
+			.on(click, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickCancel)
+			.on(click, localLinks + dataAttrExclusions + localWorkspaceExclusion, onClickCancel)
+			.on(click, absoluteLinks + toggleLinks, onClickCancel)
+			.on(click, queryStringLinks + toggleLinks, onClickCancel);
 	};
 	
 	var Links = App.modules.exports('links', {
-		init: init,
-		actions: actions
+		init: init
 	});
 	
 })(jQuery);
@@ -4692,7 +5094,7 @@
 		}
 		
 		// block clicks
-		$(o.element).on(App.device.events.click, function (e) {
+		$(o.element).on(App.device.events.pick, function (e) {
 			return window.pd(e, false);
 		});
 	};
@@ -5923,30 +6325,30 @@
 			return 'a[href$=".' + ext + '"], ';
 		}).join('') + 'a[href$="?dl"], a[download]';
 		var notAlreadyTagged = ':not([data-ga-cat])';
-		$('#site').on(App.device.events.click, '[data-ga-cat]', function (e) {
+		$('#site').on(App.device.events.pick, '[data-ga-cat]', function (e) {
 			$(this).sendClickEvent({
 				event: e
 			});
 		})
-		.on(App.device.events.click, externalLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.pick, externalLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-external',
 				event: e
 			});
 		})
-		.on(App.device.events.click, downloadLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.pick, downloadLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-download',
 				event: e
 			});
 		})
-		.on(App.device.events.click, mailtoLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.pick, mailtoLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-mailto',
 				event: e
 			});
 		})
-		.on(App.device.events.click, telLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.pick, telLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-tel',
 				event: e
@@ -5980,7 +6382,7 @@
 				popup: elem.attr('data-popup'),
 				items: elem.attr('data-items'),
 				background: elem.attr('data-background'),
-				click: App.device.events.click
+				click: App.device.events.pick
 			}, opts);
 			
 			// Ensure we are dealing with jQuery objects
