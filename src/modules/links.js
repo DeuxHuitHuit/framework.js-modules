@@ -35,7 +35,7 @@
 			return true;
 		}
 		return false;
-	}
+	};
 	
 	var onClickGoto = function (e) {
 		var t = $(this);
@@ -113,7 +113,7 @@
 			.on(click, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickCancel)
 			.on(click, localLinks + dataAttrExclusions + localWorkspaceExclusion, onClickCancel)
 			.on(click, absoluteLinks + toggleLinks, onClickCancel)
-			.on(click, queryStringLinks + toggleLinks, onClickCancel)
+			.on(click, queryStringLinks + toggleLinks, onClickCancel);
 	};
 	
 	var Links = App.modules.exports('links', {

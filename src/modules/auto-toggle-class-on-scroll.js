@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * auto toggle class on scroll
  */
 (function ($, global, undefined) {
@@ -19,15 +19,15 @@
 
 	var ATTR_PREFIX = 'data-toggle-class-on-scroll-';
 
-	var ATTR_ADD_BEFORE          = ATTR_PREFIX + 'add-before';
-	var ATTR_REM_BEFORE          = ATTR_PREFIX + 'remove-before';
-	var ATTR_ADD_AFTER           = ATTR_PREFIX + 'add-after';
-	var ATTR_REM_AFTER           = ATTR_PREFIX + 'remove-after';
+	var ATTR_ADD_BEFORE = ATTR_PREFIX + 'add-before';
+	var ATTR_REM_BEFORE = ATTR_PREFIX + 'remove-before';
+	var ATTR_ADD_AFTER = ATTR_PREFIX + 'add-after';
+	var ATTR_REM_AFTER = ATTR_PREFIX + 'remove-after';
 	var ATTR_REF_COMMON_ANCESTOR = ATTR_PREFIX + 'ref-common-ancestor';
-	var ATTR_REF                 = ATTR_PREFIX + 'ref';
-	var ATTR_SCREEN_OFFSET       = ATTR_PREFIX + 'screen-offset';
-	var ATTR_CTN                 = ATTR_PREFIX + 'scroll-ctn';
-	var ATTR_ELEMENT_OFFSET      = ATTR_PREFIX + 'element-offset';
+	var ATTR_REF = ATTR_PREFIX + 'ref';
+	var ATTR_SCREEN_OFFSET = ATTR_PREFIX + 'screen-offset';
+	var ATTR_CTN = ATTR_PREFIX + 'scroll-ctn';
+	var ATTR_ELEMENT_OFFSET = ATTR_PREFIX + 'element-offset';
 
 	var scroll = function () {
 		htmlHeight = html.height();
@@ -65,7 +65,7 @@
 					t.removeClass(clrb);
 					
 					App.mediator.notify('autoToggleClassOnScroll.executed', {
-						item: t, 
+						item: t,
 						trigger: 'before',
 						addedClass: clab,
 						removeClass: clrb
@@ -106,13 +106,13 @@
 	var scrollTimer = null;
 	
 	var postscroll = function () {
-		craf(scrollTimer);
-		scrollTimer = raf(function () {
+		global.craf(scrollTimer);
+		scrollTimer = global.raf(function () {
 			elements.each(function () {
 				var t = $(this);
 				App.callback(t.data('autoToggleClassOnScroll'));
 			});
-		})
+		});
 	};
 	
 	var resizeOnly = function () {
@@ -135,7 +135,7 @@
 		curPage = $(data.page.key());
 		//Check if we have other Scroll to follow
 		/*curPage.find('.js-popup-inner-scroll').on('scroll', function () {
-			scroll(); 
+			scroll();
 			postscroll();
 		});*/
 
@@ -170,7 +170,7 @@
 			},
 			articleChanger: {
 				enter: refreshAndRun
-			}, 
+			},
 			search: {
 				complete: refreshAndRun
 			}

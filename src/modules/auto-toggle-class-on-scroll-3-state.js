@@ -38,12 +38,9 @@
 			var ctnOffTop = Math.floor(ctn.offset().top);
 			var ctnH = Math.floor(ctn.outerHeight());
 			var offTop = Math.floor(t.offset().top);
-			var h = Math.floor(t.outerHeight());
+			var height = Math.floor(t.outerHeight());
 
-			var ctn = t.closest(CTN_SELECTOR);
-
-			if (ctn.height() > t.height()) {
-
+			var doIt = function () {
 				var fixedClass = !!t.attr(SECOND_CLASS_ATTR) ?
 					t.attr(SECOND_CLASS_ATTR) : '';
 				var absClass = !!t.attr(THIRD_CLASS_ATTR) ?
@@ -61,9 +58,6 @@
 					extraOffsetTop -= offsetTopElement.outerHeight();
 				}
 
-				var top = offTop;
-				var bot = offTop + h;
-				var h = bot - top;
 				var oTop = ctnOffTop;
 				var oBot = ctnOffTop + ctnH;
 
@@ -71,14 +65,15 @@
 					t.removeClass(absClass + ' ' + fixedClass);
 				};
 
-				if(((oTop + extraOffsetTop) <= curY) && ((oBot + extraOffsetBottom) - curY) > h) {
+				if (((oTop + extraOffsetTop) <= curY) &&
+					((oBot + extraOffsetBottom) - curY) > height) {
 					t.data('tcosFx', function () {
 						//Remove step 3
 						t.removeClass(absClass);
 						//Add Step 2
 						t.addClass(fixedClass);
 					});
-				} else if (((oBot + extraOffsetBottom) - curY) <= h) {
+				} else if (((oBot + extraOffsetBottom) - curY) <= height) {
 					t.data('tcosFx', function () {
 						//Remove Step 2
 						t.removeClass(fixedClass);
@@ -90,6 +85,10 @@
 						t.removeClass(absClass + ' ' + fixedClass);
 					});
 				}
+			};
+
+			if (ctn.height() > t.height()) {
+				doIt();
 			}
 		});
 	};
