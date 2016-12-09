@@ -22,10 +22,17 @@
 		var t = $(this);
 		var href = t.attr('href');
 		
+		// ignore click since there are no current page
 		if (!App.mediator._currentPage()) {
 			return true;
 		}
 		
+		// ignore click since it's not http
+		if (/^(mailto|skype|tel|ftps?|#)/im.test(href)) {
+			return true;
+		}
+		
+		// no keys on the keyboard
 		if (!e.metaKey && !e.ctrlKey) {
 			if (/^\?.+/.test(href)) {
 				href = window.location.pathname + href;
@@ -33,10 +40,13 @@
 			if (originRegExp.test(href)) {
 				href = href.replace(originRegExp, '');
 			}
-
-			App.mediator.notify('links.gotoClicked', {item: t, url: href});
-
+			
+			App.mediator.notify('links.gotoClicked', {
+				item: t, url: href
+			});
+			
 			App.mediator.goto(href);
+			
 			return window.pd(e);
 		}
 	};
