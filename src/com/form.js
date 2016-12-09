@@ -103,6 +103,7 @@
 			
 			isSubmitting = true;
 			submitting(isSubmitting);
+			App.callback(options.post.submitting);
 			
 			window.Loader.load({
 				url: ctn.attr('action'),
