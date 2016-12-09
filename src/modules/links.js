@@ -85,7 +85,7 @@
 		var toggleLinks = '[data-action="toggle"]';
 		var absoluteLinks = 'a[href^="/"]';
 		var queryStringLinks = 'a[href^="?"]';
-		var click = App.device.events.click;
+		var click = App.device.events.pick;
 
 		// capture all click in #site
 		$('#site')

@@ -90,7 +90,7 @@
 	};
 	
 	var init = function () {
-		site.on(App.device.events.click, o.navBtnSelector, onNavBtnClick);
+		site.on(App.device.events.pick, o.navBtnSelector, onNavBtnClick);
 	};
 	
 	var actions = function () {

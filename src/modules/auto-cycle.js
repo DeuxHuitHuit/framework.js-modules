@@ -119,7 +119,7 @@
 	
 	var init = function () {
 		site.on(
-			App.device.events.click,
+			App.device.events.pick,
 			'.js-cycle-slide.video .js-oembed-video-play',
 			onOembedPlayClick
 		);
