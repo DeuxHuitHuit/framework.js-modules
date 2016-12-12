@@ -26,7 +26,7 @@
 		
 		// ignore click since it's not http
 		var href = t.attr('href');
-		if (/^(mailto|skype|tel|ftps?|#)/im.test(href)) {
+		if (/^(mailto|skype|tel|fax|ftps?|#)/im.test(href)) {
 			return true;
 		}
 		
