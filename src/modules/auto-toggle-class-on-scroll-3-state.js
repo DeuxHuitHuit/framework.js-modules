@@ -23,11 +23,16 @@
 	var OFFSET_TOP = 'data-tcos-offset-top';
 	var OFFSET_BOTTOM = 'data-tcos-offset-bottom';
 
+	var rafTimer;
+
 	var updatePageDock = function () {
-		page.find(CONTENT_SELECTOR).each(function () {
-			var t = $(this);
-			App.callback(t.data('tcosFx'));
-		});
+		craf(rafTimer);
+		rafTimer = raf(function () {
+			page.find(CONTENT_SELECTOR).each(function () {
+				var t = $(this);
+				App.callback(t.data('tcosFx'));
+			});
+		})
 	};
 
 	var setPageDockData = function () {
