@@ -19,7 +19,7 @@
 				popup: elem.attr('data-popup'),
 				items: elem.attr('data-items'),
 				background: elem.attr('data-background'),
-				click: App.device.events.pick
+				click: App.device.events.click
 			}, opts);
 			
 			// Ensure we are dealing with jQuery objects

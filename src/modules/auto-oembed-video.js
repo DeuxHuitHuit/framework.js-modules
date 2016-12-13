@@ -75,7 +75,7 @@
 	var init = function () {
 		site = $('#site');
 		
-		site.on(App.device.events.pick, '.js-auto-oembed-video-play', onPlayBtnClick);
+		site.on(App.device.events.click, '.js-auto-oembed-video-play', onPlayBtnClick);
 	};
 	
 	var actions = function () {

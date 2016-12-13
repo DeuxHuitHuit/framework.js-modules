@@ -48,7 +48,7 @@
 	};
 	
 	var init = function () {
-		site.on(App.device.events.pick, '.js-scroll-to-id-button', scrollToIdClicked);
+		site.on(App.device.events.click, '.js-scroll-to-id-button', scrollToIdClicked);
 	};
 	
 	App.modules.exports('auto-scroll-to-id', {
