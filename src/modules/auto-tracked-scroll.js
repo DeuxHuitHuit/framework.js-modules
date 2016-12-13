@@ -9,7 +9,6 @@
 
 	'use strict';
 	
-	var page;
 	var tracker = App.components.create('checkpoint-event', {
 		category: 'Lecture',
 		checkPoints: [25, 50, 75, 90, 100]
@@ -27,7 +26,6 @@
 	};
 	
 	var onEnter = function (next, data) {
-		page = $(data.page.key());
 		tracker.init();
 		App.callback(next);
 		setTimeout(onResize, 100);
