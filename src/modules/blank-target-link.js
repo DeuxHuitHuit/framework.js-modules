@@ -33,9 +33,20 @@
 		}
 	});
 	
+	var page = $('.page');
+	
+	var update = function (ctn) {
+		ctn.find('a').blankLink();
+	};
 	
 	var onPageEnter = function (key, data, e) {
-		$('a', $(data.page.key())).blankLink();
+		page = $(data.page.key());
+		
+		update(page);
+	};
+	
+	var onArticleEnter = function (key, data) {
+		update(data.article);
 	};
 	
 	var init = function () {
