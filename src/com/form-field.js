@@ -1,13 +1,14 @@
 /**
  * @author Deux Huit Huit
  *
- * Form Field
+ *  Form Field
  *
+ *  Moment file : https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.0/moment.min.js
  */
 (function ($, w, doc, moment, undefined) {
 
 	'use strict';
-	
+
 	var defaults = {
 		container: '.js-form-field',
 		input: '.js-form-input',
@@ -53,13 +54,6 @@
 					flags: 'i'
 				}
 			},
-			dateNaissance: {
-				datetime: {
-					dateOnly: true,
-					earliest: moment.utc().subtract(30, 'years'),
-					latest: moment.utc().subtract(18, 'years')
-				}
-			},
 			phone: {
 				format: {
 					pattern: '\\(?[0-9]{3}\\)?[- ]?([0-9]{3})[- ]?([0-9]{4})',
@@ -81,6 +75,25 @@
 		}
 	};
 	
+	var extendedDateRules = null;
+
+	if (window.moment) {
+		extendedDateRules = {
+			rules: {
+				over18Now: {
+					datetime: {
+						dateOnly: true,
+						earliest: window.moment.utc().subtract(150, 'years'),
+						latest: window.moment.utc().subtract(18, 'years')
+					}
+				}
+			}
+		};
+	} else {
+		App.log('com::form-field: Extended date rules are not available.' +
+			' Add Moment.js to enable them.');
+	}
+
 	App.components.exports('form-field', function formField (options) {
 		var ctn;
 		var input;
@@ -92,7 +105,7 @@
 		var rules = [];
 		var self;
 
-		options = $.extend(true, {}, defaults, options);
+		options = $.extend(true, {}, defaults, extendedDateRules, options);
 
 		var getStateClasses = function (t) {
 			return {

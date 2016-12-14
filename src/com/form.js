@@ -194,38 +194,41 @@
 				message: ctn.attr('data-msg-invalid')
 			};
 			var dateFormat = 'DD-MM-YYYY';
-			w.validate.extend(w.validate.validators.datetime, {
-				// must return a millisecond timestamp
-				// also used to parse earlier and latest options
-				parse: function (value, options) {
-					if (!value) {
-						return NaN;
-					}
-					if (moment.isMoment(value)) {
-						return +value;
-					}
-					if (/[^\d-\/]/.test(value)) {
-						return NaN;
-					}
-					var date = moment.utc(value, dateFormat);
-					if (!date.isValid()) {
-						return NaN;
-					}
-					// coerce to ms timestamp
-					return +date;
-				},
-				// must return a string
-				format: function (value, options) {
-					if (!moment.isMoment(value)) {
-						value = moment(value);
-					}
-					return value.format(dateFormat);
-				},
-				message: ctn.attr('data-msg-date-invalid') || ctn.attr('data-msg-invalid'),
-				notValid: ctn.attr('data-msg-date-invalid') || ctn.attr('data-msg-invalid'),
-				tooEarly: ctn.attr('data-msg-date-too-early') || ctn.attr('data-msg-invalid'),
-				tooLate: ctn.attr('data-msg-date-too-late') || ctn.attr('data-msg-invalid')
-			});
+
+			if (!!window.moment) {
+				w.validate.extend(w.validate.validators.datetime, {
+					// must return a millisecond timestamp
+					// also used to parse earlier and latest options
+					parse: function (value, options) {
+						if (!value) {
+							return NaN;
+						}
+						if (moment.isMoment(value)) {
+							return +value;
+						}
+						if (/[^\d-\/]/.test(value)) {
+							return NaN;
+						}
+						var date = moment.utc(value, dateFormat);
+						if (!date.isValid()) {
+							return NaN;
+						}
+						// coerce to ms timestamp
+						return +date;
+					},
+					// must return a string
+					format: function (value, options) {
+						if (!moment.isMoment(value)) {
+							value = moment(value);
+						}
+						return value.format(dateFormat);
+					},
+					message: ctn.attr('data-msg-date-invalid') || ctn.attr('data-msg-invalid'),
+					notValid: ctn.attr('data-msg-date-invalid') || ctn.attr('data-msg-invalid'),
+					tooEarly: ctn.attr('data-msg-date-too-early') || ctn.attr('data-msg-invalid'),
+					tooLate: ctn.attr('data-msg-date-too-late') || ctn.attr('data-msg-invalid')
+				});
+			}
 		};
 		
 		return {
