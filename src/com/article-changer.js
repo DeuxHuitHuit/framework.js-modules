@@ -7,26 +7,38 @@
 (function ($, w, doc, undefined) {
 
 	'use strict';
-	
-	var DEFAULT_DELAY = 350;
 
 	var animToArticleDefault = function (current, next, o) {
-		if (!!current.length) {
-			var afterScroll = function () {
-				current.fadeTo(DEFAULT_DELAY, 0, function () {
-					current.hide();
-					next.fadeTo(DEFAULT_DELAY, 1);
-					o.articleEnter(next);
+		var afterScroll = function () {
+			var ctn = current.closest(o.containerSelector);
+			ctn.css({
+				minHeight: current.height() + 'px'
+			});
+			
+			current.fadeTo(500, 0, function () {
+				current.hide();
+				
+				App.mediator.notify('articleChanger.entering', {
+					article: next,
+					ctn: ctn
 				});
-			};
-			if (App.device.mobile) {
-				afterScroll();
-			} else {
-				$.scrollTo(0, Math.min(500, $(w).scrollTop()), afterScroll);
-			}
+				
+				next.fadeTo(500, 1, function () {
+					ctn.css({
+						minHeight: ''
+					});
+				});
+				
+				setTimeout(function () {
+					o.articleEnter(current, next, o);
+				}, 100);
+			});
+		};
+		if (!!current.length) {
+			afterScroll();
 		} else {
-			next.fadeTo(DEFAULT_DELAY, 1);
-			o.articleEnter(next);
+			next.fadeTo(500, 1);
+			o.articleEnter(current, next, o);
 		}
 	};
 	
@@ -34,11 +46,14 @@
 		var article = o.findArticle(dataLoaded, pageHandle, o);
 		article.hide();
 		articleCtn.append(article);
+		return article;
 	};
 	
 	var findArticleDefault = function (articleCtn, pageHandle, o) {
 		pageHandle = pageHandle || '';
-		return $(o.articleSelector + '[data-handle="' + pageHandle + '"]', $(articleCtn));
+		var selector = o.articleSelector +
+			(o.trackHandle ? '[data-handle="' + pageHandle + '"]' : '');
+		return $(selector, $(articleCtn));
 	};
 	
 	var defOptions = {
@@ -47,8 +62,14 @@
 		findArticle: findArticleDefault,
 		appendArticle: appendDefault,
 		animToArticle: animToArticleDefault,
-		articleEnter: function () {
-			App.modules.notify('articleChanger.enter');
+		trackHandle: true,
+		articleEnter: function (oldItem, newItem, o) {
+			if (!o.trackHandle) {
+				oldItem.remove();
+			}
+			App.mediator.notify('articleChanger.enter', {
+				article: newItem
+			});
 		}
 	};
 	
@@ -62,21 +83,27 @@
 			page = p;
 			o = $.extend({}, defOptions, options);
 			articleCtn = $(o.containerSelector, page);
+			currentPageHandle = o.startPageHandle;
 		};
 		
-		var navigateTo = function (newPageHandle) {
+		var navigateTo = function (newPageHandle, url) {
 			var currentPage = o.findArticle(articleCtn, currentPageHandle, o);
+			var loadUrl = url || document.location.href;
 			var loadSucess = function (dataLoaded, textStatus, jqXHR) {
 				//Append New article
-				o.appendArticle(articleCtn, dataLoaded, newPageHandle, o);
-				var nextPage = o.findArticle(articleCtn, newPageHandle, o);
+				var nextPage = o.appendArticle(articleCtn, dataLoaded, newPageHandle, o);
+				var loc = document.location;
+				var cleanUrl = loc.href.substring(loc.hostname.length + loc.protocol.length + 2);
 				
-				App.modules.notify('pageLoad.end');
-				App.modules.notify('articleChanger.entering');
+				App.mediator.notify('pageLoad.end');
+				App.mediator.notify('articleChanger.loaded', {
+					url: cleanUrl,
+					data: dataLoaded
+				});
 				
 				if (!nextPage.length) {
 					App.log({
-						args: ['Could not find new article `%s`', newPageHandle],
+						args: 'Could not find new article',
 						fx: 'error',
 						me: 'Article Changer'
 					});
@@ -84,19 +111,19 @@
 					o.animToArticle(currentPage, nextPage, o);
 				}
 			};
-			if (currentPageHandle !== newPageHandle) {
+
+			if (!o.trackHandle || currentPageHandle !== newPageHandle) {
 				
-				var nextPage = o.findArticle(articleCtn, newPageHandle, o);
+				var nextPage;
+				if (o.trackHandle) {
+					nextPage = o.findArticle(articleCtn, newPageHandle, o);
+				}
 				
 				// LoadPage
-				if (!nextPage.length) {
-					var loc = '';
-					App.modules.notify('url.getFullUrl', null, function (key, res) {
-						loc = res;
-					});
-					App.modules.notify('pageLoad.start', {page: page});
+				if (!nextPage || !nextPage.length) {
+					App.mediator.notify('pageLoad.start', {page: page});
 					Loader.load({
-						url: loc,
+						url: loadUrl,
 						priority: 0, // now
 						vip: true, // bypass others
 						success: loadSucess,
@@ -113,11 +140,11 @@
 							});
 						},
 						error: function () {
-							App.modules.notify('article.loaderror');
-							App.modules.notify('pageLoad.end');
+							App.mediator.notify('article.loaderror');
+							App.mediator.notify('pageLoad.end');
 						},
 						giveup: function (e) {
-							App.modules.notify('pageLoad.end');
+							App.mediator.notify('pageLoad.end');
 						}
 					});
 					
