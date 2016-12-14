@@ -10,15 +10,27 @@
 
 	var animToArticleDefault = function (current, next, o) {
 		var afterScroll = function () {
+			var ctn = current.closest(o.containerSelector);
+			ctn.css({
+				minHeight: current.height() + 'px'
+			});
+			
 			current.fadeTo(500, 0, function () {
 				current.hide();
 				
-				next.fadeTo(500, 1);
-				o.articleEnter(current, next, o);
-				setTimeout(function () {
-					App.mediator.notify('articleChanger.entering', {
-						article: next
+				App.mediator.notify('articleChanger.entering', {
+					article: next,
+					ctn: ctn
+				});
+				
+				next.fadeTo(500, 1, function () {
+					ctn.css({
+						minHeight: ''
 					});
+				});
+				
+				setTimeout(function () {
+					o.articleEnter(current, next, o);
 				}, 100);
 			});
 		};
