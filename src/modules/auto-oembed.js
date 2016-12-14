@@ -15,7 +15,6 @@
 	var BTN_PLAY_SEL = '.js-auto-oembed-play';
 	var PLAYER_SEL = '.js-auto-oembed-player';
 	var CTN_SEL = '.js-auto-oembed-ctn';
-	var IS_PLAYING_CLASS = 'is-playing';
 	var DATA_KEY = 'auto-oembed';
 	
 	var embedOne = function (ctx, force) {
@@ -58,7 +57,11 @@
 		}
 		
 		if (!!oembed) {
-			vCtn.addClass(IS_PLAYING_CLASS);
+			App.modules.notify('changeState.update', {
+				item: vCtn,
+				state: 'playing',
+				action: 'on'
+			});
 		}
 		
 		return global.pd(e);
@@ -76,7 +79,13 @@
 			var t = $(this);
 			var vPlayer = t.find(PLAYER_SEL);
 			var oembed = t.data(DATA_KEY);
-			t.removeClass(IS_PLAYING_CLASS);
+
+			App.modules.notify('changeState.update', {
+				item: t,
+				state: 'playing',
+				action: 'off'
+			});
+
 			if (!!oembed) {
 				oembed.destroy();
 			}
