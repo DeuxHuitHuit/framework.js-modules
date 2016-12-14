@@ -1,23 +1,24 @@
 /**
  * @author Deux Huit Huit
  *
- *	ATTRIBUTES :
- *		(OPTIONAL)
- *		- data-{state}-state-add-class
- *		- data-{state}-state-rem-class
+ *  ATTRIBUTES :
+ *      (OPTIONAL)
+ *      - data-{state}-state-add-class : List of class added when state goes on
+ *      - data-{state}-state-rem-class : List of class removed when state goes on
  *
- *		- data-{state}-state-follower (Not functionnal)
+ *      - data-{state}-state-follower : List of selector separated by ','
+ *      - data-{state}-state-follower-common-ancestor (if not present: this will be used)
  *
- *	NOTIFY IN :
- *		- changeState.update
- *			{item,state,flag}
+ *  NOTIFY IN :
+ *      - changeState.update
+ *          {item,state,flag}
  *
  *
- *	NOTIFY OUT :
- *		- changeState.begin
- *			{item,state,flag}
- *		- changeState.end
- *			{item,state,flag}
+ *  NOTIFY OUT :
+ *      - changeState.begin
+ *          {item,state,flag}
+ *      - changeState.end
+ *          {item,state,flag}
  *
  */
 (function ($, undefined) {
@@ -36,18 +37,12 @@
 			item[0].nodeName == 'text';
 	};
 
-	var setItemState = function (item, state, flag) {
-		//Flag class
-
+	var doSetItemState = function (item, state, flag) {
 		var flagClass = 'is-' + state;
 		var addClass = item.attr('data-' + state + '-state-add-class');
 		var remClass = item.attr('data-' + state + '-state-rem-class');
 
-		var followerSelector = item.attr('data-' + state + '-state-follower');
-		var followers = item.find(followerSelector);
-
-
-		App.modules.notify('changeState.begin', {item: item, state: state, flag: flag});
+		
 
 		var ieBehavior = function () {
 			//IE BEHAVIOR
@@ -55,8 +50,7 @@
 			var curClass = item.attr('class').split(' ');
 			var finalClass = '';
 
-			if (flag) {
-
+			var ieOn = function () {
 				var remClassArray = [];
 				if (remClass) {
 					remClassArray = remClass.split(' ');
@@ -84,8 +78,9 @@
 
 				//Set class attribute
 				item.attr('class', finalClass);
-			} else {
+			};
 
+			var ieOff = function () {
 				//Remove Add class and flag class
 				var addClassArray = [];
 				if (addClass) {
@@ -111,6 +106,13 @@
 				});
 
 				item.attr('class', finalClass);
+			}
+
+
+			if (flag) {
+				ieOn();
+			} else {
+				ieOff();
 			}
 		};
 
@@ -145,24 +147,29 @@
 				item.removeClass(flagClass);
 			}
 		}
+	};
+
+	var setItemState = function (item, state, flag) {
+		//Flag class
+		var followerCommonAncestor = item.attr('data-' + state + '-state-follower-common-ancestor');
+		var followerSelector = item.attr('data-' + state + '-state-follower');
+		var followerScope = item;
+
+		if (followerCommonAncestor) {
+			followerScope = item.closest(followerCommonAncestor);
+		}
+		
+		var followers = followerScope.find(followerSelector);
+
+		App.modules.notify('changeState.begin', {item: item, state: state, flag: flag});
+
+		//Execute change
+		doSetItemState(item, state, flag);
 
 		//Process followers
 		followers.each(function () {
 			var it = $(this);
-			var itAddClass = it.attr('data-' + state + '-state-add-class');
-			var itRemClass = it.attr('data-' + state + '-state-rem-class');
-
-			//if (isSvgElement(item)) {
-
-			//} else {
-			if (flag) {
-				it.addClass(itAddClass);
-				it.removeClass(itRemClass);
-			} else {
-				it.removeClass(itAddClass);
-				it.addClass(itRemClass);
-			}
-			//}
+			setItemState(it, state, flag);
 		});
 		
 		App.modules.notify('changeState.end', {item: item, state: state, flag: flag});
