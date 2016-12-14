@@ -9,6 +9,8 @@
  *      - data-{state}-state-follower : List of selector separated by ','
  *      - data-{state}-state-follower-common-ancestor (if not present: this will be used)
  *
+ *      - data-{state}-state-notify-on: custom notification called when switching state to on with data : {item:this}
+ *      - data-{state}-state-notify-off: custom notification called when switching state to off with data : {item:this}
  *  NOTIFY IN :
  *      - changeState.update
  *          {item,state,flag}
@@ -41,8 +43,14 @@
 		var flagClass = 'is-' + state;
 		var addClass = item.attr('data-' + state + '-state-add-class');
 		var remClass = item.attr('data-' + state + '-state-rem-class');
+		var notifyOn = item.attr('data-' + state + '-state-notify-on') || '';
+		var notifyOff = item.attr('data-' + state + '-state-notify-off') || '';
 
-		
+		if (flag && notifyOn.length) {
+			App.mediator.notify(notifyOn, {item: item});
+		} else if (!flag && notifyOff.length) {
+			App.mediator.notify(notifyOff, {item: item});
+		}
 
 		var ieBehavior = function () {
 			//IE BEHAVIOR
@@ -106,7 +114,7 @@
 				});
 
 				item.attr('class', finalClass);
-			}
+			};
 
 
 			if (flag) {
