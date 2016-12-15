@@ -28,9 +28,11 @@
 	};
 	
 	var removeScroll = function () {
-		var x = win.width();
-		html.addClass('no-scroll');
-		fixScroll(win.width() - x);
+		if (!html.hasClass('no-scroll')) {
+			var x = win.width();
+			html.addClass('no-scroll');
+			fixScroll(win.width() - x);
+		}
 	};
 	
 	var init = function () {
