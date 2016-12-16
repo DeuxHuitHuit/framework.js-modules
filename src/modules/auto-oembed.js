@@ -17,6 +17,25 @@
 	var CTN_SEL = '.js-auto-oembed-ctn';
 	var DATA_KEY = 'auto-oembed';
 	
+	var destroyOembed = function (ctn) {
+		ctn.find(CTN_SEL).each(function () {
+			var t = $(this);
+ -			var vPlayer = t.find(PLAYER_SEL);
+ -			var oembed = t.data(DATA_KEY);
+ -
+ -			App.modules.notify('changeState.update', {
+ -				item: t,
+ -				state: 'playing',
+ -				action: 'off'
+ -			});
+ -
+ -			if (!!oembed) {
+ -				oembed.destroy();
+ -			}
+ -			t.data(DATA_KEY, null);
+		});
+	};
+	
 	var embedOne = function (ctx, force) {
 		var vPlayer = ctx.find(PLAYER_SEL);
 		var autoLoad = vPlayer.attr('data-autoload');
@@ -75,22 +94,7 @@
 	};
 	
 	var onPageLeave = function () {
-		page.find(CTN_SEL).each(function () {
-			var t = $(this);
-			var vPlayer = t.find(PLAYER_SEL);
-			var oembed = t.data(DATA_KEY);
-
-			App.modules.notify('changeState.update', {
-				item: t,
-				state: 'playing',
-				action: 'off'
-			});
-
-			if (!!oembed) {
-				oembed.destroy();
-			}
-			t.data(DATA_KEY, null);
-		});
+		destroyOembed(page);
 		page = $();
 		components = [];
 	};
@@ -107,8 +111,10 @@
 	};
 	
 	var onArticleChangerEnter = function (key, data) {
-		if (!!data.item) {
-			embedAll(data.item);
+		destroyOembed(page);
+		
+		if (!!data.article) {
+			embedAll(data.article);
 		}
 	};
 	
