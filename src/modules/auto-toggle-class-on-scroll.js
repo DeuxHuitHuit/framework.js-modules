@@ -106,8 +106,8 @@
 	var scrollTimer = null;
 	
 	var postscroll = function () {
-		global.craf(scrollTimer);
-		scrollTimer = global.raf(function () {
+		window.craf(scrollTimer);
+		scrollTimer = window.raf(function () {
 			elements.each(function () {
 				var t = $(this);
 				App.callback(t.data('autoToggleClassOnScroll'));

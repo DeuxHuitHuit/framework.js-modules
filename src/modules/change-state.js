@@ -9,8 +9,10 @@
  *      - data-{state}-state-follower : List of selector separated by ','
  *      - data-{state}-state-follower-common-ancestor (if not present: this will be used)
  *
- *      - data-{state}-state-notify-on: custom list of notification separated by ',' called when switching state to on. Data passed : {item:this}
- *      - data-{state}-state-notify-off: custom list of notification separated by ',' called when switching state to off. Data passed : {item:this}
+ *      - data-{state}-state-notify-on: custom list of notification separated by ','
+ *             called when switching state to on. Data passed : {item:this}
+ *      - data-{state}-state-notify-off: custom list of notification separated by ','
+ *             called when switching state to off. Data passed : {item:this}
  *
  *  NOTIFY IN :
  *      - changeState.update
@@ -50,11 +52,11 @@
 		if (flag && notifyOn.length) {
 			$.each(notifyOn.split(','), function (i, e) {
 				App.mediator.notify(e, {item: item});
-			})
+			});
 		} else if (!flag && notifyOff.length) {
 			$.each(notifyOff.split(','), function (i, e) {
 				App.mediator.notify(e, {item: item});
-			})
+			});
 		}
 
 		var ieBehavior = function () {

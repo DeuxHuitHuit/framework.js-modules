@@ -26,13 +26,13 @@
 	var rafTimer;
 
 	var updatePageDock = function () {
-		craf(rafTimer);
-		rafTimer = raf(function () {
+		window.craf(rafTimer);
+		rafTimer = window.raf(function () {
 			page.find(CONTENT_SELECTOR).each(function () {
 				var t = $(this);
 				App.callback(t.data('tcosFx'));
 			});
-		})
+		});
 	};
 
 	var setPageDockData = function () {
