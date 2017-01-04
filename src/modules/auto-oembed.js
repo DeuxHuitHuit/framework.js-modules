@@ -101,7 +101,7 @@
 	
 	var onSiteLoaded = function () {
 		isFirstTime = false;
-		embedAll(page);
+		embedAll(site);
 	};
 	
 	var onInfiniteScrollLoaded = function (key, data) {
