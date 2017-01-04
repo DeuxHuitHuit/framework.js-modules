@@ -20,19 +20,19 @@
 	var destroyOembed = function (ctn) {
 		ctn.find(CTN_SEL).each(function () {
 			var t = $(this);
- -			var vPlayer = t.find(PLAYER_SEL);
- -			var oembed = t.data(DATA_KEY);
- -
- -			App.modules.notify('changeState.update', {
- -				item: t,
- -				state: 'playing',
- -				action: 'off'
- -			});
- -
- -			if (!!oembed) {
- -				oembed.destroy();
- -			}
- -			t.data(DATA_KEY, null);
+			var vPlayer = t.find(PLAYER_SEL);
+			var oembed = t.data(DATA_KEY);
+
+			App.modules.notify('changeState.update', {
+				item: t,
+				state: 'playing',
+				action: 'off'
+			});
+
+			if (!!oembed) {
+				oembed.destroy();
+			}
+			t.data(DATA_KEY, null);
 		});
 	};
 	
