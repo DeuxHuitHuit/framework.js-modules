@@ -1,6 +1,6 @@
 /**
  * @author Deux Huit Huit
- * 
+ *
  * auto jit image
  */
 (function ($, global, undefined) {
@@ -14,9 +14,9 @@
 	var update = function (ctn) {
 		ctn.find('a[data-mailto]').each(function () {
 			var t = $(this);
-			t.attr('href', 'mailto:' +  t.attr('data-mailto'));
+			t.attr('href', 'mailto:' + t.attr('data-mailto'));
 		});
-	}
+	};
 
 	var onArticleEnter = function (key, data) {
 		update(data.article);

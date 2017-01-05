@@ -69,15 +69,6 @@
 			App.callback(o.onTimeupdate, [o.video]);
 		};
 
-		var onCanplay = function (e) {
-			resizeVideo();
-			App.callback(o.onCanplay, [o.ctn, o.video]);
-		};
-
-		var onPlaying = function (e) {
-			App.callback(o.onPlaying, [o.ctn, o.video]);
-		};
-
 		var resizeVideo = function () {
 			if (!!o.resizable) {
 				var ref = !!o.video.closest(o.resizeContainerSelector).length ?
@@ -107,6 +98,15 @@
 					position: newPosition
 				});
 			}
+		};
+
+		var onCanplay = function (e) {
+			resizeVideo();
+			App.callback(o.onCanplay, [o.ctn, o.video]);
+		};
+
+		var onPlaying = function (e) {
+			App.callback(o.onPlaying, [o.ctn, o.video]);
 		};
 
 		var onLoaded = function (e) {

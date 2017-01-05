@@ -26,6 +26,21 @@
 		video.addClass('is-loaded');
 	};
 
+	var initVideo = function (video, options) {
+		var minimalOptions = {
+			onPlaying: onVideoPlaying,
+			onLoaded: onVideoCanPlay
+		};
+
+		var vOptions = $.extend({}, minimalOptions, options);
+
+		var v = App.components.create('video', vOptions);
+
+		v.init(video);
+
+		video.data('autoVideoComponent', v);
+	};
+
 	var playVideos = function (ctn) {
 		ctn.find(AUTO_VIDEO_SELECTOR).each(function () {
 			var t = $(this);
@@ -46,21 +61,6 @@
 				});
 			}
 		});
-	};
-
-	var initVideo = function (video, options) {
-		var minimalOptions = {
-			onPlaying: onVideoPlaying,
-			onLoaded: onVideoCanPlay
-		};
-
-		var vOptions = $.extend({}, minimalOptions, options);
-
-		var v = App.components.create('video', vOptions);
-
-		v.init(video);
-
-		video.data['autoVideoComponent'] = v;
 	};
 
 	var initVideos = function (ctn) {
