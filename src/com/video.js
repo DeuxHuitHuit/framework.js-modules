@@ -30,10 +30,26 @@
 				});
 			};
 		};
+		var factoryProp = function (prop) {
+			return function (value) {
+				if (!value) {
+					var domElement = $(this).get(0);
+					return !domElement ? 0 : (domElement[prop] || 0);
+				}
+				return $(this).each(function (i, e) {
+					if (!!e) {
+						domElement[prop] = value;
+					}
+				});
+			};
+		};
 		$.fn.mediaPlay = factory('play');
 		$.fn.mediaPause = factory('pause');
 		$.fn.mediaLoad = factory('load');
 		$.fn.mediaCurrentTime = factory('currentTime');
+		$.fn.mediaMuted = factoryProp('muted');
+		$.fn.mediaHeight = factoryProp('videoHeight');
+		$.fn.mediaWidth = factoryProp('videoWidth');
 	})($);
 	
 	App.components.exports('video', function (options) {
@@ -54,6 +70,7 @@
 		};
 
 		var onCanplay = function (e) {
+			resizeVideo();
 			App.callback(o.onCanplay, [o.ctn, o.video]);
 		};
 
@@ -67,7 +84,7 @@
 					o.video.closest(o.resizeContainerSelector) : o.ctn;
 				var refW = ref.width();
 				var refH = ref.height();
-				var ratio = o.video.width() / o.video.height();
+				var ratio = o.video.mediaWidth() / o.video.mediaHeight();
 
 				var newSize = $.sizing.aspectFill({
 					width: refW,
@@ -97,7 +114,6 @@
 			App.callback(o.onLoaded, [o.ctn, o.video]);
 		};
 
-
 		// METHODS
 		var loadVideo = function () {
 			o.video.mediaLoad();
@@ -113,6 +129,10 @@
 
 		var seekVideo = function (time) {
 			o.video.mediaCurrentTime(time);
+		};
+
+		var toggleMute = function () {
+			o.video.mediaMuted(!o.video.mediaMuted());
 		};
 
 		var destroy = function () {
