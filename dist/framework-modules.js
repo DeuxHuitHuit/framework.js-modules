@@ -1,6 +1,6 @@
-/*! framework.js-modules - v1.2.0 - build 351 - 2016-12-09
+/*! framework.js-modules - v1.3.0 - build 353 - 2017-01-05
  * https://github.com/DeuxHuitHuit/framework.js-modules
- * Copyright (c) 2016 Deux Huit Huit (https://deuxhuithuit.com/);
+ * Copyright (c) 2017 Deux Huit Huit (https://deuxhuithuit.com/);
  * MIT *//**
  * @author Deux Huit Huit
  *
@@ -13,15 +13,27 @@
 
 	var animToArticleDefault = function (current, next, o) {
 		var afterScroll = function () {
+			var ctn = current.closest(o.containerSelector);
+			ctn.css({
+				minHeight: current.height() + 'px'
+			});
+			
 			current.fadeTo(500, 0, function () {
 				current.hide();
 				
-				next.fadeTo(500, 1);
-				o.articleEnter(current, next, o);
-				setTimeout(function () {
-					App.mediator.notify('articleChanger.entering', {
-						article: next
+				App.mediator.notify('articleChanger.entering', {
+					article: next,
+					ctn: ctn
+				});
+				
+				next.fadeTo(500, 1, function () {
+					ctn.css({
+						minHeight: ''
 					});
+				});
+				
+				setTimeout(function () {
+					o.articleEnter(current, next, o);
 				}, 100);
 			});
 		};
@@ -162,149 +174,6 @@
 /**
  * @author Deux Huit Huit
  *
- * Article Changer
- *
- */
-(function ($, w, doc, undefined) {
-
-	'use strict';
-	
-	var DEFAULT_DELAY = 350;
-
-	var animToArticleDefault = function (current, next, o) {
-		if (!!current.length) {
-			var afterScroll = function () {
-				current.fadeTo(DEFAULT_DELAY, 0, function () {
-					current.hide();
-					next.fadeTo(DEFAULT_DELAY, 1);
-					o.articleEnter(next);
-				});
-			};
-			if (App.device.mobile) {
-				afterScroll();
-			} else {
-				$.scrollTo(0, Math.min(500, $(w).scrollTop()), afterScroll);
-			}
-		} else {
-			next.fadeTo(DEFAULT_DELAY, 1);
-			o.articleEnter(next);
-		}
-	};
-	
-	var appendDefault = function (articleCtn, dataLoaded, pageHandle, o) {
-		var article = o.findArticle(dataLoaded, pageHandle, o);
-		article.hide();
-		articleCtn.append(article);
-	};
-	
-	var findArticleDefault = function (articleCtn, pageHandle, o) {
-		pageHandle = pageHandle || '';
-		return $(o.articleSelector + '[data-handle="' + pageHandle + '"]', $(articleCtn));
-	};
-	
-	var defOptions = {
-		articleSelector: '.js-article',
-		containerSelector: '.js-article-ctn',
-		findArticle: findArticleDefault,
-		appendArticle: appendDefault,
-		animToArticle: animToArticleDefault,
-		articleEnter: function () {
-			App.modules.notify('articleChanger.enter');
-		}
-	};
-	
-	App.components.exports('articleChanger', function articleChanger () {
-		var o;
-		var page;
-		var articleCtn;
-		var currentPageHandle;
-		
-		var init = function (p, options) {
-			page = p;
-			o = $.extend({}, defOptions, options);
-			articleCtn = $(o.containerSelector, page);
-		};
-		
-		var navigateTo = function (newPageHandle) {
-			var currentPage = o.findArticle(articleCtn, currentPageHandle, o);
-			var loadSucess = function (dataLoaded, textStatus, jqXHR) {
-				//Append New article
-				o.appendArticle(articleCtn, dataLoaded, newPageHandle, o);
-				var nextPage = o.findArticle(articleCtn, newPageHandle, o);
-				
-				App.modules.notify('pageLoad.end');
-				App.modules.notify('articleChanger.entering');
-				
-				if (!nextPage.length) {
-					App.log({
-						args: ['Could not find new article `%s`', newPageHandle],
-						fx: 'error',
-						me: 'Article Changer'
-					});
-				} else {
-					o.animToArticle(currentPage, nextPage, o);
-				}
-			};
-			if (currentPageHandle !== newPageHandle) {
-				
-				var nextPage = o.findArticle(articleCtn, newPageHandle, o);
-				
-				// LoadPage
-				if (!nextPage.length) {
-					var loc = '';
-					App.modules.notify('url.getFullUrl', null, function (key, res) {
-						loc = res;
-					});
-					App.modules.notify('pageLoad.start', {page: page});
-					Loader.load({
-						url: loc,
-						priority: 0, // now
-						vip: true, // bypass others
-						success: loadSucess,
-						progress: function (e) {
-							var total = e.originalEvent.total;
-							var loaded = e.originalEvent.loaded;
-							var percent = total > 0 ? loaded / total : 0;
-							
-							App.mediator.notify('pageLoad.progress', {
-								event: e,
-								total: total,
-								loaded: loaded,
-								percent: percent
-							});
-						},
-						error: function () {
-							App.modules.notify('article.loaderror');
-							App.modules.notify('pageLoad.end');
-						},
-						giveup: function (e) {
-							App.modules.notify('pageLoad.end');
-						}
-					});
-					
-				} else {
-					o.animToArticle(currentPage, nextPage, o);
-				}
-				
-				currentPageHandle = newPageHandle;
-			}
-		};
-		
-		return {
-			init: init,
-			clear: function () {
-				currentPageHandle = '';
-			},
-			navigateTo: navigateTo
-		};
-	
-	});
-	
-})(jQuery, window, document);
-
-/**
- * @author Deux Huit Huit
- *
  * Checkpoint event
  *  Sends a analytic event when a certain gate is reached.
  */
@@ -354,13 +223,14 @@
 /**
  * @author Deux Huit Huit
  *
- * Form Field
+ *  Form Field
  *
+ *  Moment file : https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.0/moment.min.js
  */
 (function ($, w, doc, moment, undefined) {
 
 	'use strict';
-	
+
 	var defaults = {
 		container: '.js-form-field',
 		input: '.js-form-input',
@@ -406,13 +276,6 @@
 					flags: 'i'
 				}
 			},
-			dateNaissance: {
-				datetime: {
-					dateOnly: true,
-					earliest: moment.utc().subtract(30, 'years'),
-					latest: moment.utc().subtract(18, 'years')
-				}
-			},
 			phone: {
 				format: {
 					pattern: '\\(?[0-9]{3}\\)?[- ]?([0-9]{3})[- ]?([0-9]{4})',
@@ -434,6 +297,25 @@
 		}
 	};
 	
+	var extendedDateRules = null;
+
+	if (window.moment) {
+		extendedDateRules = {
+			rules: {
+				over18Now: {
+					datetime: {
+						dateOnly: true,
+						earliest: window.moment.utc().subtract(150, 'years'),
+						latest: window.moment.utc().subtract(18, 'years')
+					}
+				}
+			}
+		};
+	} else {
+		App.log('com::form-field: Extended date rules are not available.' +
+			' Add Moment.js to enable them.');
+	}
+
 	App.components.exports('form-field', function formField (options) {
 		var ctn;
 		var input;
@@ -445,7 +327,7 @@
 		var rules = [];
 		var self;
 
-		options = $.extend(true, {}, defaults, options);
+		options = $.extend(true, {}, defaults, extendedDateRules, options);
 
 		var getStateClasses = function (t) {
 			return {
@@ -885,38 +767,41 @@
 				message: ctn.attr('data-msg-invalid')
 			};
 			var dateFormat = 'DD-MM-YYYY';
-			w.validate.extend(w.validate.validators.datetime, {
-				// must return a millisecond timestamp
-				// also used to parse earlier and latest options
-				parse: function (value, options) {
-					if (!value) {
-						return NaN;
-					}
-					if (moment.isMoment(value)) {
-						return +value;
-					}
-					if (/[^\d-\/]/.test(value)) {
-						return NaN;
-					}
-					var date = moment.utc(value, dateFormat);
-					if (!date.isValid()) {
-						return NaN;
-					}
-					// coerce to ms timestamp
-					return +date;
-				},
-				// must return a string
-				format: function (value, options) {
-					if (!moment.isMoment(value)) {
-						value = moment(value);
-					}
-					return value.format(dateFormat);
-				},
-				message: ctn.attr('data-msg-date-invalid') || ctn.attr('data-msg-invalid'),
-				notValid: ctn.attr('data-msg-date-invalid') || ctn.attr('data-msg-invalid'),
-				tooEarly: ctn.attr('data-msg-date-too-early') || ctn.attr('data-msg-invalid'),
-				tooLate: ctn.attr('data-msg-date-too-late') || ctn.attr('data-msg-invalid')
-			});
+
+			if (!!window.moment) {
+				w.validate.extend(w.validate.validators.datetime, {
+					// must return a millisecond timestamp
+					// also used to parse earlier and latest options
+					parse: function (value, options) {
+						if (!value) {
+							return NaN;
+						}
+						if (moment.isMoment(value)) {
+							return +value;
+						}
+						if (/[^\d-\/]/.test(value)) {
+							return NaN;
+						}
+						var date = moment.utc(value, dateFormat);
+						if (!date.isValid()) {
+							return NaN;
+						}
+						// coerce to ms timestamp
+						return +date;
+					},
+					// must return a string
+					format: function (value, options) {
+						if (!moment.isMoment(value)) {
+							value = moment(value);
+						}
+						return value.format(dateFormat);
+					},
+					message: ctn.attr('data-msg-date-invalid') || ctn.attr('data-msg-invalid'),
+					notValid: ctn.attr('data-msg-date-invalid') || ctn.attr('data-msg-invalid'),
+					tooEarly: ctn.attr('data-msg-date-too-early') || ctn.attr('data-msg-invalid'),
+					tooLate: ctn.attr('data-msg-date-too-late') || ctn.attr('data-msg-invalid')
+				});
+			}
 		};
 		
 		return {
@@ -1709,10 +1594,26 @@
 				});
 			};
 		};
+		var factoryProp = function (prop) {
+			return function (value) {
+				if (!value) {
+					var domElement = $(this).get(0);
+					return !domElement ? 0 : (domElement[prop] || 0);
+				}
+				return $(this).each(function (i, e) {
+					if (!!e) {
+						domElement[prop] = value;
+					}
+				});
+			};
+		};
 		$.fn.mediaPlay = factory('play');
 		$.fn.mediaPause = factory('pause');
 		$.fn.mediaLoad = factory('load');
 		$.fn.mediaCurrentTime = factory('currentTime');
+		$.fn.mediaMuted = factoryProp('muted');
+		$.fn.mediaHeight = factoryProp('videoHeight');
+		$.fn.mediaWidth = factoryProp('videoWidth');
 	})($);
 	
 	App.components.exports('video', function (options) {
@@ -1732,21 +1633,13 @@
 			App.callback(o.onTimeupdate, [o.video]);
 		};
 
-		var onCanplay = function (e) {
-			App.callback(o.onCanplay, [o.ctn, o.video]);
-		};
-
-		var onPlaying = function (e) {
-			App.callback(o.onPlaying, [o.ctn, o.video]);
-		};
-
 		var resizeVideo = function () {
 			if (!!o.resizable) {
 				var ref = !!o.video.closest(o.resizeContainerSelector).length ?
 					o.video.closest(o.resizeContainerSelector) : o.ctn;
 				var refW = ref.width();
 				var refH = ref.height();
-				var ratio = o.video.width() / o.video.height();
+				var ratio = o.video.mediaWidth() / o.video.mediaHeight();
 
 				var newSize = $.sizing.aspectFill({
 					width: refW,
@@ -1771,11 +1664,19 @@
 			}
 		};
 
+		var onCanplay = function (e) {
+			resizeVideo();
+			App.callback(o.onCanplay, [o.ctn, o.video]);
+		};
+
+		var onPlaying = function (e) {
+			App.callback(o.onPlaying, [o.ctn, o.video]);
+		};
+
 		var onLoaded = function (e) {
 			resizeVideo();
 			App.callback(o.onLoaded, [o.ctn, o.video]);
 		};
-
 
 		// METHODS
 		var loadVideo = function () {
@@ -1792,6 +1693,10 @@
 
 		var seekVideo = function (time) {
 			o.video.mediaCurrentTime(time);
+		};
+
+		var toggleMute = function () {
+			o.video.mediaMuted(!o.video.mediaMuted());
 		};
 
 		var destroy = function () {
@@ -1971,7 +1876,7 @@
 
 	var init = function () {
 		//Attach click handler
-		site.on(App.device.events.pick, BUTTON_SELECTOR, buttonClicked);
+		site.on(App.device.events.click, BUTTON_SELECTOR, buttonClicked);
 	};
 	
 	App.modules.exports('auto-change-state-click', {
@@ -2159,7 +2064,7 @@
 	
 	var init = function () {
 		site.on(
-			App.device.events.pick,
+			App.device.events.click,
 			'.js-cycle-slide.video .js-oembed-video-play',
 			onOembedPlayClick
 		);
@@ -2278,7 +2183,7 @@
 	};
 	
 	var init = function () {
-		site.on(App.device.events.pick, o.navBtnSelector, onNavBtnClick);
+		site.on(App.device.events.click, o.navBtnSelector, onNavBtnClick);
 	};
 	
 	var actions = function () {
@@ -2350,6 +2255,57 @@
 	};
 	
 	var AutoJitImage = App.modules.exports('auto-jit-image', {
+		init: init,
+		actions: actions
+	});
+	
+})(jQuery, window);
+
+/**
+ * @author Deux Huit Huit
+ *
+ * auto jit image
+ */
+(function ($, global, undefined) {
+	
+	'use strict';
+	
+	var firstTime = true;
+	var site = $('#site');
+	var page = $('.page');
+	
+	var update = function (ctn) {
+		ctn.find('a[data-mailto]').each(function () {
+			var t = $(this);
+			t.attr('href', 'mailto:' + t.attr('data-mailto'));
+		});
+	};
+
+	var onArticleEnter = function (key, data) {
+		update(data.article);
+	};
+
+	var onEnter = function (key, data) {
+		page = $(data.page.key());
+		update(page);
+	};
+
+	var init = function () {
+		update(site);
+	};
+	
+	var actions = function () {
+		return {
+			page: {
+				enter: onEnter
+			},
+			articleChanger: {
+				enter: onArticleEnter
+			}
+		};
+	};
+	
+	var AutoJitImage = App.modules.exports('auto-mailto', {
 		init: init,
 		actions: actions
 	});
@@ -2437,110 +2393,11 @@
 	};
 	
 	var init = function () {
-		site.on(App.device.events.pick, BUTTON_SELECTOR, buttonClicked);
+		site.on(App.device.events.click, BUTTON_SELECTOR, buttonClicked);
 	};
 	
 	App.modules.exports('auto-merge-qs-value', {
 		init: init
-	});
-	
-})(jQuery);
-
-/**
- * @author Deux Huit Huit
- *
- * module to manage oembed videos
- */
-(function ($, undefined) {
-	
-	'use strict';
-	
-	var win = $(window);
-	var site;
-	var isFirstLoad = true;
-	
-	var getPage = function () {
-		return $('> .page:visible', site.find('#site-pages'));
-	};
-	
-	var onPlayBtnClick = function (e) {
-		var t = $(this);
-		var vCtn = t.closest('.js-auto-oembed-video-ctn');
-		var vPlayer = vCtn.find('.js-auto-oembed-video-player');
-		
-		if (!App.device.mobile) {
-			App.modules.notify('loadVideo', {
-				player: vPlayer,
-				autoplay: true
-			});
-		}
-		
-		vCtn.addClass('is-playing');
-		
-		return window.pd(e);
-		
-	};
-	
-	var loadPageVideo = function () {
-		var p = getPage();
-		
-		p.find('.js-auto-oembed-video-ctn').each(function () {
-			var t = $(this);
-			var vPlayer = t.find('.js-auto-oembed-video-player');
-			
-			App.modules.notify('loadVideo', {
-				player: vPlayer
-			});
-		});
-	};
-	
-	var onPageEnter = function () {
-		if (!isFirstLoad && App.device.mobile) {
-			loadPageVideo();
-		}
-	};
-	
-	var onPageLeave = function () {
-		var p = getPage();
-		
-		p.find('.js-auto-oembed-video-ctn').each(function () {
-			var t = $(this);
-			var vPlayer = t.find('.js-auto-oembed-video-player');
-			
-			t.removeClass('is-playing');
-			vPlayer.empty();
-		});
-	};
-	
-	var onSiteLoaded = function () {
-		isFirstLoad = false;
-		if (App.device.mobile) {
-			loadPageVideo();
-		}
-		
-	};
-	
-	var init = function () {
-		site = $('#site');
-		
-		site.on(App.device.events.pick, '.js-auto-oembed-video-play', onPlayBtnClick);
-	};
-	
-	var actions = function () {
-		return {
-			page: {
-				enter: onPageEnter,
-				leaving: onPageLeave
-			},
-			site: {
-				loaded: onSiteLoaded
-			}
-		};
-	};
-	
-	App.modules.exports('auto-oembed-video', {
-		init: init,
-		actions: actions
 	});
 	
 })(jQuery);
@@ -2562,8 +2419,26 @@
 	var BTN_PLAY_SEL = '.js-auto-oembed-play';
 	var PLAYER_SEL = '.js-auto-oembed-player';
 	var CTN_SEL = '.js-auto-oembed-ctn';
-	var IS_PLAYING_CLASS = 'is-playing';
 	var DATA_KEY = 'auto-oembed';
+	
+	var destroyOembed = function (ctn) {
+		ctn.find(CTN_SEL).each(function () {
+			var t = $(this);
+			var vPlayer = t.find(PLAYER_SEL);
+			var oembed = t.data(DATA_KEY);
+
+			App.modules.notify('changeState.update', {
+				item: t,
+				state: 'playing',
+				action: 'off'
+			});
+
+			if (!!oembed) {
+				oembed.destroy();
+			}
+			t.data(DATA_KEY, null);
+		});
+	};
 	
 	var embedOne = function (ctx, force) {
 		var vPlayer = ctx.find(PLAYER_SEL);
@@ -2605,7 +2480,11 @@
 		}
 		
 		if (!!oembed) {
-			vCtn.addClass(IS_PLAYING_CLASS);
+			App.modules.notify('changeState.update', {
+				item: vCtn,
+				state: 'playing',
+				action: 'on'
+			});
 		}
 		
 		return global.pd(e);
@@ -2619,23 +2498,14 @@
 	};
 	
 	var onPageLeave = function () {
-		page.find(CTN_SEL).each(function () {
-			var t = $(this);
-			var vPlayer = t.find(PLAYER_SEL);
-			var oembed = t.data(DATA_KEY);
-			t.removeClass(IS_PLAYING_CLASS);
-			if (!!oembed) {
-				oembed.destroy();
-			}
-			t.data(DATA_KEY, null);
-		});
+		destroyOembed(page);
 		page = $();
 		components = [];
 	};
 	
 	var onSiteLoaded = function () {
 		isFirstTime = false;
-		embedAll(page);
+		embedAll(site);
 	};
 	
 	var onInfiniteScrollLoaded = function (key, data) {
@@ -2645,13 +2515,15 @@
 	};
 	
 	var onArticleChangerEnter = function (key, data) {
-		if (!!data.item) {
-			embedAll(data.item);
+		destroyOembed(page);
+		
+		if (!!data.article) {
+			embedAll(data.article);
 		}
 	};
 	
 	var init = function () {
-		site.on(App.device.events.pick, BTN_PLAY_SEL, onPlayBtnClick);
+		site.on(App.device.events.click, BTN_PLAY_SEL, onPlayBtnClick);
 	};
 	
 	var actions = function () {
@@ -2970,7 +2842,7 @@
 	};
 	
 	var init = function () {
-		site.on(App.device.events.pick, '.js-scroll-to-id-button', scrollToIdClicked);
+		site.on(App.device.events.click, '.js-scroll-to-id-button', scrollToIdClicked);
 	};
 	
 	App.modules.exports('auto-scroll-to-id', {
@@ -3270,10 +3142,15 @@
 	var OFFSET_TOP = 'data-tcos-offset-top';
 	var OFFSET_BOTTOM = 'data-tcos-offset-bottom';
 
+	var rafTimer;
+
 	var updatePageDock = function () {
-		page.find(CONTENT_SELECTOR).each(function () {
-			var t = $(this);
-			App.callback(t.data('tcosFx'));
+		window.craf(rafTimer);
+		rafTimer = window.raf(function () {
+			page.find(CONTENT_SELECTOR).each(function () {
+				var t = $(this);
+				App.callback(t.data('tcosFx'));
+			});
 		});
 	};
 
@@ -3540,8 +3417,8 @@
 	var scrollTimer = null;
 	
 	var postscroll = function () {
-		global.craf(scrollTimer);
-		scrollTimer = global.raf(function () {
+		window.craf(scrollTimer);
+		scrollTimer = window.raf(function () {
 			elements.each(function () {
 				var t = $(this);
 				App.callback(t.data('autoToggleClassOnScroll'));
@@ -3628,7 +3505,6 @@
 
 	'use strict';
 	
-	var page;
 	var tracker = App.components.create('checkpoint-event', {
 		category: 'Lecture',
 		checkPoints: [25, 50, 75, 90, 100]
@@ -3646,7 +3522,6 @@
 	};
 	
 	var onEnter = function (next, data) {
-		page = $(data.page.key());
 		tracker.init();
 		App.callback(next);
 		setTimeout(onResize, 100);
@@ -3697,28 +3572,63 @@
 	var win = $(window);
 	var site = $('#site');
 	var page = $('.page');
-	var pageVideos = [];
+	var BTN_PLAY_SEL = '.js-auto-video-play';
 	var resizeTimer = 0;
 	
 	var AUTO_VIDEO_SELECTOR = '.js-auto-video';
 	
 	var onVideoPlaying = function (ctn, video) {
-		ctn.addClass('is-playing');
+		App.modules.notify('changeState.update', {
+			item: ctn,
+			state: 'playing',
+			action: 'on'
+		});
+	};
+
+	var onVideoCanPlay = function (ctn, video) {
+		video.addClass('is-loaded');
+	};
+
+	var initVideo = function (video, options) {
+		var minimalOptions = {
+			onPlaying: onVideoPlaying,
+			onLoaded: onVideoCanPlay
+		};
+
+		var vOptions = $.extend({}, minimalOptions, options);
+
+		var v = App.components.create('video', vOptions);
+
+		v.init(video);
+
+		video.data('autoVideoComponent', v);
+	};
+
+	var playVideos = function (ctn) {
+		ctn.find(AUTO_VIDEO_SELECTOR).each(function () {
+			var t = $(this);
+			var d = t.data();
+
+			if (d && d.autoVideoComponent) {
+				var video = d.autoVideoComponent;
+
+				video.resize();
+				video.play();
+			} else {
+				initVideo(t, {
+					onCanPlay: function (ctn, video) {
+						onVideoCanPlay(ctn, video);
+						video.resize();
+						video.play();
+					}
+				});
+			}
+		});
 	};
 
 	var initVideos = function (ctn) {
 		ctn.find(AUTO_VIDEO_SELECTOR).each(function () {
-			var t = $(this);
-			var v = App.components.create('video', {
-				onPlaying: onVideoPlaying
-			});
-
-			v.init(t);
-			v.load();
-
-			t.addClass('is-loaded');
-
-			pageVideos.push(v);
+			initVideo($(this));
 		});
 	};
 
@@ -3726,8 +3636,11 @@
 		window.craf(resizeTimer);
 
 		resizeTimer = window.raf(function () {
-			$.each(pageVideos, function () {
-				this.resize();
+			page.find(AUTO_VIDEO_SELECTOR + '.is-loaded').each(function () {
+				var d = $(this).data();
+				if (d && d.autoVideoComponent) {
+					d.autoVideoComponent.resize();
+				}
 			});
 		});
 	};
@@ -3744,14 +3657,29 @@
 
 	var onPageLeave = function (key, data) {
 		if (!!data.canRemove) {
-			page.find(AUTO_VIDEO_SELECTOR, function () {
-				$(this).removeClass('is-loaded');
-			});
+			page.find(AUTO_VIDEO_SELECTOR + '.is-loaded').each(function () {
+				var t = $(this);
+				var ctn = t.closest('.js-auto-video-ctn');
+				var d = t.data();
 
-			$.each(pageVideos, function () {
-				this.destroy();
+				if (d && d.autoVideoComponent) {
+					d.autoVideoComponent.destroy();
+				}
+				t.removeClass('is-loaded');
 			});
 		}
+	};
+
+	var onPlayBtnClick = function (e) {
+		var vCtn = $(this).closest('.js-auto-video-ctn');
+
+		playVideos(vCtn);
+
+		return window.pd(e);
+	};
+
+	var init = function () {
+		site.on($.click, BTN_PLAY_SEL, onPlayBtnClick);
 	};
 
 	var actions = function () {
@@ -3765,11 +3693,15 @@
 			},
 			site: {
 				resize: onResize
+			},
+			video: {
+				resize: onResize
 			}
 		};
 	};
 	
 	App.modules.exports('auto-video', {
+		init: init,
 		actions: actions
 	});
 	
@@ -3810,9 +3742,20 @@
 		}
 	});
 	
+	var page = $('.page');
+	
+	var update = function (ctn) {
+		ctn.find('a').blankLink();
+	};
 	
 	var onPageEnter = function (key, data, e) {
-		$('a', $(data.page.key())).blankLink();
+		page = $(data.page.key());
+		
+		update(page);
+	};
+	
+	var onArticleEnter = function (key, data) {
+		update(data.article);
 	};
 	
 	var init = function () {
@@ -3837,23 +3780,29 @@
 /**
  * @author Deux Huit Huit
  *
- *	ATTRIBUTES :
- *		(OPTIONAL)
- *		- data-{state}-state-add-class
- *		- data-{state}-state-rem-class
+ *  ATTRIBUTES :
+ *      (OPTIONAL)
+ *      - data-{state}-state-add-class : List of class added when state goes on
+ *      - data-{state}-state-rem-class : List of class removed when state goes on
  *
- *		- data-{state}-state-follower (Not functionnal)
+ *      - data-{state}-state-follower : List of selector separated by ','
+ *      - data-{state}-state-follower-common-ancestor (if not present: this will be used)
  *
- *	NOTIFY IN :
- *		- changeState.update
- *			{item,state,flag}
+ *      - data-{state}-state-notify-on: custom list of notification separated by ','
+ *             called when switching state to on. Data passed : {item:this}
+ *      - data-{state}-state-notify-off: custom list of notification separated by ','
+ *             called when switching state to off. Data passed : {item:this}
+ *
+ *  NOTIFY IN :
+ *      - changeState.update
+ *          {item,state,flag}
  *
  *
- *	NOTIFY OUT :
- *		- changeState.begin
- *			{item,state,flag}
- *		- changeState.end
- *			{item,state,flag}
+ *  NOTIFY OUT :
+ *      - changeState.begin
+ *          {item,state,flag}
+ *      - changeState.end
+ *          {item,state,flag}
  *
  */
 (function ($, undefined) {
@@ -3872,18 +3821,22 @@
 			item[0].nodeName == 'text';
 	};
 
-	var setItemState = function (item, state, flag) {
-		//Flag class
-
+	var doSetItemState = function (item, state, flag) {
 		var flagClass = 'is-' + state;
 		var addClass = item.attr('data-' + state + '-state-add-class');
 		var remClass = item.attr('data-' + state + '-state-rem-class');
+		var notifyOn = item.attr('data-' + state + '-state-notify-on') || '';
+		var notifyOff = item.attr('data-' + state + '-state-notify-off') || '';
 
-		var followerSelector = item.attr('data-' + state + '-state-follower');
-		var followers = item.find(followerSelector);
-
-
-		App.modules.notify('changeState.begin', {item: item, state: state, flag: flag});
+		if (flag && notifyOn.length) {
+			$.each(notifyOn.split(','), function (i, e) {
+				App.mediator.notify(e, {item: item});
+			});
+		} else if (!flag && notifyOff.length) {
+			$.each(notifyOff.split(','), function (i, e) {
+				App.mediator.notify(e, {item: item});
+			});
+		}
 
 		var ieBehavior = function () {
 			//IE BEHAVIOR
@@ -3891,8 +3844,7 @@
 			var curClass = item.attr('class').split(' ');
 			var finalClass = '';
 
-			if (flag) {
-
+			var ieOn = function () {
 				var remClassArray = [];
 				if (remClass) {
 					remClassArray = remClass.split(' ');
@@ -3920,8 +3872,9 @@
 
 				//Set class attribute
 				item.attr('class', finalClass);
-			} else {
+			};
 
+			var ieOff = function () {
 				//Remove Add class and flag class
 				var addClassArray = [];
 				if (addClass) {
@@ -3947,6 +3900,13 @@
 				});
 
 				item.attr('class', finalClass);
+			};
+
+
+			if (flag) {
+				ieOn();
+			} else {
+				ieOff();
 			}
 		};
 
@@ -3981,24 +3941,29 @@
 				item.removeClass(flagClass);
 			}
 		}
+	};
+
+	var setItemState = function (item, state, flag) {
+		//Flag class
+		var followerCommonAncestor = item.attr('data-' + state + '-state-follower-common-ancestor');
+		var followerSelector = item.attr('data-' + state + '-state-follower');
+		var followerScope = item;
+
+		if (followerCommonAncestor) {
+			followerScope = item.closest(followerCommonAncestor);
+		}
+		
+		var followers = followerScope.find(followerSelector);
+
+		App.modules.notify('changeState.begin', {item: item, state: state, flag: flag});
+
+		//Execute change
+		doSetItemState(item, state, flag);
 
 		//Process followers
 		followers.each(function () {
 			var it = $(this);
-			var itAddClass = it.attr('data-' + state + '-state-add-class');
-			var itRemClass = it.attr('data-' + state + '-state-rem-class');
-
-			//if (isSvgElement(item)) {
-
-			//} else {
-			if (flag) {
-				it.addClass(itAddClass);
-				it.removeClass(itRemClass);
-			} else {
-				it.removeClass(itAddClass);
-				it.addClass(itRemClass);
-			}
-			//}
+			setItemState(it, state, flag);
 		});
 		
 		App.modules.notify('changeState.end', {item: item, state: state, flag: flag});
@@ -4294,7 +4259,7 @@
 		
 		// ignore click since it's not http
 		var href = t.attr('href');
-		if (/^(mailto|skype|tel|ftps?|#)/im.test(href)) {
+		if (/^(mailto|skype|tel|fax|ftps?|#)/im.test(href)) {
 			return true;
 		}
 		
@@ -4349,14 +4314,6 @@
 		return window.pd(e);
 	};
 	
-	var onClickCancel = function (e) {
-		var t = $(this);
-		if (mustIgnore(t, e)) {
-			return true;
-		}
-		return window.pd(e);
-	};
-	
 	var init = function () {
 		var workspaceExclusion = ':not([href^="/workspace"])';
 		var dataAttrExclusions = ':not([data-action="full"])' +
@@ -4367,21 +4324,15 @@
 		var toggleLinks = '[data-action="toggle"]';
 		var absoluteLinks = 'a[href^="/"]';
 		var queryStringLinks = 'a[href^="?"]';
-		var pick = App.device.events.pick;
 		var click = App.device.events.click;
 
 		// capture all click in #site
 		$('#site')
-			.on(pick, absoluteLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
-			.on(pick, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
-			.on(pick, localLinks + dataAttrExclusions + localWorkspaceExclusion, onClickGoto)
-			.on(pick, absoluteLinks + toggleLinks, onClickToggle)
-			.on(pick, queryStringLinks + toggleLinks, onClickToggle)
-			.on(click, absoluteLinks + workspaceExclusion + dataAttrExclusions, onClickCancel)
-			.on(click, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickCancel)
-			.on(click, localLinks + dataAttrExclusions + localWorkspaceExclusion, onClickCancel)
-			.on(click, absoluteLinks + toggleLinks, onClickCancel)
-			.on(click, queryStringLinks + toggleLinks, onClickCancel);
+			.on(click, absoluteLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
+			.on(click, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
+			.on(click, localLinks + dataAttrExclusions + localWorkspaceExclusion, onClickGoto)
+			.on(click, absoluteLinks + toggleLinks, onClickToggle)
+			.on(click, queryStringLinks + toggleLinks, onClickToggle);
 	};
 	
 	var Links = App.modules.exports('links', {
@@ -5094,7 +5045,7 @@
 		}
 		
 		// block clicks
-		$(o.element).on(App.device.events.pick, function (e) {
+		$(o.element).on(App.device.events.click, function (e) {
 			return window.pd(e, false);
 		});
 	};
@@ -5247,9 +5198,11 @@
 	};
 	
 	var removeScroll = function () {
-		var x = win.width();
-		html.addClass('no-scroll');
-		fixScroll(win.width() - x);
+		if (!html.hasClass('no-scroll')) {
+			var x = win.width();
+			html.addClass('no-scroll');
+			fixScroll(win.width() - x);
+		}
 	};
 	
 	var init = function () {
@@ -5527,6 +5480,47 @@
 		transitions: {
 			exports: exportsTransition
 		}
+	});
+	
+})(jQuery);
+
+/**
+ * @author Deux Huit Huit
+ *
+ */
+(function ($, undefined) {
+	
+	'use strict';
+	var win = $(window);
+
+	var onCancel = function (key, data) {
+		if (data && data.item) {
+			$.removeFromTransition(data.item.selector);
+		}
+	};
+
+	var onAttach = function (key, data) {
+		if (data && data.item) {
+			var notifyEnd = data.item.attr('data-transitionEnd-notify');
+			if (notifyEnd && notifyEnd.length) {
+				data.item.transitionEnd(function () {
+					App.mediator.notify(notifyEnd, {item: data.item});
+				});
+			}
+		}
+	};
+	
+	var actions = function () {
+		return {
+			transitionEndNotify: {
+				attach: onAttach,
+				cancel: onCancel
+			}
+		};
+	};
+	
+	App.modules.exports('transitionEnd-notify', {
+		actions: actions
 	});
 	
 })(jQuery);
@@ -6325,30 +6319,30 @@
 			return 'a[href$=".' + ext + '"], ';
 		}).join('') + 'a[href$="?dl"], a[download]';
 		var notAlreadyTagged = ':not([data-ga-cat])';
-		$('#site').on(App.device.events.pick, '[data-ga-cat]', function (e) {
+		$('#site').on(App.device.events.click, '[data-ga-cat]', function (e) {
 			$(this).sendClickEvent({
 				event: e
 			});
 		})
-		.on(App.device.events.pick, externalLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, externalLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-external',
 				event: e
 			});
 		})
-		.on(App.device.events.pick, downloadLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, downloadLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-download',
 				event: e
 			});
 		})
-		.on(App.device.events.pick, mailtoLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, mailtoLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-mailto',
 				event: e
 			});
 		})
-		.on(App.device.events.pick, telLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, telLinks + notAlreadyTagged, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-tel',
 				event: e
@@ -6382,7 +6376,7 @@
 				popup: elem.attr('data-popup'),
 				items: elem.attr('data-items'),
 				background: elem.attr('data-background'),
-				click: App.device.events.pick
+				click: App.device.events.click
 			}, opts);
 			
 			// Ensure we are dealing with jQuery objects
