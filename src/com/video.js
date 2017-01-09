@@ -12,11 +12,15 @@
 		videoSelector: '.js-video',
 		resizeContainerSelector: '',
 		onTimeUpdate: $.noop,
-		onCanplay: $.noop,
+		onCanPlay: $.noop,
 		onPlaying: $.noop,
 		resizable: true,
-		onLoaded: $.noop
+		onLoaded: $.noop,
+		onEnded: $.noop
 	};
+
+	var RESET_ON_END_ATTR = 'data-video-reset-on-end';
+	var RATIO_ATTR = 'data-video-ratio';
 
 	// jQuery fun
 	(function ($) {
@@ -47,6 +51,8 @@
 		$.fn.mediaPause = factory('pause');
 		$.fn.mediaLoad = factory('load');
 		$.fn.mediaCurrentTime = factory('currentTime');
+
+		$.fn.mediaPaused = factoryProp('paused');
 		$.fn.mediaMuted = factoryProp('muted');
 		$.fn.mediaHeight = factoryProp('videoHeight');
 		$.fn.mediaWidth = factoryProp('videoWidth');
@@ -54,20 +60,6 @@
 	
 	App.components.exports('video', function (options) {
 		var o = $.extend({}, defaultOptions, options);
-
-		var RATIO_ATTR = 'data-video-ratio';
-
-		// EVENTS
-		var onTimeUpdate = function (e) {
-			if (!!status.currentTime) {
-				App.mediator.notify('video.timeupdate', {
-					video: o.video,
-					e: e
-				});
-			}
-			
-			App.callback(o.onTimeupdate, [o.video]);
-		};
 
 		var resizeVideo = function () {
 			if (!!o.resizable) {
@@ -100,18 +92,66 @@
 			}
 		};
 
-		var onCanplay = function (e) {
-			resizeVideo();
-			App.callback(o.onCanplay, [o.ctn, o.video]);
+		// EVENTS
+		var onTimeUpdate = function (e) {
+			if (!!status.currentTime) {
+				App.mediator.notify('video.timeupdate', {
+					video: o.video,
+					e: e
+				});
+			}
+			
+			App.callback(o.onTimeupdate, [o.video]);
 		};
 
 		var onPlaying = function (e) {
+			App.modules.notify('changeState.update', {
+				item: o.ctn,
+				state: 'paused',
+				action: 'off'
+			});
+
+			App.modules.notify('changeState.update', {
+				item: o.ctn,
+				state: 'playing',
+				action: 'on'
+			});
+
 			App.callback(o.onPlaying, [o.ctn, o.video]);
 		};
 
+		var onCanPlay = function (e) {
+			resizeVideo();
+
+			App.modules.notify('changeState.update', {
+				item: o.ctn,
+				state: 'paused',
+				action: 'off'
+			});
+
+			App.modules.notify('changeState.update', {
+				item: o.ctn,
+				state: 'video-loaded',
+				action: 'on'
+			});
+
+			App.callback(o.onCanPlay, [o.ctn, o.video]);
+		};
+		
 		var onLoaded = function (e) {
 			resizeVideo();
 			App.callback(o.onLoaded, [o.ctn, o.video]);
+		};
+
+		var onEnded = function () {
+			if (o.video.filter('[' + RESET_ON_END_ATTR + ']').length) {
+				App.modules.notify('changeState.update', {
+					item: o.ctn,
+					state: 'playing',
+					action: 'off'
+				});
+			}
+			App.callback(o.onEnded, [o.ctn, o.video]);
 		};
 
 		// METHODS
@@ -124,6 +164,12 @@
 		};
 
 		var pauseVideo = function () {
+			App.modules.notify('changeState.update', {
+				item: o.ctn,
+				state: 'paused',
+				action: 'on'
+			});
+
 			o.video.mediaPause();
 		};
 
@@ -135,12 +181,24 @@
 			o.video.mediaMuted(!o.video.mediaMuted());
 		};
 
+		var togglePlayVideo = function () {
+			if (!o.video.mediaPaused()) {
+				pauseVideo();
+			} else {
+				playVideo();
+			}
+		};
+
 		var destroy = function () {
 			o.video.off('timeUpdate', onTimeUpdate)
-				.off('canplay', onCanplay);
-			o.video.append(o.originalVideo);
-			o.video.remove();
-			o.video = o.originalVideo;
+				.off('canplay', onCanPlay)
+				.off('playing', onPlaying)
+				.off('ended', onEnded)
+				.off('loadedmetadata', onLoaded);
+
+			loadVideo();
+			o.video = null;
+			o = {};
 		};
 
 		var init = function (ctn, options) {
@@ -148,12 +206,12 @@
 
 			o.ctn = $(ctn);
 			o.video = ctn.find(o.videoSelector);
-			o.originalVideo = o.video;
 
 			// attach events
 			o.video.on('timeupdate', onTimeUpdate)
-				.on('canplay', onCanplay)
+				.on('canplay', onCanPlay)
 				.on('playing', onPlaying)
+				.on('ended', onEnded)
 				.on('loadedmetadata', onLoaded);
 		};
 		
@@ -163,6 +221,7 @@
 			destroy: destroy,
 			load: loadVideo,
 			play: playVideo,
+			togglePlay: togglePlayVideo,
 			pause: pauseVideo,
 			seek: seekVideo
 		};

@@ -1,7 +1,5 @@
 /**
  * @author Deux Huit Huit
- *
- *
  */
 (function ($, undefined) {
 	
@@ -9,38 +7,45 @@
 	var win = $(window);
 	var site = $('#site');
 	var page = $('.page');
-	var BTN_PLAY_SEL = '.js-auto-video-play';
-	var resizeTimer = 0;
-	
-	var AUTO_VIDEO_SELECTOR = '.js-auto-video';
-	
-	var onVideoPlaying = function (ctn, video) {
-		App.modules.notify('changeState.update', {
-			item: ctn,
-			state: 'playing',
-			action: 'on'
-		});
-	};
 
-	var onVideoCanPlay = function (ctn, video) {
-		video.addClass('is-loaded');
-	};
+	var AUTO_VIDEO_SELECTOR = '.js-auto-video';
+	var BTN_PLAY_SEL = '.js-auto-video-play';
+	var BTN_TOGGLE_PLAY_SEL = '.js-auto-video-toggle-play';
+
+	var resizeTimer = 0;
 
 	var initVideo = function (video, options) {
-		var minimalOptions = {
-			onPlaying: onVideoPlaying,
-			onLoaded: onVideoCanPlay
-		};
+		//Var other options
+		var minimalOptions = {};
 
 		var vOptions = $.extend({}, minimalOptions, options);
 
 		var v = App.components.create('video', vOptions);
 
 		v.init(video);
+		v.load();
 
 		video.data('autoVideoComponent', v);
 	};
 
+	var togglePlay = function (ctn) {
+		ctn.find(AUTO_VIDEO_SELECTOR).each(function () {
+			var t = $(this);
+			var d = t.data();
+
+			if (d && d.autoVideoComponent) {
+				d.autoVideoComponent.togglePlay();
+			}else {
+				App.log('No auto-video-component found');
+			}
+		});
+	};
+
+	var onTogglePlayBtnClick = function () {
+		var vCtn = $(this).closest('.js-auto-video-ctn');
+		togglePlay(vCtn);
+	};
+	
 	var playVideos = function (ctn) {
 		ctn.find(AUTO_VIDEO_SELECTOR).each(function () {
 			var t = $(this);
@@ -52,18 +57,16 @@
 				video.resize();
 				video.play();
 			} else {
-				initVideo(t, {
-					onCanPlay: function (ctn, video) {
-						onVideoCanPlay(ctn, video);
-						video.resize();
-						video.play();
-					}
-				});
+				App.log('No autoVideoComponent found');
 			}
 		});
 	};
 
 	var initVideos = function (ctn) {
+		var btns = site.find(BTN_TOGGLE_PLAY_SEL);
+		btns.off($.click, onTogglePlayBtnClick);
+		btns.on($.click, onTogglePlayBtnClick);
+
 		ctn.find(AUTO_VIDEO_SELECTOR).each(function () {
 			initVideo($(this));
 		});
@@ -73,7 +76,7 @@
 		window.craf(resizeTimer);
 
 		resizeTimer = window.raf(function () {
-			page.find(AUTO_VIDEO_SELECTOR + '.is-loaded').each(function () {
+			page.find(AUTO_VIDEO_SELECTOR).each(function () {
 				var d = $(this).data();
 				if (d && d.autoVideoComponent) {
 					d.autoVideoComponent.resize();
@@ -94,24 +97,23 @@
 
 	var onPageLeave = function (key, data) {
 		if (!!data.canRemove) {
-			page.find(AUTO_VIDEO_SELECTOR + '.is-loaded').each(function () {
+			page.find(AUTO_VIDEO_SELECTOR).each(function () {
 				var t = $(this);
 				var ctn = t.closest('.js-auto-video-ctn');
 				var d = t.data();
 
 				if (d && d.autoVideoComponent) {
-					d.autoVideoComponent.destroy();
+					var comp = d.autoVideoComponent;
+					//Remove cyclic ref
+					t.data('autoVideoComponent', null);
+					comp.destroy();
 				}
-				t.removeClass('is-loaded');
 			});
 		}
 	};
 
 	var onPlayBtnClick = function (e) {
-		var vCtn = $(this).closest('.js-auto-video-ctn');
-
-		playVideos(vCtn);
-
+		playVideos($(this).closest('.js-auto-video-ctn'));
 		return window.pd(e);
 	};
 
@@ -123,7 +125,7 @@
 		return {
 			page: {
 				enter: onPageEnter,
-				leave: onPageLeave
+				leaving: onPageLeave
 			},
 			articleChanger: {
 				enter: onArticleEnter
