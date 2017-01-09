@@ -21,6 +21,7 @@
 		validationEvents: 'blur change',
 		emptinessEvents: 'blur keyup change',
 		previewEvents: 'change input',
+		changeLabelTextToFilename: true,
 		onlyShowFirstError: false,
 		group: null,
 		rules: {
@@ -54,7 +55,7 @@
 					flags: 'i'
 				}
 			},
-			phone: {
+			phoneUs: {
 				format: {
 					pattern: '\\(?[0-9]{3}\\)?[- ]?([0-9]{3})[- ]?([0-9]{4})',
 					flags: 'i'
@@ -139,6 +140,35 @@
 			input.focus();
 		};
 		
+		var previewFile = function (ctn, file) {
+			ctn.empty();
+			//Change label caption
+			if (options.changeLabelTextToFilename) {
+				if (!!file && file.name) {
+					label.text(file.name);
+				} else {
+					label.text(label.attr('data-text'));
+				}
+			}
+
+			if (!!file && !!w.FileReader) {
+				var reader = new w.FileReader();
+				reader.onload = function readerLoaded (event) {
+					var r = event.target.result;
+					if (!!r) {
+						var img = $('<img />')
+							.attr('class', ctn.attr('data-preview-class'))
+							.attr('src', r)
+							.on('error', function () {
+								img.remove();
+							});
+						ctn.append(img);
+					}
+				};
+				reader.readAsDataURL(file);
+			}
+		};
+
 		var reset = function () {
 			var inputClasses = getStateClasses(input);
 			var ctnClasses = getStateClasses(ctn);
@@ -158,32 +188,59 @@
 			error.empty().removeClass(getStateClass(error));
 			setStateClass('removeClass', 'error');
 			setStateClass('removeClass', 'valid');
-		};
-		
-		var previewFile = function (ctn, file) {
-			ctn.empty();
-			if (!!file && !!w.FileReader) {
-				var reader = new w.FileReader();
-				reader.onload = function readerLoaded (event) {
-					var r = event.target.result;
-					if (!!r) {
-						var img = $('<img />')
-							.attr('class', ctn.attr('data-preview-class'))
-							.attr('src', r)
-							.on('error', function () {
-								img.remove();
-							});
-						ctn.append(img);
-					}
-				};
-				reader.readAsDataURL(file);
+
+			if (input.attr('type') == 'file') {
+				if (options.changeLabelTextToFilename) {
+					label.text(label.attr('data-text'));
+				}
+
+				//Reset preview
+				previewFile(ctn.find(options.preview), null);
 			}
+		};
+
+		var value = function () {
+			var value;
+			if (input.attr('type') == 'checkbox') {
+				value = input.prop('checked') ? 'true' : '';
+			} else if (input.attr('type') == 'radio') {
+				//Get grouped item
+				var goodInput = input.closest('form').
+					find('input[type=\'radio\'][name=\'' + input.attr('name') + '\']:checked');
+				if (!!goodInput.length) {
+					value = goodInput.prop('checked') ? goodInput.val() : '';
+				} else {
+					value = input.prop('checked') ? input.val() : '';
+				}
+			} else if (input.hasClass('js-form-field-radio-list')) {
+				var selectedInput = input.find('input[type=\'radio\']:checked');
+				value = selectedInput.prop('checked') ? selectedInput.val() : '';
+			} else {
+				value = input.val();
+			}
+			return value;
+		};
+
+		var checkEmptiness = function () {
+			var valueIsEmpty = w.validate.isEmpty(value());
+			var emptyFx = valueIsEmpty ? 'addClass' : 'removeClass';
+			var notEmptyFx = valueIsEmpty ? 'removeClass' : 'addClass';
+			var inputClasses = getStateClasses(input);
+			var ctnClasses = getStateClasses(ctn);
+			var labelClasses = getStateClasses(label);
+			input[emptyFx](inputClasses.empty);
+			input[notEmptyFx](inputClasses.notEmpty);
+			ctn[emptyFx](ctnClasses.empty);
+			ctn[notEmptyFx](ctnClasses.notEmpty);
+			label[emptyFx](labelClasses.empty);
+			label[notEmptyFx](labelClasses.notEmpty);
 		};
 		
 		var preview = function (e) {
 			var p = ctn.find(options.preview);
-			if (!!p.length) {
-				if (input.attr('type') == 'file') {
+			if (input.attr('type') == 'file') {
+				checkEmptiness();
+				if (!!p.length) {
 					var file = !!e && !!e.target.files && e.target.files[0];
 					file = file || (input[0].files && input[0].files[0]);
 					previewFile(p, file);
@@ -210,25 +267,6 @@
 				App.log({fx: 'error', args: [ex]});
 			}
 			return false;
-		};
-		
-		var value = function () {
-			var value;
-			if (input.attr('type') == 'checkbox') {
-				value = input.prop('checked') ? 'true' : '';
-			} else if (input.attr('type') == 'radio') {
-				//Get grouped item
-				var goodInput = input.closest('form').
-					find('input[type=\'radio\'][name=\'' + input.attr('name') + '\']:checked');
-				if (!!goodInput.length) {
-					value = goodInput.prop('checked') ? 'true' : '';
-				} else {
-					value = input.prop('checked') ? 'true' : '';
-				}
-			} else {
-				value = input.val();
-			}
-			return value;
 		};
 		
 		var validate = function () {
@@ -267,21 +305,6 @@
 				result: result,
 				field: self
 			};
-		};
-		
-		var checkEmptiness = function () {
-			var valueIsEmpty = w.validate.isEmpty(value());
-			var emptyFx = valueIsEmpty ? 'addClass' : 'removeClass';
-			var notEmptyFx = valueIsEmpty ? 'removeClass' : 'addClass';
-			var inputClasses = getStateClasses(input);
-			var ctnClasses = getStateClasses(ctn);
-			var labelClasses = getStateClasses(label);
-			input[emptyFx](inputClasses.empty);
-			input[notEmptyFx](inputClasses.notEmpty);
-			ctn[emptyFx](ctnClasses.empty);
-			ctn[notEmptyFx](ctnClasses.notEmpty);
-			label[emptyFx](labelClasses.empty);
-			label[notEmptyFx](labelClasses.notEmpty);
 		};
 		
 		var submitting = function (submitting) {
