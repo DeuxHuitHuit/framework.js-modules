@@ -21,6 +21,7 @@
 		validationEvents: 'blur change',
 		emptinessEvents: 'blur keyup change',
 		previewEvents: 'change input',
+		formatEvents: 'blur',
 		changeLabelTextToFilename: true,
 		onlyShowFirstError: false,
 		group: null,
@@ -72,6 +73,9 @@
 			}
 		},
 		rulesOptions: {
+			
+		},
+		formatters: {
 			
 		}
 	};
@@ -269,6 +273,14 @@
 			return false;
 		};
 		
+		var format = function () {
+			_.each(rules, function (rule) {
+				if (!!options.formatters[rule]) {
+					options.formatters[rule](input, self);
+				}
+			});
+		};
+		
 		var validate = function () {
 			var result = tryValidate(value());
 			
@@ -324,6 +336,9 @@
 			progress = ctn.find(options.progress);
 			rules = _.filter((ctn.attr('data-rules') || '').split(/[|,\s]/g));
 
+			if (!!options.formatEvents) {
+				input.on(options.formatEvents, format);
+			}
 			if (!!options.validationEvents) {
 				input.on(options.validationEvents, validate);
 			}
@@ -338,6 +353,7 @@
 		self = {
 			init: init,
 			validate: validate,
+			format: format,
 			enable: enable,
 			focus: focus,
 			reset: reset,
