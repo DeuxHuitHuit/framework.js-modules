@@ -275,7 +275,13 @@
 	};
 	
 	var init = function () {
-		//Detect good strategy
+		//Init langs arrays
+		var html = $('html');
+		var languages = html.attr('data-all-langs');
+		if (!!languages) {
+			langs = languages.split(',');
+		}
+
 		if (window.history.pushState) {
 			win.on('popstate', urlChanged);
 		} else {
