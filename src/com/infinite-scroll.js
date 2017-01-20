@@ -47,6 +47,7 @@
 
 					//Remove Link
 					pagerLink.remove();
+					App.mediator.notify('pageLoad.start');
 
 					window.Loader.load({
 						url: url,
@@ -58,6 +59,26 @@
 								url: url
 							});
 							App.callback(callback, [ctn, url, dataLoaded, textStatus, jqXHR, o]);
+
+							App.mediator.notify('pageLoad.end');
+						},
+						progress: function (e) {
+							var total = e.originalEvent.total;
+							var loaded = e.originalEvent.loaded;
+							var percent = total > 0 ? loaded / total : 0;
+							
+							App.mediator.notify('pageLoad.progress', {
+								event: e,
+								total: total,
+								loaded: loaded,
+								percent: percent
+							});
+						},
+						error: function () {
+							App.mediator.notify('pageLoad.end');
+						},
+						giveup: function (e) {
+							App.mediator.notify('pageLoad.end');
 						}
 					});
 				}
