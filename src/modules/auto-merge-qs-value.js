@@ -40,6 +40,7 @@
 	var REMOVE_KEYS_ATTR = 'data-merge-qs-value-remove-keys';
 	var VALUE_ATTR = 'data-merge-qs-value';
 	var PREVENT_DEFAULT_ATTR = 'data-merge-qs-value-prevent-default';
+	var TOGGLE_KEY_VALUE_ATTR = 'data-merge-qs-value-toggle';
 	
 	var buttonClicked = function (e) {
 		
@@ -52,11 +53,21 @@
 		
 		// Minimal attribute needed for proceeding
 		if (!!key) {
-			//Build new qs
-			if (!!value) {
-				qs[key] = value;
+
+			if (t.filter('[' +TOGGLE_KEY_VALUE_ATTR + ']' ).length) {
+				//Toggle action
+				if (qs[key] && qs[key] == value) {
+					qs[key] = null;
+				} else {
+					qs[key] = value;
+				}
 			} else {
-				qs[key] = null;
+				//Build new qs
+				if (!!value) {
+					qs[key] = value;
+				} else {
+					qs[key] = null;
+				}
 			}
 			
 			if (!!removeKeys) {
