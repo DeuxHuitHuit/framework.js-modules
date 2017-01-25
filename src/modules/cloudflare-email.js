@@ -6,7 +6,7 @@
 (function ($, undefined) {
 
 	'use strict';
-	var pattern = '[email protected]';
+	var pattern = /^\[email(.+)protected\]$/i;
 	var doIt = function () {
 		$('a[href^="/cdn-cgi/l/email-protection"]').each(function (i, e) {
 			/* jshint ignore:start */
@@ -30,7 +30,7 @@
 						if (!!span.length) {
 							e = span;
 						}
-						if (_.string.trim(e.text()) === pattern) {
+						if (pattern.test(_.string.trim(e.text()))) {
 							e.text(s);
 						}
 					}
