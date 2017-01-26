@@ -27,7 +27,10 @@
  *          to be removed when the key-value is set
  *
  *      - data-merge-qs-value-prevent-default
- *          If present. will prevent default
+ *          If present, will prevent default
+ *
+ *      - data-merge-qs-value-toggle
+ *          If present, will toggle the key-value pair from the qs
  */
 (function ($, undefined) {
 	'use strict';
