@@ -1,23 +1,30 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- *  Allow a link or a button to append a key and value in the Querystring.
- *  If used with a link. the href should be corresponding to the js behavior
- *  It Need to be used with data-action="none" or the links modules will also trigger.
- *  It will automatically raise the page.updateQsFragment with the new querystring builded.
- *  If the value is "" then the key will be removed from the QS (Filter all);
- *  Optionnaly you can make a key exclusif by removing other key when setting a key with
- *  the remove-keys attribute
+ *  Auto merge qs value
+ *      Allow a link or a button to append a key-value pair in the Querystring.
+ *      Limitation : Can be only one key-value pair by button
+ *      If used with a link. the href should be corresponding to the js behavior
+ *      It Need to be used with data-action="none" or the links modules will also trigger.
+ *      It will automatically raise the page.updateQsFragment with the new querystring builded.
+ *      If the value is "" then the key will be removed from the QS (Filter all);
+ *      Optionnaly you can make a key exclusif by removing other key when setting a key with
+ *      the remove-keys attribute.
+ *      Optionnaly you can make a key-value toggling behavior.
  *
- *  Query string example
- *  ?{key}={value}
+ *  Query string example:
+ *      ?{key}={value}
  *
  *  SELECTOR :
- *    .js-merge-qs-value-button
+ *      .js-merge-qs-value-button
  *
  *  ATTRIBUTES :
+ *      REQUIRED :
+ *
  *      - data-merge-qs-value-key
- *          Define the key for the querystring )
+ *          Define the key used for the querystring.
+ *
+ *      OPTIONAL :
  *
  *      - data-merge-qs-value
  *          Define the value associated to the key
@@ -51,7 +58,7 @@
 		var t = $(this);
 		var key = t.attr(KEY_ATTR);
 		var removeKeys = t.attr(REMOVE_KEYS_ATTR);
-		var value = t.attr(VALUE_ATTR);
+		var value = t.attr(VALUE_ATTR) || null;
 		var qs = App.routing.querystring.parse(document.location.search);
 		
 		// Minimal attribute needed for proceeding
