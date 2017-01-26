@@ -1,6 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
+ *  Auto change state hover
  */
 (function ($, undefined) {
 	

@@ -1,7 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * Window Notifier
+ *  Auto cycle
  */
 (function ($, undefined) {
 

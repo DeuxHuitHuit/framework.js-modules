@@ -1,7 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * Defered css
+ *  Defered css
  */
 (function ($, global, undefined) {
 	

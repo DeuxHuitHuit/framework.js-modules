@@ -1,10 +1,9 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * Auto Tracked Page module
+ *  Auto Tracked Page module
  *
  */
-
 (function ($, global, undefined) {
 
 	'use strict';

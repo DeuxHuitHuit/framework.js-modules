@@ -1,14 +1,24 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * Cloudflare email protection
+ *  Cloudflare email
+ *      Integration of the cloudflare email security behavior in the framework automatically
+ *
+ *  SELECTOR:
+ *      a[href^="/cdn-cgi/l/email-protection"]
+ *
+ *  ACTIONS:
+ *      page.enter
+ *      articleChanger.enter
  */
 (function ($, undefined) {
 
 	'use strict';
-	var pattern = /^\[email(.+)protected\]$/i;
+	var SELECTOR = 'a[href^="/cdn-cgi/l/email-protection"]';
+	var PATTERN = /^\[email(.+)protected\]$/i;
+
 	var doIt = function () {
-		$('a[href^="/cdn-cgi/l/email-protection"]').each(function (i, e) {
+		$(SELECTOR).each(function (i, e) {
 			/* jshint ignore:start */
 			try {
 				e = $(e);
@@ -30,7 +40,7 @@
 						if (!!span.length) {
 							e = span;
 						}
-						if (pattern.test(_.string.trim(e.text()))) {
+						if (PATTERN.test(_.string.trim(e.text()))) {
 							e.text(s);
 						}
 					}

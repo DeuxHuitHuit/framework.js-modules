@@ -1,7 +1,8 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * module to manage oembed components
+ *  Auto oembed
+ *      Module to manage oembed components
  */
 (function ($, global, undefined) {
 	

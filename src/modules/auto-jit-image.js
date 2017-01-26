@@ -1,7 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * auto jit image
+ *  Auto jit image
  */
 (function ($, global, undefined) {
 	

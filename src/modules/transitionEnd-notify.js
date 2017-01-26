@@ -1,6 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
+ *  TransitionEnd notify
  */
 (function ($, undefined) {
 	

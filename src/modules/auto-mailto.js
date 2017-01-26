@@ -1,7 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * auto jit image
+ *  Auto mailto
  */
 (function ($, global, undefined) {
 	
@@ -42,7 +42,7 @@
 		};
 	};
 	
-	var AutoJitImage = App.modules.exports('auto-mailto', {
+	var AutoMailto = App.modules.exports('auto-mailto', {
 		init: init,
 		actions: actions
 	});

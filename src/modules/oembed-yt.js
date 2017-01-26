@@ -1,8 +1,10 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * oEmbed Youtube provider
- * requires https://www.youtube.com/iframe_api
+ *  oEmbed Youtube provider
+ *
+ *  REQUIRES:
+ *      https://www.youtube.com/iframe_api
  */
 
 (function ($, global, undefined) {

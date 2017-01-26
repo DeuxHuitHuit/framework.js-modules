@@ -1,7 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * Auto ratio size
+ *  Auto ratio size
  */
 (function ($, undefined) {
 	

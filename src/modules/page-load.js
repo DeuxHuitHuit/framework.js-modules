@@ -1,11 +1,9 @@
-/******************************
- * @author Deux Huit Huit
- ******************************/
-
 /**
- * Page loading handling
+ *  @author Deux Huit Huit
  *
- * Use load progress if available, reverts to good old timer if not.
+ *  Page load
+ *      Allow animating a progress bar during ajax request.
+ *      Use load progress if available, reverts to good old timer if not.
  *
  */
 (function ($, undefined) {

@@ -1,11 +1,12 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * oEmbed Facebook provider
- *  requires https://connect.facebook.net/en_US/sdk.js#xfbml=1&amp;version=v2.3
- *  requires <div id="fb-root"></div> in the body
+ *  oEmbed Facebook provider
+ *  
+ *  REQUIRES:
+ *      https://connect.facebook.net/en_US/sdk.js#xfbml=1&amp;version=v2.3
+ *      <div id="fb-root"></div> in the body
  */
-
 (function ($, global, undefined) {
 
 	'use strict';

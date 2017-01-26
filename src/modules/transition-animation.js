@@ -1,11 +1,11 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * Transition Modules
+ *  Transition Modules
  *
- * Listens to
+ *  Listens to
  *
- * -
+ *  -
  *
  */
 (function ($, undefined) {

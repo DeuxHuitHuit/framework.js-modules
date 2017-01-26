@@ -1,8 +1,10 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * oEmbed Dailymotion provider
- * requires https://api.dmcdn.net/all.js
+ *  oEmbed Dailymotion provider
+ *
+ *  REQUIRES:
+ *      https://api.dmcdn.net/all.js
  */
 
 (function ($, global, undefined) {

@@ -1,11 +1,11 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * Blank link targets
+ *  Blank target link
  *
- * Listens to
+ *  Listens to
  *
- * -
+ *  -
  *
  */
 (function ($, undefined) {

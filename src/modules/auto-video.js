@@ -1,5 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
+ *  
+ *  Auto video
  */
 (function ($, undefined) {
 	

@@ -1,33 +1,34 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- *  Allow to set local property with an external element target by the source attribute.
- *  The value will be keep it in sync with the element on each resize of the window and
- *  in each pageEnter.
+ *  Auto sync property
+ *      Allow to set local property with an external element target by the source attribute.
+ *      The value will be keep it in sync with the element on each resize of the window and
+ *      in each pageEnter.
  *
  *  JS Selector :
- *    .js-auto-sync-property:
+ *      .js-auto-sync-property:
  *
  *  DATA ATTRIBUTES :
- *    REQUIRED
+ *      REQUIRED
  *
- *    - data-sync-property :
- *        : Property to change on the element
+ *      - data-sync-property :
+ *          : Property to change on the element
  *
- *    - data-sync-property-from :
- *        : JQuery Selector to identify the element used to read the value.
- *        : By default will use a scope from the #site element
- *        : (see common ancestor for alternative selection)
+ *      - data-sync-property-from :
+ *          : JQuery Selector to identify the element used to read the value.
+ *          : By default will use a scope from the #site element
+ *          : (see common ancestor for alternative selection)
  *
- *    OPTIONAL :
+ *      OPTIONAL :
  *
- *    - data-sync-property-with :
- *        : Property to read if different than the set property
+ *      - data-sync-property-with :
+ *          : Property to read if different than the set property
  *
- *    - data-sync-property-from-common-ancestor :
- *        : To specify a closer scope between the target and the current element.
- *        : Will find the scope with
- *        :     element.closest({value}).find({from})
+ *      - data-sync-property-from-common-ancestor :
+ *          : To specify a closer scope between the target and the current element.
+ *          : Will find the scope with
+ *          :     element.closest({value}).find({from})
  *
  */
 (function ($, undefined) {

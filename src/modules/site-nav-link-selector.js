@@ -1,6 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
+ *  Site nav link selector
  */
 (function ($, undefined) {
 	

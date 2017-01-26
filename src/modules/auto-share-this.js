@@ -1,7 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * Share This
+ *  Auto share this
  *
  */
 (function ($, undefined) {

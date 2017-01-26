@@ -1,9 +1,7 @@
-/******************************
- * @author Deux Huit Huit
- ******************************/
-
 /**
- * Facebook async parsing
+ *  @author Deux Huit Huit
+ *
+ *  Facebook
  */
 (function ($, undefined) {
 	'use strict';

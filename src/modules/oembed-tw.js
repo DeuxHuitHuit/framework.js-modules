@@ -1,8 +1,10 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * oEmbed Twitter provider
- *  requires https://platform.twitter.com/widgets.js
+ *  oEmbed Twitter provider
+ *
+ *  REQUIRES:
+ *      https://platform.twitter.com/widgets.js
  */
 
 (function ($, global, undefined) {

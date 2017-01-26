@@ -1,7 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * Format Tweets
+ *  Format twitter
  *
  */
 (function ($, undefined) {

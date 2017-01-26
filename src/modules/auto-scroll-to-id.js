@@ -1,6 +1,7 @@
 /**
- * @author Deux Huit Huit
- *
+ *  @author Deux Huit Huit
+ *  
+ *  Auto scroll to id
  */
 (function ($, undefined) {
 	

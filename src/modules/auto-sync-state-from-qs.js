@@ -1,6 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
+ *  Auto sync state from qs
  */
 (function ($, undefined) {
 	

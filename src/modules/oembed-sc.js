@@ -1,7 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * oEmbed Soundcloud provider
+ *  oEmbed Soundcloud provider
  */
 
 (function ($, global, undefined) {

@@ -1,9 +1,7 @@
-/******************************
- * @author Deux Huit Huit
- ******************************/
-
 /**
- * Page load error handling
+ *  @author Deux Huit Huit
+ *
+ *  Page load error
  */
 (function ($, undefined) {
 

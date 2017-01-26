@@ -1,7 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * Auto screen height
+ *  Auto screen height
  */
 (function ($, undefined) {
 

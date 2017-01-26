@@ -1,6 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
+ *  Alt language link updater
  */
 (function ($, undefined) {
 	

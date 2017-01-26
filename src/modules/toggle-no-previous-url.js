@@ -1,7 +1,8 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * Toggle when no previous url are present
+ *  Toggle no previous url
+ *     Go to homepage if no previous url are found
  *
  */
 (function ($, undefined) {

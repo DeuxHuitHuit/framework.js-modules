@@ -1,8 +1,10 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * oEmbed Vimeo provider
- * requires https://f.vimeocdn.com/js/froogaloop2.min.js
+ *  oEmbed Vimeo provider
+ *
+ *  REQUIRES:
+ *      https://f.vimeocdn.com/js/froogaloop2.min.js
  */
 
 (function ($, global, undefined) {

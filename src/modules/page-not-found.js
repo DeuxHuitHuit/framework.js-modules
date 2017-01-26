@@ -1,9 +1,7 @@
-/******************************
- * @author Deux Huit Huit
- ******************************/
-
 /**
- * Page not found handling
+ *  @author Deux Huit Huit
+ *
+ *  Page not found
  */
 (function ($, undefined) {
 

@@ -1,7 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * auto toggle class on scroll
+ *  Auto toggle class on scroll
  */
 (function ($, global, undefined) {
 	

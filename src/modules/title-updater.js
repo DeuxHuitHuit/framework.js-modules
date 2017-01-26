@@ -1,17 +1,15 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * Title Updater
+ *  Title Updater
  *
  */
 (function ($, undefined) {
 	
 	'use strict';
-	
 	var win = $(window);
 	var metaTitle = $('title', document);
 	var titleList = {};
-	
 	
 	var init = function () {
 		titleList[document.location.pathname] = $('title').text();

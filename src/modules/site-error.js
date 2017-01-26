@@ -1,7 +1,7 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * Module Site Error
+ *  Site Error
  */
 (function ($, global, undefined) {
 	'use strict';

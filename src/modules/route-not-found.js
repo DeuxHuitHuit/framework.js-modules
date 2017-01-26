@@ -1,9 +1,7 @@
-/******************************
- * @author Deux Huit Huit
- ******************************/
-
 /**
- * Route not found handling
+ *  @author Deux Huit Huit
+ *
+ *  Route not found
  */
 (function ($, undefined) {
 

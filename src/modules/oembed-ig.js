@@ -1,8 +1,10 @@
 /**
- * @author Deux Huit Huit
+ *  @author Deux Huit Huit
  *
- * oEmbed Instagram provider
- *  requires https://platform.instagram.com/en_US/embeds.js
+ *  oEmbed Instagram provider
+ *
+ *  REQUIRES:
+ *      https://platform.instagram.com/en_US/embeds.js
  */
 
 (function ($, global, undefined) {
