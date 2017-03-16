@@ -21,7 +21,7 @@
 			abstractProvider = p;
 		});
 		var youtubeProvider = $.extend({}, abstractProvider, {
-			getIframe: function (url, autoplay, rel, extra) {
+			getIframe: function (url, autoplay, loop, rel, extra) {
 				var id = url.indexOf('v=') > 0 ?
 					url.match(/v=([^\&]+)/mi)[1] : url.substring(url.lastIndexOf('/'));
 				var autoPlay = autoplay !== undefined ? autoplay : 1;
