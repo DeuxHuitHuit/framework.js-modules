@@ -52,6 +52,7 @@
 		var notifyOn = item.attr('data-' + state + '-state-notify-on') || '';
 		var notifyOff = item.attr('data-' + state + '-state-notify-off') || '';
 
+		//Manage notify
 		if (flag && notifyOn.length) {
 			$.each(notifyOn.split(','), function (i, e) {
 				App.mediator.notify(e, {item: item});
@@ -112,7 +113,6 @@
 						}
 					}
 				});
-				
 
 				//Add Remove Class
 				if (remClass) {
@@ -193,9 +193,11 @@
 		App.modules.notify('changeState.end', {item: item, state: state, flag: flag});
 	};
 
-	var processItem = function (item, state, action) {
+	var processItem = function (item, state, action, callbacks) {
 		var flagClass = 'is-' + state;
 		var curBoolState = item.hasClass(flagClass);
+
+		callbacks = callbacks ? callbacks : {};
 
 		if (isSvgElement(item)) {
 			if (item[0].classList) {
@@ -209,13 +211,27 @@
 
 		if (action == 'toggle') {
 			setItemState(item, state, !curBoolState);
+
+			if (curBoolState) {
+				//Off callback
+				App.callback(callbacks.off);
+			} else {
+				//On callback
+				App.callback(callbacks.on);
+			}
 		} else if (action == 'on') {
 			if (!curBoolState) {
 				setItemState(item, state, true);
+
+				//On callback
+				App.callback(callbacks.on);
 			}
 		} else if (action == 'off') {
 			if (curBoolState) {
 				setItemState(item, state, false);
+
+				//Off callback
+				App.callback(callbacks.off);
 			}
 		} else {
 			App.log('Action: ' + action +
@@ -231,7 +247,7 @@
 			var isMaxWidthValid = (!!maxWidth && window.mediaQueryMaxWidth(maxWidth)) || !maxWidth;
 			
 			if (isMinWidthValid && isMaxWidthValid) {
-				processItem(data.item, data.state, data.action);
+				processItem(data.item, data.state, data.action, data.callbacks);
 			}
 		}
 	};
