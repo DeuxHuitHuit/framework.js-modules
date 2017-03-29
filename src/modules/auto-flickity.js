@@ -64,6 +64,7 @@
 		$.each(flickities, function () {
 			this.destroy();
 		});
+		flickities = [];
 		
 		page = $();
 	};
