@@ -50,10 +50,10 @@
 				state: state,
 				action: action
 			});
-		}
-
-		if (t.filter('[' + BUTTON_PREVENT_DEFAULT_ATTR + ']').length) {
-			return window.pd(e);
+			
+			if (t.filter('[' + BUTTON_PREVENT_DEFAULT_ATTR + ']').length) {
+				return window.pd(e);
+			}
 		}
 	};
 
