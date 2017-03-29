@@ -9,8 +9,6 @@
 
 	var BTN_SELECTOR = '.js-site-nav-link';
 	var SELECTED_CLASS = 'is-selected';
-	var ATTR_SELECTED_ADD = 'data-selected-class-add';
-	var ATTR_SELECTED_REMOVE = 'data-selected-class-remove';
 	var site = $('#site');
 	
 	var updateSelectedLink = function (newKey) {
@@ -23,18 +21,22 @@
 
 				//Remove is selected state
 				var t = $(this);
-				t.removeClass(SELECTED_CLASS)
-					.removeClass(t.attr(ATTR_SELECTED_ADD))
-					.addClass(t.attr(ATTR_SELECTED_REMOVE));
+				App.modules.notify('changeState.update', {
+					item: t,
+					state: 'selected',
+					action: 'off'
+				});
 			});
 
 		//Add class
 		newBtn.each(function () {
 			var t = $(this);
 
-			t.addClass(SELECTED_CLASS)
-				.addClass(t.attr(ATTR_SELECTED_ADD))
-				.removeClass(t.attr(ATTR_SELECTED_REMOVE));
+			App.modules.notify('changeState.update', {
+				item: t,
+				state: 'selected',
+				action: 'on'
+			});
 		});
 	};
 	
