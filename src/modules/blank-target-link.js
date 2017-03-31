@@ -56,6 +56,9 @@
 	var actions = {
 		page: {
 			enter: onPageEnter
+		},
+		articleChanger: {
+			enter: onArticleEnter
 		}
 	};
 	
