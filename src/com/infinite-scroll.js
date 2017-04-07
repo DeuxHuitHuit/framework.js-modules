@@ -94,10 +94,12 @@
 			if (ctn.length) {
 				var y = win.scrollTop();
 				
-				var relY = Math.min(y - ctn.offset().top + winH);
-				var relP = relY / ctn.height();
+				//y of the bottom of the container 
+				//relative to the bottom of the screen;
+				var relY = (y - (ctn.offset().top + ctn.height()) + winH);
+				var relP = relY / winH;
 
-				if (relP >= o.triggerPercentage && relP <= 1) {
+				if (relP >= -o.triggerPercentage && relP <= 1) {
 					loadNextPage(o.callback);
 				}
 			}
