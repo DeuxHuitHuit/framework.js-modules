@@ -8,6 +8,30 @@ Collections of files we frequently use with our framework.
 
 Files are separated into groups:
 
+### Pages
+
+Pages represent a page model associated with one or more routes.
+
+- default-detail-page
+- default-page
+
+### Components
+
+Components are modules that are created and reference by the page or other components.
+
+- article-changer
+- checkpoint-event
+- flickity
+- form
+- form-field
+- google-map
+- infinite-scroll
+- j-player
+- oembed
+- replace-state-on-scroll
+- time-ago
+- video
+
 ### Modules
 
 Modules are singletons across the framework
@@ -62,29 +86,7 @@ Modules are singletons across the framework
 - url-changer
 - window-notifier
 
-### Components
 
-Components are modules that are created and reference by the page or other components.
-
-- article-changer
-- checkpoint-event
-- flickity
-- form
-- form-field
-- google-map
-- infinite-scroll
-- j-player
-- oembed
-- replace-state-on-scroll
-- time-ago
-- video
-
-### Pages
-
-Pages represent a page model associated with one or more routes.
-
-- default-detail-page
-- default-page
 
 ### Transitions
 
