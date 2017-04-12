@@ -54,6 +54,7 @@
 			container: ctx,
 			player: vPlayer
 		});
+
 		ctx.data(DATA_KEY, oembed);
 		components.push(oembed);
 		oembed.load();
@@ -65,6 +66,27 @@
 		scope.each(function () {
 			embedOne($(this));
 		});
+	};
+
+	var pause = function (ctx) {
+		var d = ctx.data();
+
+		if (d && d.autoOembed) {
+			d.autoOembed.pause();
+		}
+	};
+
+	var pauseAll = function (ctx) {
+		var scope = ctx.is(CTN_SEL) ? ctx : ctx.find(CTN_SEL);
+		scope.each(function () {
+			pause($(this));
+		});
+	};
+
+	var onPauseAll = function (key, data) {
+		if (data && data.item) {
+			pauseAll(data.item);
+		}
 	};
 	
 	var onPlayBtnClick = function (e) {
@@ -137,6 +159,9 @@
 			},
 			articleChanger: {
 				enter: onArticleChangerEnter
+			},
+			autoOembed: {
+				pauseAll: onPauseAll
 			}
 		};
 	};
