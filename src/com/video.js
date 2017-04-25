@@ -36,13 +36,13 @@
 		};
 		var factoryProp = function (prop) {
 			return function (value) {
-				if (!value) {
+				if (value === undefined) {
 					var domElement = $(this).get(0);
 					return !domElement ? 0 : (domElement[prop] || 0);
 				}
 				return $(this).each(function (i, e) {
 					if (!!e) {
-						domElement[prop] = value;
+						$(e).get(0)[prop] = value;
 					}
 				});
 			};
@@ -50,8 +50,8 @@
 		$.fn.mediaPlay = factory('play');
 		$.fn.mediaPause = factory('pause');
 		$.fn.mediaLoad = factory('load');
-		$.fn.mediaCurrentTime = factory('currentTime');
-
+		
+		$.fn.mediaCurrentTime = factoryProp('currentTime');
 		$.fn.mediaPaused = factoryProp('paused');
 		$.fn.mediaMuted = factoryProp('muted');
 		$.fn.mediaHeight = factoryProp('videoHeight');
