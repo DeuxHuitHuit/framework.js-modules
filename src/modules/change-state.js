@@ -55,11 +55,11 @@
 		//Manage notify
 		if (flag && notifyOn.length) {
 			$.each(notifyOn.split(','), function (i, e) {
-				App.mediator.notify(e, {item: item});
+				App.mediator.notify(e, {item: item, state: state, flag: flag});
 			});
 		} else if (!flag && notifyOff.length) {
 			$.each(notifyOff.split(','), function (i, e) {
-				App.mediator.notify(e, {item: item});
+				App.mediator.notify(e, {item: item, state: state, flag: flag});
 			});
 		}
 
