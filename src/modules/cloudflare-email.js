@@ -15,7 +15,7 @@
 
 	'use strict';
 	var SELECTOR = 'a[href^="/cdn-cgi/l/email-protection"]';
-	var PATTERN = /^\[email(.+)protected\]$/i;
+	var PATTERN = /^\[email([\u0080-\u00FF ]+)protected\]$/i;
 
 	var doIt = function () {
 		$(SELECTOR).each(function (i, e) {
@@ -45,7 +45,9 @@
 						}
 					}
 				}
-			} catch (e) {}
+			} catch (e) {
+				App.log(ex);
+			}
 			/* jshint ignore:end */
 		});
 	};
