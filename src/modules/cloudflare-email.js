@@ -11,7 +11,7 @@
  *      page.enter
  *      articleChanger.enter
  */
-(function ($, undefined) {
+(function ($, str, undefined) {
 
 	'use strict';
 	var SELECTOR = 'a[href^="/cdn-cgi/l/email-protection"]';
@@ -40,7 +40,7 @@
 						if (!!span.length) {
 							e = span;
 						}
-						if (PATTERN.test(_.string.trim(e.text()))) {
+						if (PATTERN.test(str.trim(e.text()))) {
 							e.text(s);
 						}
 					}
@@ -65,4 +65,4 @@
 		actions: actions
 	});
 	
-})(jQuery, window);
+})(jQuery, window.s, window);
