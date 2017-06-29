@@ -52,9 +52,27 @@
 		doc
 			.on('visibilitychange webkitvisibilitychange', visibilityHandler);
 	};
+
+	var requestScrollTop = function (key, data) {
+		if (data && data.animated) {
+
+		} else {
+			win.scrollTop(0);
+			scrollHandler();
+		}
+	};
+
+	var actions = function () {
+		return {
+			window: {
+				scrollTop: requestScrollTop
+			}
+		};
+	};
 	
 	var WindowNotifier = App.modules.exports('windowNotifier', {
-		init: init
+		init: init,
+		actions: actions
 	});
 	
 })(jQuery);

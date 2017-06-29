@@ -9,7 +9,9 @@
 	'use strict';
 
 	var animToArticleDefault = function (current, next, o) {
-		var afterScroll = function () {
+		
+
+		if (!!current.length) {
 			var ctn = current.closest(o.containerSelector);
 			ctn.css({
 				minHeight: current.height() + 'px'
@@ -17,7 +19,13 @@
 			
 			current.fadeTo(500, 0, function () {
 				current.hide();
-				
+
+				if (o.scrollToTop) {
+					App.mediator.notify('window.scrollTop', {
+						animated: false
+					});
+				}
+
 				App.mediator.notify('articleChanger.entering', {
 					article: next,
 					ctn: ctn
@@ -33,9 +41,6 @@
 					o.articleEnter(current, next, o);
 				}, 100);
 			});
-		};
-		if (!!current.length) {
-			afterScroll();
 		} else {
 			next.fadeTo(500, 1);
 			o.articleEnter(current, next, o);
@@ -63,6 +68,7 @@
 		appendArticle: appendDefault,
 		animToArticle: animToArticleDefault,
 		trackHandle: true,
+		scrollToTop: false,
 		articleEnter: function (oldItem, newItem, o) {
 			if (!o.trackHandle) {
 				oldItem.remove();
