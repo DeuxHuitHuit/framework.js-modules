@@ -32,7 +32,8 @@
 			page = $(this.key());
 
 			changer.init(page, {
-				startPageHandle: page.find('.js-article').attr('data-handle')
+				startPageHandle: page.find('.js-article').attr('data-handle'),
+				scrollToTop: true
 			});
 		};
 		
