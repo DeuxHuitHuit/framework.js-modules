@@ -20,9 +20,9 @@
 	var ATTR_PREFIX = 'data-toggle-class-on-scroll-';
 
 	var ATTR_ADD_BEFORE = ATTR_PREFIX + 'add-before';
-	var ATTR_REM_BEFORE = ATTR_PREFIX + 'rem-before';
+	var ATTR_REM_BEFORE = ATTR_PREFIX + 'remove-before';
 	var ATTR_ADD_AFTER = ATTR_PREFIX + 'add-after';
-	var ATTR_REM_AFTER = ATTR_PREFIX + 'rem-after';
+	var ATTR_REM_AFTER = ATTR_PREFIX + 'remove-after';
 	var ATTR_REF_COMMON_ANCESTOR = ATTR_PREFIX + 'ref-common-ancestor';
 	var ATTR_REF = ATTR_PREFIX + 'ref';
 	var ATTR_SCREEN_OFFSET = ATTR_PREFIX + 'screen-offset';
@@ -76,7 +76,9 @@
 				var screenOffsetInPx = winHeight * screenOffset;
 				var elementOffsetInPx = 0;
 				if (!!t.attr(ATTR_ELEMENT_OFFSET)) {
-					elementOffsetInPx = site.find(t.attr(ATTR_ELEMENT_OFFSET)).outerHeight();
+					site.find(t.attr(ATTR_ELEMENT_OFFSET)).each(function () {
+						elementOffsetInPx += $(this).outerHeight();
+					});
 				}
 				
 				if (refOffset - screenOffsetInPx - elementOffsetInPx < scrollPos ||
@@ -166,7 +168,7 @@
 				leave: leave
 			},
 			infiniteScroll: {
-				newListPage: refreshElementsList
+				pageLoaded: refreshElementsList
 			},
 			articleChanger: {
 				enter: refreshAndRun
