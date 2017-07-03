@@ -2,7 +2,7 @@
  *  @author Deux Huit Huit
  *
  *  oEmbed Facebook provider
- *  
+ *
  *  REQUIRES:
  *      https://connect.facebook.net/en_US/sdk.js#xfbml=1&amp;version=v2.3
  *      <div id="fb-root"></div> in the body

@@ -94,7 +94,7 @@
 			if (ctn.length) {
 				var y = win.scrollTop();
 				
-				//y of the bottom of the container 
+				//y of the bottom of the container
 				//relative to the bottom of the screen;
 				var relY = (y - (ctn.offset().top + ctn.height()) + winH);
 				var relP = relY / winH;

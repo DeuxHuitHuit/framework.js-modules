@@ -64,7 +64,7 @@
 		// Minimal attribute needed for proceeding
 		if (!!key) {
 
-			if (t.filter('[' +TOGGLE_KEY_VALUE_ATTR + ']' ).length) {
+			if (t.filter('[' + TOGGLE_KEY_VALUE_ATTR + ']').length) {
 				//Toggle action
 				if (qs[key] && qs[key] == value) {
 					qs[key] = null;

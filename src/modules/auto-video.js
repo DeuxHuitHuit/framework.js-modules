@@ -1,6 +1,6 @@
 /**
  *  @author Deux Huit Huit
- *  
+ *
  *  Auto video
  */
 (function ($, undefined) {

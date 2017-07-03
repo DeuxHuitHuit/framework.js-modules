@@ -10,7 +10,7 @@
  *
  *  Requirements:
  *		- https://cdnjs.cloudflare.com/ajax/libs/flickity/1.1.2/flickity.pkgd.min.js
- *		- Component Flickity.js 
+ *		- Component Flickity.js
  *
  *  You can have more info on the options of Flickity at
  *  http://flickity.metafizzy.co/
