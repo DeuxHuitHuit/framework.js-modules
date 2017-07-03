@@ -15,19 +15,41 @@
 	var loc = window.location;
 	var origin = loc.origin || (loc.protocol + '//' + loc.hostname);
 	var originRegExp = new RegExp('^' + origin, 'i');
+	var otherLangs = (function () {
+		var h = $('html');
+		var l = h.attr('lang');
+		if (!l) {
+			return null;
+		}
+		var d = h.attr('data-all-langs');
+		if (!d) {
+			return null;
+		}
+		var validLang = function (lang) {
+			return !!lang && lang !== l;
+		};
+		var createRegxp = function (lang) {
+			return new RegExp('^\/' + lang + '\/.*$', 'i');
+		};
+		return _.map(_.filter(d.split(','), validLang), createRegxp);
+	})();
 	
 	var mustIgnore = function (t, e) {
 		// ignore click since there are no current page
 		if (!App.mediator._currentPage()) {
 			return true;
 		}
-		
-		// ignore click since it's not http
+
 		var href = t.attr('href');
+		if (href === undefined) {
+			return true;
+		}
+
+		// ignore click since it's not http
 		if (/^(mailto|skype|tel|fax|ftps?|#)/im.test(href)) {
 			return true;
 		}
-		
+
 		// no keys on the keyboard
 		if (!!e.metaKey || !!e.ctrlKey) {
 			return true;
@@ -38,20 +60,33 @@
 	var onClickGoto = function (e) {
 		var t = $(this);
 		var href = t.attr('href');
+		var testRegexp = function (r) {
+			return r.test(href);
+		};
 		
+		// basic validity
 		if (mustIgnore(t, e)) {
 			return true;
 		}
 		
+		// query string only href
 		if (/^\?.+/.test(href)) {
 			href = window.location.pathname + href;
 		}
+
+		// full absolute url
 		if (originRegExp.test(href)) {
 			href = href.replace(originRegExp, '');
 		}
-		
+
+		// other language url
+		if (!!otherLangs && _.some(_.map(otherLangs, testRegexp))) {
+			return true;
+		}
+
 		App.mediator.notify('links.gotoClicked', {
-			item: t, url: href
+			item: t,
+			url: href
 		});
 		
 		App.mediator.goto(href);
