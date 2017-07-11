@@ -164,9 +164,12 @@
 			t = $(t);
 			var field = App.components.create('form-field', options.fieldsOptions);
 
+			var showFirstErrorOnly = t.filter('[data-only-show-first-error]').length === 1;
+
 			field.init({
 				container: t,
-				group: t.closest(options.fieldsGroupSelector)
+				group: t.closest(options.fieldsGroupSelector),
+				onlyShowFirstError: showFirstErrorOnly
 			});
 			fields.push(field);
 		};
