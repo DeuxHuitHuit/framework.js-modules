@@ -53,6 +53,12 @@
 						url: url,
 						success: function (dataLoaded, textStatus, jqXHR) {
 							appendNextPage(dataLoaded, textStatus, jqXHR);
+							
+							App.modules.notify('page.replaceState', {
+								title: document.title,
+								url: url
+							});
+
 							App.mediator.notify('infiniteScroll.pageLoaded', {
 								data: dataLoaded,
 								ctn: ctn,

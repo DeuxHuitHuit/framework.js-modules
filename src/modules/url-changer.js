@@ -9,7 +9,6 @@
 	
 	'use strict';
 	
-	var win = $(window);
 	var currentPageKey = '';
 	var currentPageRoute = '';
 	var currentPageUrl = '';
@@ -43,8 +42,29 @@
 		}
 	};
 
+	var onReplaceState = function (key, data) {
+		var innerData = {
+			scrollPos: $(window).scrollTop()
+		};
+
+		window.history.replaceState($.extend({}, innerData, data.data), data.title, data.url);
+	};
+
+	var onPagesLoading = function () {
+		if (!isPopingState) {
+			onReplaceState(null, {
+				title: document.title,
+				url: currentPageRoute + currentPageFragment
+			});
+		}
+	};
+
+	var historyPush = function (url) {
+		history.pushState({}, document.title, url);
+	};
+
 	var updateUrlFragment = function () {
-		history.pushState({}, document.title, currentPageRoute + currentPageFragment);
+		historyPush(currentPageRoute + currentPageFragment);
 	};
 	
 	var getNextRouteFromData = function (data) {
@@ -105,7 +125,7 @@
 			url = url + currentPageFragment;
 		
 			if (!isPopingState) {
-				history.pushState({}, document.title, newRoute + currentPageFragment);
+				historyPush(newRoute + currentPageFragment);
 			}
 			isPopingState = false;
 		}
@@ -204,7 +224,7 @@
 				}
 
 				//Append back hash value
-				if (currentHash.length) {
+				if (currentHash && currentHash.length) {
 					currentPageFragment += '#' + currentHash;
 				}
 
@@ -262,16 +282,15 @@
 		$.sendPageView({page: data.route});
 	};
 	
-	var getCurrentUrl = function () {
-		return window.location.pathname;
-	};
+	var throttledScroll = _.throttle(function () {
+		onReplaceState(null, {
+			title: document.title,
+			url: document.location.pathname + document.location.search + document.location.hash
+		});
+	}, 500, {});
 	
-	var getQueryString = function () {
-		return window.location.search;
-	};
-
-	var getFullUrl = function () {
-		return window.location.toString();
+	var onScroll = function () {
+		throttledScroll();
 	};
 	
 	var init = function () {
@@ -283,7 +302,15 @@
 		}
 
 		if (window.history.pushState) {
-			win.on('popstate', urlChanged);
+			$(window).on('popstate', function (e) {
+
+				App.modules.notify('history.popState', {
+					previousUrl: currentPageUrl,
+					event: e,
+					state: e.originalEvent.state
+				});
+				urlChanged();
+			});
 		} else {
 			App.log({
 				fx: 'error',
@@ -294,20 +321,31 @@
 	
 	var actions = function () {
 		return {
+			site: {
+				scroll: onScroll
+			},
 			page: {
 				entering: onPageEntering,
 				leaving: onPageLeaving,
 				enter: onPageEntered,
 				updateUrlFragment: onUpdateUrlFragment,
-				updateQsFragment: onUpdateQsFragment
+				updateQsFragment: onUpdateQsFragment,
+				replaceState: onReplaceState
 			},
 			pages: {
-				navigateToCurrent: onNavigateToCurrent
+				navigateToCurrent: onNavigateToCurrent,
+				loading: onPagesLoading
 			},
 			url: {
-				getUrl: getCurrentUrl,
-				getQueryString: getQueryString,
-				getFullUrl: getFullUrl
+				getUrl: function () {
+					return window.location.pathname;
+				},
+				getQueryString: function () {
+					return window.location.search;
+				},
+				getFullUrl: function () {
+					return window.location.toString();
+				}
 			}
 		};
 	};

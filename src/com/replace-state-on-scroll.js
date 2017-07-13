@@ -65,7 +65,12 @@
 					document.title = title;
 				}
 				if (!!url) {
-					global.history.replaceState({}, title || document.title, url);
+					App.modules.notify('page.replaceState', {
+						title: title || document.title,
+						url: url
+					});
+					
+
 					App.callback(o.change, [cur, n, url]);
 					if (n > seen) {
 						$.sendPageView({page: url});
