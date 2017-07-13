@@ -193,11 +193,11 @@
 		};
 		
 		return {
-			init : init,
-			clear : function () {
+			init: init,
+			clear: function () {
 				currentPageHandle = '';
 			},
-			navigateTo : navigateTo
+			navigateTo: navigateTo
 		};
 	
 	});
