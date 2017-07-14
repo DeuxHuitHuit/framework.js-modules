@@ -110,7 +110,10 @@
 			},
 			page: {
 				enter: onPageEnter
-			}
+			},
+			articleChanger: {
+				enter: onPageEnter
+			}	
 		};
 	};
 	
