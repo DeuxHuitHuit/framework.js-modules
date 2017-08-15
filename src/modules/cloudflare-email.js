@@ -22,8 +22,11 @@
 			/* jshint ignore:start */
 			try {
 				e = $(e);
-				var a = e.attr('href').split('#')[1];
-				if (a.indexOf('?') !== -1) {
+				var a = e.attr('data-cfemail');
+				if (!a) {
+					a = e.attr('href').split('#')[1];
+				}
+				if (a && a.indexOf('?') !== -1) {
 					a = a.split('?')[0];
 				}
 				if (a) {
