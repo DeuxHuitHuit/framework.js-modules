@@ -12,16 +12,11 @@
 	var ITEM_SELECTOR = '.js-auto-sync-state-from-qs';
 
 	var setItemState = function (item, state, flag) {
-
-		if (flag) {
-			//Set state
-			item.addClass(item.attr('data-' + state + '-state-add-class'));
-			item.removeClass(item.attr('data-' + state + '-state-rem-class'));
-		} else {
-			//Remove state
-			item.removeClass(item.attr('data-' + state + '-state-add-class'));
-			item.addClass(item.attr('data-' + state + '-state-rem-class'));
-		}
+		App.modules.notify('changeState.update', {
+			item: item,
+			state: state,
+			action: flag ? 'on': 'off'
+		});
 	};
 
 	var processItemState = function (item, state, conditions) {
