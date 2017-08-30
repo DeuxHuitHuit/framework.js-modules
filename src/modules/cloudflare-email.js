@@ -48,7 +48,7 @@
 						}
 					}
 				}
-			} catch (e) {
+			} catch (ex) {
 				App.log(ex);
 			}
 			/* jshint ignore:end */
