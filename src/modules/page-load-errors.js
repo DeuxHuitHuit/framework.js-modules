@@ -6,6 +6,16 @@
 (function ($, undefined) {
 
 	'use strict';
+
+	var defaultLoadFatalError = function (key, data) {
+		if (data && data.url) {
+			//Full reload url
+			document.location = data.url;
+		} else {
+			//Should never append from the framework event
+			document.location = document.location;
+		}
+	};
 	
 	var actions = function () {
 		return {
@@ -17,7 +27,7 @@
 					
 				},
 				loadfatalerror: function (key, data) {
-					
+					defaultLoadFatalError(key, data);
 				}
 			}
 		};
