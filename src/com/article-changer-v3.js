@@ -149,7 +149,7 @@
 					var cleanUrl = loc.href.substring(loc.hostname.length + loc.protocol.length + 2);
 					
 					App.mediator.notify('pageLoad.end');
-					//App.mediator.notify('articleChanger.entering', {url : cleanUrl, data : dataLoaded});
+					App.mediator.notify('articleChanger.loaded', {url : cleanUrl, data : dataLoaded});
 					
 					if (!nextPage.length) {
 						App.log({
