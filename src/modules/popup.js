@@ -8,41 +8,24 @@
 	'use strict';
 	
 	var ANIM_STATE = 'popup-poped';
-	var ANIM_INITED_STATE = 'popup-inited';
+	var POPUP_SELECTOR = '.js-popup';
 	var BG_SELECTOR = '.js-popup-bg';
-	var CONTENT_SELECTOR = '.js-popup-content';
-	var TRANSITION_END_SELECTOR_ATTR = 'data-popup-transition-end-selector';
 	var RESET_ON_CLOSE_ATTR = 'data-popup-reset-on-close';
 	
-	var toggleAnimInited = function (action, popupBg, popupContent) {
-		popupBg.addClass('noanim');
+	var toggleAnimInited = function (action, popup) {
+		popup.addClass('noanim');
 		App.modules.notify('changeState.update', {
-			item: popupBg,
-			action: action,
-			state: ANIM_INITED_STATE
-		});
-		popupBg.height();
-		popupBg.removeClass('noanim');
-		
-		popupContent.addClass('noanim');
-		App.modules.notify('changeState.update', {
-			item: popupContent,
-			action: action,
-			state: ANIM_INITED_STATE
-		});
-		popupContent.height();
-		popupContent.removeClass('noanim');
-	};
-	
-	var toggleAnim = function (action, popupBg, popupContent) {
-		App.modules.notify('changeState.update', {
-			item: popupBg,
+			item: popup,
 			action: action,
 			state: ANIM_STATE
 		});
-		
+		popup.height();
+		popup.removeClass('noanim');
+	};
+	
+	var toggleAnim = function (action, popup) {
 		App.modules.notify('changeState.update', {
-			item: popupContent,
+			item: popup,
 			action: action,
 			state: ANIM_STATE
 		});
@@ -51,43 +34,54 @@
 	var openPopup = function (key, data) {
 		var popup = $(data.popup);
 		var bg = popup.find(BG_SELECTOR);
-		var content = popup.find(CONTENT_SELECTOR);
+		var isAlreadyPopep = popup.hasClass('is-' + ANIM_STATE);
 		
 		// prepare anim
-		toggleAnimInited('on', bg, content);
+		toggleAnimInited('off', popup);
 		// callback to do things just before animating the popup
 		App.callback(data.openCallback);
-		// do the anim
-		toggleAnim('on', bg, content);
+		
+		if (!isAlreadyPopep) {
+			$.removeFromTransition(bg.selector);
+			bg.transitionEnd(function () {
+				// callback to do things just after animating the popup
+				App.callback(data.openedCallback,[{
+					popup: popup
+				}]);
+			});
+			// do the anim
+			toggleAnim('on', popup);
+		}
 	};
 	
 	var closePopup = function (key, data) {
 		var popup = $(data.popup);
 		var bg = popup.find(BG_SELECTOR);
-		var isAlreadyPopep = bg.hasClass('is-' + ANIM_STATE);
+		var isAlreadyPopep = popup.hasClass('is-' + ANIM_STATE);
 		
 		if (isAlreadyPopep) {
-			var content = popup.find(CONTENT_SELECTOR);
-			
 			// return to riginal state once anim is done
+			$.removeFromTransition(bg.selector);
 			bg.transitionEnd(function () {
 				
 				//Reset on close if enabled
 				if (popup.filter('[' + RESET_ON_CLOSE_ATTR + ']').length) {
-					toggleAnimInited('off', bg, content);
+					toggleAnimInited('on', popup);
 				}
 				
 				// callback to do things just after animating the popup
-				App.callback(data.closeCallback);
+				App.callback(data.closeCallback,[{
+					popup: popup
+				}]);
 			});
 			
 			//do the anim
-			toggleAnim('off', bg, content);
+			toggleAnim('off', popup);
 		}
 	};
 	
 	var togglePopup = function (key, data) {
-		var isAlreadyPopep = $(data.popup).find(BG_SELECTOR).hasClass('is-' + ANIM_STATE);
+		var isAlreadyPopep = $(data.popup).hasClass('is-' + ANIM_STATE);
 		
 		if (isAlreadyPopep) {
 			//popup is opened and we want to close
