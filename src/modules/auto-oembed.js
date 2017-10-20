@@ -91,11 +91,19 @@
 	
 	var onPlayBtnClick = function (e) {
 		var t = $(this);
+		var pauseAllOther = t.attr('data-auto-oembed-pause-other-on-play') === 'true';
 		var vCtn = t.closest(CTN_SEL);
 		var oembed = vCtn.data(DATA_KEY);
 		
+
+		if (pauseAllOther == true) {
+			pauseAll($('#site'));
+		};
+
 		if (!oembed) {
 			oembed = embedOne(vCtn, true);
+		} else {
+			oembed.play();
 		}
 		
 		if (!!oembed) {
