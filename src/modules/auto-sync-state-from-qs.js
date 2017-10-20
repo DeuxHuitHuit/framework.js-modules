@@ -10,6 +10,7 @@
 	var site = $('#site');
 	
 	var ITEM_SELECTOR = '.js-auto-sync-state-from-qs';
+	var ATTR_STATES = 'data-sync-state-from-qs';
 
 	var setItemState = function (item, state, flag) {
 		App.modules.notify('changeState.update', {
@@ -20,7 +21,6 @@
 	};
 
 	var processItemState = function (item, state, conditions) {
-
 		var isOn = false;
 		var qs = App.routing.querystring.parse(document.location.search);
 
@@ -28,6 +28,7 @@
 			var splitedCondition = e.split('=');
 			var key = splitedCondition[0];
 			var value = splitedCondition[1];
+
 			if (value.length) {
 				if (qs[key] && qs[key] == value) {
 					isOn = true;
@@ -44,9 +45,11 @@
 	var syncState = function () {
 		site.find(ITEM_SELECTOR).each(function () {
 			var t = $(this);
-			var states = t.attr('data-sync-state-from-qs');
+			var states = t.attr(ATTR_STATES);
+
 			if (states.length) {
 				var statesList = states.split(';');
+
 				$.each(statesList, function (i, e) {
 					var splitedStateValue = e.split(':');
 					var state = splitedStateValue[0];
