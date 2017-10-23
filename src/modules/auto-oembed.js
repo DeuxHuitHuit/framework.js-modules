@@ -98,7 +98,7 @@
 
 		if (pauseAllOther == true) {
 			pauseAll($('#site'));
-		};
+		}
 
 		if (!oembed) {
 			oembed = embedOne(vCtn, true);
