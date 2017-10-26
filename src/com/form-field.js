@@ -348,6 +348,9 @@
 			if (!!options.previewEvents) {
 				input.on(options.previewEvents, preview);
 			}
+			if (!!ctn.find('[selected]').length) {
+				checkEmptiness();
+			}
 		};
 		
 		self = {
