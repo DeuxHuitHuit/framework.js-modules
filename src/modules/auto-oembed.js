@@ -57,7 +57,15 @@
 
 		ctx.data(DATA_KEY, oembed);
 		components.push(oembed);
-		oembed.load();
+		oembed.load({
+			finish: function () {
+				App.modules.notify('changeState.update', {
+					item: ctx,
+					state: 'playing',
+					action: 'off'
+				});
+			}
+		});
 		return oembed;
 	};
 	
@@ -103,15 +111,12 @@
 		if (!oembed) {
 			oembed = embedOne(vCtn, true);
 		} else {
-			oembed.play();
-		}
-		
-		if (!!oembed) {
 			App.modules.notify('changeState.update', {
 				item: vCtn,
 				state: 'playing',
 				action: 'on'
 			});
+			oembed.play();
 		}
 		
 		return global.pd(e);
