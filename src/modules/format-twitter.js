@@ -11,7 +11,7 @@
 	var twitterlink = function (t) {
 		return t.replace(/[a-z]+:\/\/([a-z0-9-_]+\.[a-z0-9-_:~\+#%&\?\/.=^>^<]+[^:\.,\)\s*$])/gi,
 			function (m, link) {
-				return '<a title="' + m + '" href="' + m + '" target="_blank">' +
+				return '<a title="' + m + '" href="' + m + '" target="_blank" rel="noopener">' +
 					((link.length > 36) ? link.substr(0, 35) + '&hellip;' : link) + '</a>';
 			}
 		);
@@ -22,7 +22,7 @@
 /(^|[^\w]+)\@([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]{1,15}(\/[a-zA-Z0-9-_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)*)/gi, // jshint ignore:line
 			function (m, m1, m2) {
 				return m1 + '<a href="http://twitter.com/' + m2 +
-					'" target="_blank">@' + m2 + '</a>';
+					'" target="_blank" rel="noopener">@' + m2 + '</a>';
 			}
 		);
 	};
@@ -32,7 +32,7 @@
 			function (m, m1, m2) {
 				return m.substr(-1) === '"' || m.substr(-1) == '<' ?
 					m : m1 + '<a href="https://twitter.com/search?q=%23' + m2 +
-						'&src=hash" target="_blank">#' + m2 + '</a>';
+						'&src=hash" target="_blank rel="noopener"">#' + m2 + '</a>';
 			}
 		);
 	};
