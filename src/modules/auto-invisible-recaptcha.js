@@ -50,7 +50,11 @@
 	};
 
 	var pageEnter = function (key, data) {
-		page = $(data.page.key());
+		if (!!data.page) {
+			page = $(data.page.key());
+		} else if (!!data.article) {
+			page = $(data.article);
+		}
 		load();
 	};
 
