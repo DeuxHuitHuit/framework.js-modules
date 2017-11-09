@@ -11,11 +11,18 @@
 	var BUTTON_SELECTOR = '.js-change-state-hover';
 	var BUTTON_STATE_ATTR = 'data-change-state-hover';
 	var BUTTON_TARGET_ATTR = 'data-change-state-hover-target';
+	var BUTTON_TARGET_COMMON_ANCESTOR_ATTR = 'data-change-state-hover-target-common-ancestor';
 
 	var findTargetItemIfAvailable = function (item, target) {
 		//Find target if present
 		if (target) {
-			return site.find(target);
+			var scope = site;
+			var commonAncestor = item.attr(BUTTON_TARGET_COMMON_ANCESTOR_ATTR);
+
+			if (commonAncestor) {
+				scope = item.closest(commonAncestor);
+			}
+			return scope.find(target);
 		} else {
 			return item;
 		}
