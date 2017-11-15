@@ -24,7 +24,8 @@
 		focusOnError: true,
 		post: {
 			
-		}
+		},
+		gaCat: null
 	};
 	
 	App.components.exports('form', function form (options) {
@@ -33,6 +34,11 @@
 		var fields = [];
 		var isSubmitting = false;
 		options = $.extend(true, {}, defaults, options);
+		
+		var track = function (action, label, value) {
+			var cat = ctn.attr('data-ga-form-cat') || 'form';
+			$.sendEvent(cat, action, label, value);
+		};
 		
 		var reset = function () {
 			ctn[0].reset();
@@ -125,6 +131,18 @@
 			});
 		};
 		
+		var isAllFieldsValid = function () {
+			var isValid = true;
+			_.reduce(fields, function (memo, current) {
+				if (!!memo) {
+					isValid = current.isValid();
+					return isValid;
+				}
+			}, true);
+			
+			return isValid;
+		};
+		
 		var onSubmit = function (e) {
 			var results = validate();
 			App.callback(options.onSubmit);
@@ -180,6 +198,13 @@
 			ctn = options.root.find(options.container);
 			ctn.find(options.fields).each(initField);
 			ctn.submit(onSubmit);
+			
+			if (!!options.focusOnFirst) {
+				setTimeout(function () {
+					fields[0].focus();
+				}, 100);
+			}
+			
 			// Default validators message
 			w.validate.validators.presence.options = {
 				message: ctn.attr('data-msg-required')
@@ -248,7 +273,15 @@
 			},
 			eachFields: function (cb) {
 				return _.each(fields, cb);
-			}
+			},
+			getOptions: function () {
+				return options;
+			},
+			isValid: isAllFieldsValid,
+			validators: function () {
+				return w.validate.validators;
+			},
+			track: track
 		};
 	});
 	
