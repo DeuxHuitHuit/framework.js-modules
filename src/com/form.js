@@ -25,7 +25,8 @@
 		post: {
 			
 		},
-		gaCat: null
+		gaCat: 'conversion',
+		gaLabel: 'form'
 	};
 	
 	App.components.exports('form', function form (options) {
@@ -36,8 +37,9 @@
 		options = $.extend(true, {}, defaults, options);
 		
 		var track = function (action, label, value) {
-			var cat = ctn.attr('data-ga-form-cat') || 'form';
-			$.sendEvent(cat, action, label, value);
+			var cat = ctn.attr('data-ga-form-cat') || options.gaCat;
+			label = label || ctn.attr('data-ga-form-label') || options.gaLabel;
+			$.sendEvent('conversion', action, label, value);
 		};
 		
 		var reset = function () {
