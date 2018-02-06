@@ -60,11 +60,13 @@
 		initAllSliders();
 	};
 	
-	var pageLeave = function () {
-		$.each(flickities, function () {
-			this.destroy();
-		});
-		flickities = [];
+	var pageLeaving = function (key, data) {
+		if (!!data && !!data.canRemove) {
+			$.each(flickities, function () {
+				this.destroy();
+			});
+			flickities = [];
+		}
 		
 		page = $();
 	};
@@ -81,7 +83,7 @@
 			},
 			page: {
 				enter: pageEnter,
-				leave: pageLeave
+				leaving: pageLeaving
 			},
 			articleChanger: {
 				entering: onArticleEntering
