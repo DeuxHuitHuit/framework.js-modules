@@ -41,6 +41,7 @@
 	var init = function () {
 		App.modules.notify('siteLoader.initing');
 		if (App.debug()) {
+			App.modules.notify('siteLoader.closing');
 			destroyLoader();
 		} else {
 			setTimeout(closeLoader, 9500);
