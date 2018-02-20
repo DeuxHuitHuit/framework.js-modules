@@ -74,7 +74,6 @@
 	var onArticleEntering = function () {
 		initAllSliders();
 	};
-
 	
 	var actions = function () {
 		return {

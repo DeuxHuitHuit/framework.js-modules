@@ -45,7 +45,7 @@
 			$.removeFromTransition(bg.selector);
 			bg.transitionEnd(function () {
 				// callback to do things just after animating the popup
-				App.callback(data.openedCallback,[{
+				App.callback(data.openedCallback, [{
 					popup: popup
 				}]);
 			});
@@ -70,7 +70,7 @@
 				}
 				
 				// callback to do things just after animating the popup
-				App.callback(data.closeCallback,[{
+				App.callback(data.closeCallback, [{
 					popup: popup
 				}]);
 			});

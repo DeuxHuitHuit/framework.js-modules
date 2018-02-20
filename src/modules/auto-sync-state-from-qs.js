@@ -16,7 +16,7 @@
 		App.modules.notify('changeState.update', {
 			item: item,
 			state: state,
-			action: flag ? 'on': 'off'
+			action: flag ? 'on' : 'off'
 		});
 	};
 

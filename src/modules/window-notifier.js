@@ -54,9 +54,7 @@
 	};
 
 	var requestScrollTop = function (key, data) {
-		if (data && data.animated) {
-
-		} else {
+		if (!data || !data.animated) {
 			win.scrollTop(0);
 			scrollHandler();
 		}

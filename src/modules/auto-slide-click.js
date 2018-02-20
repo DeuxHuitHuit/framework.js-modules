@@ -2,8 +2,8 @@
  * @author Deux Huit Huit
  *
  * auto slide on click
- * 
- * - Container: optionnal. If present, when opening an item, it will close the 
+ *
+ * - Container: optionnal. If present, when opening an item, it will close the
  *	 other items present in the container, just like an accordeon.
  *	 <add class="js-auto-slide-click" />
  *
@@ -11,7 +11,7 @@
  *	 <add class="js-auto-slide-click-item" />
  *	 <add data-auto-slide-click-max-width="" />
  *	 <add data-auto-slide-click-min-width="" />
- * 
+ *
  * - Trigger: toggle The slide. A change-state toggle is done on the trigger.
  *	 When state is "on", it will notify onToggleOn to close the other items if
  *	 <add class="js-auto-slide-click-trigger" />
