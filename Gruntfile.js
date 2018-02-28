@@ -64,7 +64,7 @@ module.exports = function fxGruntConfig (grunt) {
 				forin: true,
 				//freeze: true,
 				immed: false, //
-				latedef: true, // late definition
+				latedef: false, // late definition
 				newcap: true, // capitalize ctos
 				noempty: true,
 				nonew: true, // no new ..()
@@ -143,7 +143,7 @@ module.exports = function fxGruntConfig (grunt) {
 				config: JSCS_FILE,
 				fix: true,
 				disallowDanglingUnderscores: {
-					allExcept: ['_currentPage']
+					allExcept: ['_currentPage', '_templateSettings']
 				}
 			}
 		}

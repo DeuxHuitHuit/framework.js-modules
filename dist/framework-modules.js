@@ -1,7 +1,189 @@
-/*! framework.js-modules - v1.4.0 - build 354 - 2017-07-13
+/*! framework.js-modules - v1.5.0 - build 356 - 2018-02-28
  * https://github.com/DeuxHuitHuit/framework.js-modules
- * Copyright (c) 2017 Deux Huit Huit (https://deuxhuithuit.com/);
+ * Copyright (c) 2018 Deux Huit Huit (https://deuxhuithuit.com/);
  * MIT *//**
+ * @author Deux Huit Huit
+ */
+
+(function ($, win, undefined) {
+	
+	'use strict';
+	
+	App.components.exports('algolia-search', function (options) {
+		var ctn;
+		var aClient;
+		var aIndex;
+		var input;
+		var resultsCtn;
+		var rootUrl = document.location.protocol + '//' + document.location.host;
+		var lg = $('html').attr('lang');
+		var searchBarInput;
+		var searchTaggingTimer = 0;
+		
+		var createResultsTemplatingObject = function (hit) {
+			return {
+				title: hit.title,
+				url: hit.url.replace(rootUrl, '')
+			};
+		};
+		
+		var defaultOptions = {
+			inputSelector: '.js-algolia-input',
+			resultsCtnSelector: '.js-algolia-results-ctn',
+			resultsContentSelector: '.js-algolia-results-content',
+			noResultsTemplateSelector: '.js-algolia-no-results-template',
+			resultsItemTemplateSelector: '.js-algolia-results-item-template',
+			algoliaAttributesToRetrieve: 'title,url,image',
+			algoliaAttributesToHighlight: 'title',
+			resultsTemplateStringSelector: '.js-algolia-results-template-string',
+			facetsAttr: 'data-algolia-facets',
+			facetFiltersAttr: 'data-algolia-facet-filters',
+			onCreateResultsTemplatingObject: createResultsTemplatingObject,
+			defaultResultsTemplateString: '<div><a href="__url__">__title__</a></div>',
+			defaultFacets: 'lang',
+			defaultFacetFilters: 'lang:' + lg,
+			searchCallback: $.noop,
+			clearCallback: $.noop,
+			beforeSearchCallback: $.noop,
+			gaCat: 'Search',
+			gaAction: 'search',
+			gaTimer: 1000,
+			_templateSettings: {
+				interpolate: /__(.+?)__/g,
+				evaluate: /_%([\s\S]+?)%_/g,
+				escape: /_%-([\s\S]+?)%_/g
+			},
+			algolia: {
+				app: '',
+				key: '',
+				index: ''
+			}
+		};
+		
+		var o = $.extend({}, defaultOptions, options);
+
+		var trackSearch = function (val, nb) {
+			$.sendEvent(o.gaCat, o.gaAction, val, nb);
+		};
+
+		var appendNoResults = function (rCtn) {
+			var resultContent = rCtn.find(o.resultsContentSelector);
+			var noResults = !!rCtn.find(o.noResultsTemplateSelector).length ?
+				rCtn.find(o.noResultsTemplateSelector).html() : '';
+			resultContent.append(noResults);
+		};
+		
+		var searchCallback = function (rCtn, err, content, val, appendNewResults) {
+			var resultContent = rCtn.find(o.resultsContentSelector);
+			
+			if (!!!appendNewResults) {
+				resultContent.empty();
+			}
+
+			if (!err) {
+				if (!!content.nbHits) {
+					var tmplString = !!rCtn.find(o.resultsItemTemplateSelector).length ?
+						rCtn.find(o.resultsItemTemplateSelector).text() :
+						o.defaultResultsTemplateString;
+					
+					var originalSettings = _.templateSettings;
+					_.templateSettings = o._templateSettings;
+					
+					var tplt = _.template(tmplString);
+					
+					$.each(content.hits, function () {
+						var t = this;
+						
+						var cleanData = o.onCreateResultsTemplatingObject(t);
+						var newItem = tplt(cleanData);
+						resultContent.append(newItem);
+					});
+					
+					_.templateSettings = originalSettings;
+				} else if (!!val && val.length > 2) {
+					appendNoResults(rCtn);
+				}
+				clearTimeout(searchTaggingTimer);
+				searchTaggingTimer = setTimeout(function () {
+					trackSearch(val, !content ? 0 : (content.nbHits || 0));
+				}, o.gaTimer);
+			}
+			App.callback(o.searchCallback, [rCtn, err, content, o, val]);
+		};
+
+		var search = function (pageToRetrieve, appendNewResults) {
+			var val = input.val();
+			var p = !!parseInt(pageToRetrieve) ? parseInt(pageToRetrieve) : 0;
+			
+			App.callback(o.beforeSearchCallback, [{
+				resultsCtn: resultsCtn
+			}]);
+			
+			resultsCtn.each(function () {
+				var t = $(this);
+				
+				var facets = !!t.attr(o.facetsAttr) ?
+					t.attr(o.facetsAttr) : o.defaultFacets;
+				var facetFilters = !!t.attr(o.facetFiltersAttr) ?
+					t.attr(o.facetFiltersAttr) : o.defaultFacetFilters;
+
+				aIndex.search(val, {
+					facets: facets,
+					facetFilters: facetFilters,
+					attributesToRetrieve: o.algoliaAttributesToRetrieve,
+					attributesToHighlight: o.algoliaAttributesToHighlight,
+					page: p
+				}, function (err, content) {
+					searchCallback(t, err, content, val, appendNewResults);
+				});
+			});
+		};
+
+		var clear = function () {
+			resultsCtn.each(function () {
+				var resultContent = $(this).find(o.resultsContentSelector);
+				resultContent.empty();
+			});
+			App.callback(o.clearCallback, [resultsCtn, o]);
+		};
+		
+		var onInputKeyUp = function () {
+			var val = input.val();
+		
+			if (val.length > 2) {
+				search();
+			} else {
+				clear();
+			}
+		};
+		
+		var init = function (c) {
+			ctn = $(c);
+			input = ctn.find(o.inputSelector);
+			resultsCtn = ctn.find(o.resultsCtnSelector);
+			
+			// init algolia
+			aClient = window.algoliasearch(o.algolia.app, o.algolia.key);
+			aIndex = aClient.initIndex(o.algolia.index);
+			input.on('keyup', onInputKeyUp);
+		};
+		
+		return {
+			init: init,
+			search: search,
+			updateInputVal: function (val) {
+				input.val(val);
+			},
+			getVal: function () {
+				return input.val();
+			},
+			clear: clear
+		};
+	});
+	
+})(jQuery, jQuery(window));
+
+/**
  * @author Deux Huit Huit
  *
  * Article Changer
@@ -77,15 +259,7 @@
 		}
 	};
 
-	App.components.exports('articleChanger', function _articleChanger () {
-		var checkStartAnimAnd = function (current, next, o) {
-			isAnimating = false;
-			if (!isLoading) {
-				//Complete anim
-				o.endAnimToArticle(current, next, o);
-			}
-		};
-
+	App.components.exports('articleChanger', function articleChanger () {
 		var o;
 		var page;
 		var articleCtn;
@@ -94,8 +268,16 @@
 		var isAnimating = false;
 		var loadingUrl = '';
 
-		var init = function (_page, options) {
-			page = _page;
+		var checkStartAnimAnd = function (current, next, o) {
+			isAnimating = false;
+			if (!isLoading) {
+				//Complete anim
+				o.endAnimToArticle(current, next, o);
+			}
+		};
+
+		var init = function (p, options) {
+			page = p;
 			o = $.extend({}, defOptions, options);
 			articleCtn = $(o.containerSelector, page);
 			currentPageHandle = o.startPageHandle;
@@ -107,6 +289,40 @@
 			var currentPage = o.findArticle(articleCtn, currentPageHandle, o);
 			loadUrl = url || document.location.href;
 
+			/* jshint latedef:false */
+			var loadSuccess = function (dataLoaded, textStatus, jqXHR) {
+				//Append New article
+				isLoading = false;
+				if (loadUrl === loadingUrl) {
+					var nextPage = o.appendArticle(articleCtn, dataLoaded, newPageHandle, o);
+					var loc = document.location;
+					var cleanUrl = loc.href.substring(
+						loc.hostname.length +
+						loc.protocol.length + 2
+					);
+					
+					App.mediator.notify('pageLoad.end');
+					App.mediator.notify('articleChanger.loaded', {url: cleanUrl, data: dataLoaded});
+					
+					if (!nextPage.length) {
+						App.log({
+							args: 'Could not find new article',
+							fx: 'error',
+							me: 'Article Changer'
+						});
+					} else {
+						if (o.twoStepAnim && !isAnimating) {
+							o.endAnimToArticle(currentPage, nextPage, o);
+						} else {
+							o.startAnimToArticle(currentPage, nextPage, o, checkStartAnimAnd);
+						}
+					}
+				} else {
+					//Launch again loading
+					load();
+				}
+			};
+
 			var load = function () {
 				if (!isLoading) {
 					App.mediator.notify('pageLoad.start', {page: page});
@@ -117,7 +333,7 @@
 						url: loadUrl,
 						priority: 0, // now
 						vip: true, // bypass others
-						success: loadSucess,
+						success: loadSuccess,
 						progress: function (e) {
 							var total = e.originalEvent.total;
 							var loaded = e.originalEvent.loaded;
@@ -142,36 +358,7 @@
 					});
 				}
 			};
-
-			var loadSucess = function (dataLoaded, textStatus, jqXHR) {
-				//Append New article
-				isLoading = false;
-				if (loadUrl === loadingUrl) {
-					var nextPage = o.appendArticle(articleCtn, dataLoaded, newPageHandle, o);
-					var loc = document.location;
-					var cleanUrl = loc.href.substring(loc.hostname.length + loc.protocol.length + 2);
-					
-					App.mediator.notify('pageLoad.end');
-					//App.mediator.notify('articleChanger.entering', {url : cleanUrl, data : dataLoaded});
-					
-					if (!nextPage.length) {
-						App.log({
-							args: 'Could not find new article',
-							fx: 'error',
-							me: 'Article Changer'
-						});
-					} else {
-						if (o.twoStepAnim && !isAnimating) {
-							o.endAnimToArticle(currentPage, nextPage, o);
-						} else {
-							o.startAnimToArticle(currentPage, nextPage, o, checkStartAnimAnd);
-						}
-					}
-				} else {
-					//Launch again loading
-					load();
-				}
-			};
+			/* jshint latedef:true */
 
 			if (!o.trackHandle || currentPageHandle !== newPageHandle) {
 				
@@ -898,6 +1085,9 @@
 			if (!!options.previewEvents) {
 				input.on(options.previewEvents, preview);
 			}
+			if (!!ctn.find('[selected]').length) {
+				checkEmptiness();
+			}
 		};
 		
 		self = {
@@ -964,7 +1154,9 @@
 		focusOnError: true,
 		post: {
 			
-		}
+		},
+		gaCat: 'conversion',
+		gaLabel: 'form'
 	};
 	
 	App.components.exports('form', function form (options) {
@@ -973,6 +1165,12 @@
 		var fields = [];
 		var isSubmitting = false;
 		options = $.extend(true, {}, defaults, options);
+		
+		var track = function (action, label, value) {
+			var cat = ctn.attr('data-ga-form-cat') || options.gaCat;
+			label = label || ctn.attr('data-ga-form-label') || options.gaLabel;
+			$.sendEvent('conversion', action, label, value);
+		};
 		
 		var reset = function () {
 			ctn[0].reset();
@@ -1065,6 +1263,18 @@
 			});
 		};
 		
+		var isAllFieldsValid = function () {
+			var isValid = true;
+			_.reduce(fields, function (memo, current) {
+				if (!!memo) {
+					isValid = current.isValid();
+					return isValid;
+				}
+			}, true);
+			
+			return isValid;
+		};
+		
 		var onSubmit = function (e) {
 			var results = validate();
 			App.callback(options.onSubmit);
@@ -1120,6 +1330,13 @@
 			ctn = options.root.find(options.container);
 			ctn.find(options.fields).each(initField);
 			ctn.submit(onSubmit);
+			
+			if (!!options.focusOnFirst) {
+				setTimeout(function () {
+					fields[0].focus();
+				}, 100);
+			}
+			
 			// Default validators message
 			w.validate.validators.presence.options = {
 				message: ctn.attr('data-msg-required')
@@ -1188,7 +1405,15 @@
 			},
 			eachFields: function (cb) {
 				return _.each(fields, cb);
-			}
+			},
+			getOptions: function () {
+				return options;
+			},
+			isValid: isAllFieldsValid,
+			validators: function () {
+				return w.validate.validators;
+			},
+			track: track
 		};
 	});
 	
@@ -2363,11 +2588,18 @@
 	var BUTTON_SELECTOR = '.js-change-state-hover';
 	var BUTTON_STATE_ATTR = 'data-change-state-hover';
 	var BUTTON_TARGET_ATTR = 'data-change-state-hover-target';
+	var BUTTON_TARGET_COMMON_ANCESTOR_ATTR = 'data-change-state-hover-target-common-ancestor';
 
 	var findTargetItemIfAvailable = function (item, target) {
 		//Find target if present
 		if (target) {
-			return site.find(target);
+			var scope = site;
+			var commonAncestor = item.attr(BUTTON_TARGET_COMMON_ANCESTOR_ATTR);
+
+			if (commonAncestor) {
+				scope = item.closest(commonAncestor);
+			}
+			return scope.find(target);
 		} else {
 			return item;
 		}
@@ -2619,11 +2851,13 @@
 		initAllSliders();
 	};
 	
-	var pageLeave = function () {
-		$.each(flickities, function () {
-			this.destroy();
-		});
-		flickities = [];
+	var pageLeaving = function (key, data) {
+		if (!!data && !!data.canRemove) {
+			$.each(flickities, function () {
+				this.destroy();
+			});
+			flickities = [];
+		}
 		
 		page = $();
 	};
@@ -2631,7 +2865,6 @@
 	var onArticleEntering = function () {
 		initAllSliders();
 	};
-
 	
 	var actions = function () {
 		return {
@@ -2640,7 +2873,7 @@
 			},
 			page: {
 				enter: pageEnter,
-				leave: pageLeave
+				leaving: pageLeaving
 			},
 			articleChanger: {
 				entering: onArticleEntering
@@ -2649,6 +2882,91 @@
 	};
 	
 	var AutoFlickity = App.modules.exports('auto-flickity', {
+		actions: actions
+	});
+	
+})(jQuery);
+
+/**
+ *  @author Deux Huit Huit
+ *
+ *  Auto Invisible ReCaptcha
+ *
+ *  @requires
+ *    https://www.google.com/recaptcha/api.js?onload=GoogleReCaptchaCallback&amp;render=explicit
+ *    https://github.com/SagaraZD/google_recaptcha
+ *    In the form
+ *    <input type="hidden" name="fields[google_recaptcha]" class="js-recaptcha-response" />
+ *    On the button
+ *    <add class="js-recaptcha" />
+ *    <set data-sitekey="{/data/params/recaptcha-sitekey}" />
+ */
+(function ($, undefined) {
+	'use strict';
+
+	var site = $('#site');
+	var options = {
+		target: '.js-recaptcha-response',
+		trigger: '.js-recaptcha',
+		prefix: 'g-recaptcha-'
+	};
+	var page = null;
+	var loaded = false;
+	var ids = 0;
+
+	var load = function () {
+		if (!loaded || !page) {
+			return;
+		}
+		page.find(options.trigger).each(function () {
+			var t = $(this);
+			if (t.attr('id')) {
+				return;
+			}
+			var id = options.prefix + (++ids);
+			t.attr('id', id);
+			window.grecaptcha.render(id, {
+				sitekey: t.attr('data-sitekey'),
+				callback: function (result) {
+					page.find(options.target).val(result);
+					App.mediator.notify('recaptcha.updated', {
+						result: result,
+						lastTarget: t
+					});
+				}
+			});
+		});
+	};
+
+	var pageEnter = function (key, data) {
+		if (!!data.page) {
+			page = $(data.page.key());
+		} else if (!!data.article) {
+			page = $(data.article);
+		}
+		load();
+	};
+
+	var init = function () {
+		window.GoogleReCaptchaCallback = function () {
+			loaded = true;
+			load();
+		};
+	};
+	
+	var actions = function () {
+		return {
+			page: {
+				enter: pageEnter
+			},
+			articleChanger: {
+				enter: pageEnter
+			}
+		};
+	};
+	
+	App.modules.exports('auto-invisible-recaptcha', {
+		init: init,
 		actions: actions
 	});
 	
@@ -2985,7 +3303,15 @@
 
 		ctx.data(DATA_KEY, oembed);
 		components.push(oembed);
-		oembed.load();
+		oembed.load({
+			finish: function () {
+				App.modules.notify('changeState.update', {
+					item: ctx,
+					state: 'playing',
+					action: 'off'
+				});
+			}
+		});
 		return oembed;
 	};
 	
@@ -3019,19 +3345,24 @@
 	
 	var onPlayBtnClick = function (e) {
 		var t = $(this);
+		var pauseAllOther = t.attr('data-auto-oembed-pause-other-on-play') === 'true';
 		var vCtn = t.closest(CTN_SEL);
 		var oembed = vCtn.data(DATA_KEY);
 		
+
+		if (pauseAllOther) {
+			pauseAll($('#site'));
+		}
+
 		if (!oembed) {
 			oembed = embedOne(vCtn, true);
-		}
-		
-		if (!!oembed) {
+		} else {
 			App.modules.notify('changeState.update', {
 				item: vCtn,
 				state: 'playing',
 				action: 'on'
 			});
+			oembed.play();
 		}
 		
 		return global.pd(e);
@@ -3460,6 +3791,133 @@
 })(jQuery);
 
 /**
+ * @author Deux Huit Huit
+ *
+ * auto slide on click
+ *
+ * - Container: optionnal. If present, when opening an item, it will close the
+ *	 other items present in the container, just like an accordeon.
+ *	 <add class="js-auto-slide-click" />
+ *
+ * - Item: container of the trigger and slide
+ *	 <add class="js-auto-slide-click-item" />
+ *	 <add data-auto-slide-click-max-width="" />
+ *	 <add data-auto-slide-click-min-width="" />
+ *
+ * - Trigger: toggle The slide. A change-state toggle is done on the trigger.
+ *	 When state is "on", it will notify onToggleOn to close the other items if
+ *	 <add class="js-auto-slide-click-trigger" />
+ *	 <add data-auto-slide-click-state-add-class="" />
+ *	 <add data-auto-slide-click-state-rem-class="" />
+ *	 <add data-auto-slide-click-state-notify-on="autoSlideClick.toggleOn" />
+ *
+ * - Slide: Item that slides up and down
+ *	 <add class="js-auto-slide-click-slide" />
+ *	 <add data-auto-slide-click-state-add-class="" />
+ *	 <add data-auto-slide-click-state-rem-class="" />
+ */
+(function ($, global, undefined) {
+	
+	'use strict';
+	
+	var win = $(window);
+	var html = $('html');
+	
+	var CTN_SELECTOR = '.js-auto-slide-click';
+	var ITEM_SELECTOR = '.js-auto-slide-click-item';
+	var TRIGGER_SELECTOR = '.js-auto-slide-click-trigger';
+	var SLIDE_SELECTOR = '.js-auto-slide-click-slide';
+	
+	var STATE = 'auto-slide-click';
+	
+	var TRIGGER_MAX_WIDTH_ATTR = 'data-auto-slide-click-max-width';
+	var TRIGGER_MIN_WIDTH_ATTR = 'data-auto-slide-click-min-width';
+	
+	// close other when opening one
+	var onToggleOn = function (key, data) {
+		var curItem = data.item.closest(ITEM_SELECTOR);
+		var ctn = data.item.closest(CTN_SELECTOR);
+		var items = ctn.find(ITEM_SELECTOR).not(curItem);
+		
+		items.each(function () {
+			var t = $(this);
+			var trigger = t.find(TRIGGER_SELECTOR);
+			var slide = t.find(SLIDE_SELECTOR);
+			
+			//trigger
+			App.modules.notify('changeState.update', {
+				item: trigger,
+				state: STATE,
+				action: 'off'
+			});
+			
+			//tiroir
+			App.modules.notify('slide.update', {
+				item: slide,
+				state: STATE,
+				action: 'up'
+			});
+		});
+	};
+	
+	var updateSlideState = function (key, data) {
+		var item = data.trigger.closest(ITEM_SELECTOR);
+		var slide = item.find(SLIDE_SELECTOR);
+
+		var minWidth = item.attr(TRIGGER_MIN_WIDTH_ATTR);
+		var maxWidth = item.attr(TRIGGER_MAX_WIDTH_ATTR);
+		var isMinWidthValid = (!!minWidth && window.mediaQueryMinWidth(minWidth)) || !minWidth;
+		var isMaxWidthValid = (!!maxWidth && window.mediaQueryMaxWidth(maxWidth)) || !maxWidth;
+		
+		if (isMinWidthValid && isMaxWidthValid) {
+			//Process item algo
+			App.modules.notify('slide.update', {
+				item: slide,
+				state: STATE,
+				action: data.slideAction
+			});
+			
+			App.modules.notify('changeState.update', {
+				item: data.trigger,
+				state: STATE,
+				action: data.triggerAction
+			});
+		}
+	};
+	
+	var onTriggerClick = function (e) {
+		var t = $(this);
+		
+		updateSlideState('', {
+			trigger: t,
+			triggerAction: 'toggle',
+			slideAction: 'toggle'
+		});
+		
+		return window.pd(e);
+	};
+	
+	var init = function () {
+		$('#site').on(App.device.events.click, TRIGGER_SELECTOR, onTriggerClick);
+	};
+	
+	var actions = function () {
+		return {
+			autoSlideClick: {
+				toggleOn: onToggleOn,
+				updateSlideState: updateSlideState
+			}
+		};
+	};
+	
+	var autoAccordion = App.modules.exports('auto-slide-click', {
+		init: init,
+		actions: actions
+	});
+	
+})(jQuery, window);
+
+/**
  *  @author Deux Huit Huit
  *
  *  Auto sync property
@@ -3571,6 +4029,9 @@
 			},
 			page: {
 				enter: onPageEnter
+			},
+			articleChanger: {
+				enter: onPageEnter
 			}
 		};
 	};
@@ -3594,22 +4055,17 @@
 	var site = $('#site');
 	
 	var ITEM_SELECTOR = '.js-auto-sync-state-from-qs';
+	var ATTR_STATES = 'data-sync-state-from-qs';
 
 	var setItemState = function (item, state, flag) {
-
-		if (flag) {
-			//Set state
-			item.addClass(item.attr('data-' + state + '-state-add-class'));
-			item.removeClass(item.attr('data-' + state + '-state-rem-class'));
-		} else {
-			//Remove state
-			item.removeClass(item.attr('data-' + state + '-state-add-class'));
-			item.addClass(item.attr('data-' + state + '-state-rem-class'));
-		}
+		App.modules.notify('changeState.update', {
+			item: item,
+			state: state,
+			action: flag ? 'on' : 'off'
+		});
 	};
 
 	var processItemState = function (item, state, conditions) {
-
 		var isOn = false;
 		var qs = App.routing.querystring.parse(document.location.search);
 
@@ -3617,6 +4073,7 @@
 			var splitedCondition = e.split('=');
 			var key = splitedCondition[0];
 			var value = splitedCondition[1];
+
 			if (value.length) {
 				if (qs[key] && qs[key] == value) {
 					isOn = true;
@@ -3633,9 +4090,11 @@
 	var syncState = function () {
 		site.find(ITEM_SELECTOR).each(function () {
 			var t = $(this);
-			var states = t.attr('data-sync-state-from-qs');
+			var states = t.attr(ATTR_STATES);
+
 			if (states.length) {
 				var statesList = states.split(';');
+
 				$.each(statesList, function (i, e) {
 					var splitedStateValue = e.split(':');
 					var state = splitedStateValue[0];
@@ -4295,6 +4754,9 @@
 				if (!!href && (/^https?:\/\//.test(href) || /^\/workspace/.test(href))) {
 					if (!t.attr('target')) {
 						t.attr('target', '_blank');
+						t.attr('rel', 'noopener');
+					} else if (!t.attr('rel') && $.inArray(t.attr('target'), ['_blank', '_top'])) {
+						t.attr('rel', 'noopener');
 					}
 				}
 			});
@@ -4626,38 +5088,52 @@
 	var SELECTOR = 'a[href^="/cdn-cgi/l/email-protection"]';
 	var PATTERN = /^\[email([\u0080-\u00FF ]+)protected\]$/i;
 
+	var process = function (a, e) {
+		var j,c,s = '';
+
+		var r = parseInt(a.substr(0, 2), 16);
+
+		if (r) {
+			for (j = 2; j < a.length; j += 2) {
+				c = parseInt(a.substr(j, 2), 16) ^ r;
+				s += String.fromCharCode(c);
+			}
+
+			e.attr('href', 'mailto:' + s);
+			e.find('script').remove();
+			
+			var span = e.find('.__cf_email__');
+
+			if (!!span.length) {
+				e = span;
+			}
+
+			if (PATTERN.test(str.trim(e.text()))) {
+				e.text(s);
+			}
+		}
+	};
+
 	var doIt = function () {
 		$(SELECTOR).each(function (i, e) {
-			/* jshint ignore:start */
 			try {
 				e = $(e);
-				var a = e.attr('href').split('#')[1];
-				if (a.indexOf('?') !== -1) {
+				var a = e.attr('data-cfemail');
+
+				if (!a) {
+					a = e.attr('href').split('#')[1];
+				}
+
+				if (a && a.indexOf('?') !== -1) {
 					a = a.split('?')[0];
 				}
+
 				if (a) {
-					var j,c,s = '';
-					var r = parseInt(a.substr(0, 2), 16);
-					if (r) {
-						for (j = 2; j < a.length; j += 2) {
-							c = parseInt(a.substr(j, 2), 16) ^ r;
-							s += String.fromCharCode(c);
-						}
-						e.attr('href', 'mailto:' + s);
-						e.find('script').remove();
-						var span = e.find('.__cf_email__');
-						if (!!span.length) {
-							e = span;
-						}
-						if (PATTERN.test(str.trim(e.text()))) {
-							e.text(s);
-						}
-					}
+					process(a, e);
 				}
-			} catch (e) {
+			} catch (ex) {
 				App.log(ex);
 			}
-			/* jshint ignore:end */
 		});
 	};
 
@@ -4778,7 +5254,7 @@
 	var twitterlink = function (t) {
 		return t.replace(/[a-z]+:\/\/([a-z0-9-_]+\.[a-z0-9-_:~\+#%&\?\/.=^>^<]+[^:\.,\)\s*$])/gi,
 			function (m, link) {
-				return '<a title="' + m + '" href="' + m + '" target="_blank">' +
+				return '<a title="' + m + '" href="' + m + '" target="_blank" rel="noopener">' +
 					((link.length > 36) ? link.substr(0, 35) + '&hellip;' : link) + '</a>';
 			}
 		);
@@ -4789,7 +5265,7 @@
 /(^|[^\w]+)\@([a-zA-Z0-9_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]{1,15}(\/[a-zA-Z0-9-_àáâãäåçèéêëìíîïðòóôõöùúûüýÿ]+)*)/gi, // jshint ignore:line
 			function (m, m1, m2) {
 				return m1 + '<a href="http://twitter.com/' + m2 +
-					'" target="_blank">@' + m2 + '</a>';
+					'" target="_blank" rel="noopener">@' + m2 + '</a>';
 			}
 		);
 	};
@@ -4799,7 +5275,7 @@
 			function (m, m1, m2) {
 				return m.substr(-1) === '"' || m.substr(-1) == '<' ?
 					m : m1 + '<a href="https://twitter.com/search?q=%23' + m2 +
-						'&src=hash" target="_blank">#' + m2 + '</a>';
+						'&src=hash" target="_blank rel="noopener"">#' + m2 + '</a>';
 			}
 		);
 	};
@@ -5431,6 +5907,16 @@
 (function ($, undefined) {
 
 	'use strict';
+
+	var defaultLoadFatalError = function (key, data) {
+		if (data && data.url) {
+			//Full reload url
+			document.location = data.url;
+		} else {
+			//Should never append from the framework event
+			document.location = document.location;
+		}
+	};
 	
 	var actions = function () {
 		return {
@@ -5442,7 +5928,7 @@
 					
 				},
 				loadfatalerror: function (key, data) {
-					
+					defaultLoadFatalError(key, data);
 				}
 			}
 		};
@@ -5624,41 +6110,24 @@
 	'use strict';
 	
 	var ANIM_STATE = 'popup-poped';
-	var ANIM_INITED_STATE = 'popup-inited';
+	var POPUP_SELECTOR = '.js-popup';
 	var BG_SELECTOR = '.js-popup-bg';
-	var CONTENT_SELECTOR = '.js-popup-content';
-	var TRANSITION_END_SELECTOR_ATTR = 'data-popup-transition-end-selector';
 	var RESET_ON_CLOSE_ATTR = 'data-popup-reset-on-close';
 	
-	var toggleAnimInited = function (action, popupBg, popupContent) {
-		popupBg.addClass('noanim');
+	var toggleAnimInited = function (action, popup) {
+		popup.addClass('noanim');
 		App.modules.notify('changeState.update', {
-			item: popupBg,
-			action: action,
-			state: ANIM_INITED_STATE
-		});
-		popupBg.height();
-		popupBg.removeClass('noanim');
-		
-		popupContent.addClass('noanim');
-		App.modules.notify('changeState.update', {
-			item: popupContent,
-			action: action,
-			state: ANIM_INITED_STATE
-		});
-		popupContent.height();
-		popupContent.removeClass('noanim');
-	};
-	
-	var toggleAnim = function (action, popupBg, popupContent) {
-		App.modules.notify('changeState.update', {
-			item: popupBg,
+			item: popup,
 			action: action,
 			state: ANIM_STATE
 		});
-		
+		popup.height();
+		popup.removeClass('noanim');
+	};
+	
+	var toggleAnim = function (action, popup) {
 		App.modules.notify('changeState.update', {
-			item: popupContent,
+			item: popup,
 			action: action,
 			state: ANIM_STATE
 		});
@@ -5667,43 +6136,54 @@
 	var openPopup = function (key, data) {
 		var popup = $(data.popup);
 		var bg = popup.find(BG_SELECTOR);
-		var content = popup.find(CONTENT_SELECTOR);
+		var isAlreadyPopep = popup.hasClass('is-' + ANIM_STATE);
 		
 		// prepare anim
-		toggleAnimInited('on', bg, content);
+		toggleAnimInited('off', popup);
 		// callback to do things just before animating the popup
 		App.callback(data.openCallback);
-		// do the anim
-		toggleAnim('on', bg, content);
+		
+		if (!isAlreadyPopep) {
+			$.removeFromTransition(bg.selector);
+			bg.transitionEnd(function () {
+				// callback to do things just after animating the popup
+				App.callback(data.openedCallback, [{
+					popup: popup
+				}]);
+			});
+			// do the anim
+			toggleAnim('on', popup);
+		}
 	};
 	
 	var closePopup = function (key, data) {
 		var popup = $(data.popup);
 		var bg = popup.find(BG_SELECTOR);
-		var isAlreadyPopep = bg.hasClass('is-' + ANIM_STATE);
+		var isAlreadyPopep = popup.hasClass('is-' + ANIM_STATE);
 		
 		if (isAlreadyPopep) {
-			var content = popup.find(CONTENT_SELECTOR);
-			
 			// return to riginal state once anim is done
+			$.removeFromTransition(bg.selector);
 			bg.transitionEnd(function () {
 				
 				//Reset on close if enabled
 				if (popup.filter('[' + RESET_ON_CLOSE_ATTR + ']').length) {
-					toggleAnimInited('off', bg, content);
+					toggleAnimInited('on', popup);
 				}
 				
 				// callback to do things just after animating the popup
-				App.callback(data.closeCallback);
+				App.callback(data.closeCallback, [{
+					popup: popup
+				}]);
 			});
 			
 			//do the anim
-			toggleAnim('off', bg, content);
+			toggleAnim('off', popup);
 		}
 	};
 	
 	var togglePopup = function (key, data) {
-		var isAlreadyPopep = $(data.popup).find(BG_SELECTOR).hasClass('is-' + ANIM_STATE);
+		var isAlreadyPopep = $(data.popup).hasClass('is-' + ANIM_STATE);
 		
 		if (isAlreadyPopep) {
 			//popup is opened and we want to close
@@ -5751,6 +6231,70 @@
 	};
 	
 	var RouteNotFound = App.modules.exports('route-not-found', {
+		actions: actions
+	});
+	
+})(jQuery);
+
+/**
+ * @author Deux Huit Huit
+ *
+ */
+(function ($, undefined) {
+	
+	'use strict';
+	var win = $(window);
+	var siteLoader = $('#site-loader');
+	var html = $('html');
+	
+	var getParam = function (p) {
+		var match = new RegExp('[?&]' + p + '=([^&]*)').exec(window.location.search);
+		return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+	};
+	
+	var setCookie = function (name, value, days) {
+		var date = new Date();
+		date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+		var expires = '; expires=' + date.toGMTString();
+		document.cookie = name + '=' + value + expires + ';path=/';
+	};
+	
+	var storeIdInCookie = function () {
+		var gclid = getParam('gclid');
+		
+		if (gclid) {
+			var gclsrc = getParam('gclsrc');
+			if (!gclsrc || gclsrc.indexOf('aw') !== -1) {
+				setCookie('gclid', gclid, 90);
+			}
+		}
+	};
+	
+	var setIdFromCookie = function (key, data) {
+		var regEx = new RegExp('(?:^|;\\s*)gclid=([^;]*)').exec(document.cookie);
+		if (!!regEx) {
+			var id = !!regEx[1] ? regEx[1] : '';
+			
+			if (!!data.input) {
+				data.input.attr('value', id);
+			}
+		}
+	};
+	
+	var init = function () {
+		storeIdInCookie();
+	};
+	
+	var actions = function () {
+		return {
+			salesforceAdwords: {
+				setId: setIdFromCookie
+			}
+		};
+	};
+	
+	App.modules.exports('salesforce-adwords', {
+		init: init,
 		actions: actions
 	});
 	
@@ -5850,6 +6394,71 @@
 	});
 
 })(jQuery, window);
+
+/**
+ * @author Deux Huit Huit
+ *
+ */
+(function ($, undefined) {
+
+	'use strict';
+
+	var win = $(window);
+	var SELECTOR = '.js-site-loader';
+
+	var siteLoaderPanel = $(SELECTOR);
+
+	var destroyLoader = function () {
+		siteLoaderPanel.remove();
+		App.modules.notify('siteLoader.finished');
+	};
+
+	var closeLoader = function () {
+		App.modules.notify('siteLoader.closing');
+		if (!!siteLoaderPanel.length) {
+
+			$('.js-site-loader-close-ended-anim-ref').transitionEnd(destroyLoader);
+
+			App.modules.notify('changeState.update', {
+				item: siteLoaderPanel,
+				state: 'close',
+				action: 'on'
+			});
+		}
+	};
+
+	var pageLoaded = function () {
+		App.modules.notify('siteLoader.pageLoaded');
+		if (!!siteLoaderPanel.length) {
+			setTimeout(closeLoader, 1000);
+		}
+	};
+
+	/*********************** INIT */
+	var init = function () {
+		App.modules.notify('siteLoader.initing');
+		if (App.debug()) {
+			App.modules.notify('siteLoader.closing');
+			destroyLoader();
+		} else {
+			setTimeout(closeLoader, 9500);
+		}
+	};
+	
+	var actions = function () {
+		return {
+			site: {
+				loaded: pageLoaded
+			}
+		};
+	};
+
+	App.modules.exports('site-loader', {
+		init: init,
+		actions: actions
+	});
+
+})(jQuery);
 
 /**
  *  @author Deux Huit Huit
@@ -6030,6 +6639,153 @@
 
 	App.modules.exports('siteScroll', {
 		init: init,
+		actions: actions
+	});
+	
+})(jQuery);
+
+/**
+ *  @author Deux Huit Huit
+ *
+ *  Module Slide
+ *
+ *
+ *  ATTRIBUTES :
+ *      (OPTIONAL)
+ *      - data-{state}-state-add-class : List of class added when state goes on
+ *      - data-{state}-state-rem-class : List of class removed when state goes on
+ *
+ *      - data-{state}-state-follower : List of selector separated by ','
+ *      - data-{state}-state-follower-common-ancestor (if not present: this will be used)
+ *
+ *      - data-{state}-state-notify-on: custom list of notification separated by ','
+ *             called when switching state to on. Data passed : {item:this}
+ *      - data-{state}-state-notify-off: custom list of notification separated by ','
+ *             called when switching state to off. Data passed : {item:this}
+ *
+ *  NOTIFY IN :
+ *      - slide.update
+ *          {item,state,flag}
+ *
+ *
+ *  NOTIFY OUT :
+ *      - changeState.begin
+ *          {item,state,flag}
+ *      - changeState.end
+ *          {item,state,flag}
+ *
+ */
+(function ($, undefined) {
+	
+	'use strict';
+	var win = $(window);
+
+	var processItem = function (item, state, action, callbacks) {
+		var flagClass = 'is-' + state;
+		var curBoolState = item.hasClass(flagClass);
+		var dur = item.attr('data-' + state + '-state-slide-duration') || 300;
+		var onCallback = item.attr('data-' + state + '-state-notify-on-callback');
+
+		callbacks = callbacks ? callbacks : {};
+
+		if (action === 'toggle') {
+			// set flag class
+			App.modules.notify('changeState.update', {
+				item: item,
+				state: state,
+				action: 'toggle'
+			});
+			
+			var fx = !!curBoolState ? 'slideUp' : 'slideDown';
+			
+			item.stop(true, false)[fx](dur, function () {
+				item.css({
+					overflow: '',
+					height: '',
+					marginTop: '',
+					marginBottom: '',
+					paddingTop: '',
+					paddingBottom: ''
+				});
+				
+				if (fx === 'slideDown' && !!onCallback) {
+					App.mediator.notify(onCallback, {
+						item: item
+					});
+				}
+			});
+		} else if (action === 'up') {
+			if (!!curBoolState) {
+				// set flag class
+				App.modules.notify('changeState.update', {
+					item: item,
+					state: state,
+					action: 'off'
+				});
+				
+				item.stop(true, false).slideUp(dur, function () {
+					item.css({
+						overflow: '',
+						height: '',
+						marginTop: '',
+						marginBottom: '',
+						paddingTop: '',
+						paddingBottom: ''
+					});
+				});
+			}
+		} else if (action === 'down') {
+			if (!curBoolState) {
+				// set flag class
+				App.modules.notify('changeState.update', {
+					item: item,
+					state: state,
+					action: 'on'
+				});
+				
+				item.stop(true, false).slideDown(dur, function () {
+					item.css({
+						overflow: '',
+						height: '',
+						marginTop: '',
+						marginBottom: '',
+						paddingTop: '',
+						paddingBottom: ''
+					});
+					
+					App.mediator.notify(onCallback, {
+						item: item
+					});
+				});
+			}
+		} else {
+			App.log('Action: ' + action +
+				' is not recognized: Actions available are : toggle, up, down');
+		}
+	};
+
+	var onUpdateState = function (key, data) {
+		if (data && data.item && data.state && data.action) {
+			var minWidth = data.item.attr('data-' + data.state + '-state-min-width');
+			var maxWidth = data.item.attr('data-' + data.state + '-state-max-width');
+			var isMinWidthValid = (!!minWidth && window.mediaQueryMinWidth(minWidth)) || !minWidth;
+			var isMaxWidthValid = (!!maxWidth && window.mediaQueryMaxWidth(maxWidth)) || !maxWidth;
+			
+			if (isMinWidthValid && isMaxWidthValid) {
+				processItem(data.item, data.state, data.action, data.callbacks);
+			}
+		}
+	};
+	
+	var actions = function () {
+		return {
+			slide: {
+				update: onUpdateState
+			}
+		};
+	};
+	
+	App.modules.exports('slide', {
 		actions: actions
 	});
 	
@@ -6479,8 +7235,6 @@
 			currentPageRoute = nextRoute;
 			currentPageUrl = data.route;
 			currentPageKey = data.page.key();
-			
-			$.sendPageView({page: data.route});
 		}
 	};
 	
@@ -6492,6 +7246,8 @@
 				window.location.host + currentPageRoute;
 			currentPageFragment = href.substring(curPageHref.length);
 			App.mediator.notify('page.fragmentChanged', currentPageFragment);
+		} else {
+			$.sendPageView({page: data.route});
 		}
 	};
 	
@@ -6697,6 +7453,71 @@
 /**
  *  @author Deux Huit Huit
  *
+ *  User id
+ */
+(function ($, undefined) {
+
+	'use strict';
+	
+	var LENGTH = 32;
+	var HIDDEN_FIELD_SEL = '.js-user-id';
+	var storage = window.Storage.local;
+	var KEY = 'auto-user-id';
+	var uId = '';
+	
+	var createUid = function () {
+		var i = 0;
+		var uId = '';
+		if (!window.Uint8Array || !window.crypto) {
+			for (i = 0; i < LENGTH; ++i) {
+				uId += (~~(Math.random() * 10000) % 255).toString(16);
+			}
+			return uId;
+		}
+		var randomPool = new window.Uint8Array(LENGTH);
+		window.crypto.getRandomValues(randomPool);
+		for (i = 0; i < randomPool.length; ++i) {
+			uId += randomPool[i].toString(16);
+		}
+		return uId;
+	};
+
+	var init = function () {
+		uId = storage.get(KEY) || '';
+		if (!uId) {
+			uId = createUid();
+			storage.set(KEY, uId);
+		}
+	};
+
+	var update = function () {
+		if (!uId) {
+			return;
+		}
+		$(HIDDEN_FIELD_SEL).val(uId);
+	};
+
+	var actions = function () {
+		return {
+			page: {
+				enter: update
+			},
+			articleChanger: {
+				enter: update
+			}
+		};
+	};
+
+	App.modules.exports('auto-cycle', {
+		init: init,
+		actions: actions
+	});
+	
+})(jQuery);
+
+/**
+ *  @author Deux Huit Huit
+ *
  *  Window Notifier
  */
 (function ($, undefined) {
@@ -6750,9 +7571,7 @@
 	};
 
 	var requestScrollTop = function (key, data) {
-		if (data && data.animated) {
-
-		} else {
+		if (!data || !data.animated) {
 			win.scrollTop(0);
 			scrollHandler();
 		}
@@ -6870,6 +7689,222 @@
 			return true;
 		}
 	});
+	
+})(jQuery);
+
+/**
+ * @author Deux Huit Huit
+ *
+ * Default page transition
+ *
+ */
+(function ($, undefined) {
+	
+	'use strict';
+	
+	var win = $(window);
+	var body = $('body');
+	var sitePages = $('#site-pages');
+	var bgTransition = $('#bg-transition');
+	var bgTransitionPopup = $('#bg-transition-popup');
+	var DEFAULT_DELAY = 350;
+	var POPUP_SELECTOR = '.js-popup';
+			
+	var beginCompleted = false;
+	var loadCompleted = false;
+
+	var dataIn = null;
+	
+	/* ENTERING FUNCTIONS */
+	var completeAnim = function (data, callback) {
+		var leavingPage = data.currentPage;
+		var enteringPage = data.nextPage;
+		
+		var domEnteringPage = $(enteringPage.key());
+		var domLeavingPage = $(leavingPage.key());
+		
+		var popup = domEnteringPage.find(POPUP_SELECTOR);
+		
+		//Leave the current page
+		leavingPage.leave(
+			data.leaveCurrent,
+			{
+				canRemove: false
+			}
+		);
+		
+		body.addClass(enteringPage.key().substring(1));
+		
+		//Notify intering page
+		App.modules.notify('page.entering', {page: enteringPage, route: data.route});
+		
+		//Animate leaving and start entering after leaving animation
+		//Need a delay for get all Loaded
+		domEnteringPage.ready(function () {
+			// close popup if already opened
+			if (popup.hasClass('is-popup-poped')) {
+				popup.addClass('noanim');
+				
+				App.modules.notify('popup.close', {
+					popup: popup
+				});
+				
+				popup.height();
+				popup.removeClass('noanim');
+			}
+			
+			App.modules.notify('popup.open', {
+				popup: popup,
+				openCallback: function () {
+					domEnteringPage.css({
+						opacity: 1,
+						display: 'block',
+						position: 'relative'
+					}).height();
+					enteringPage.enter(data.enterNext);
+				},
+				openedCallback: function () {
+					App.modules.notify('transition.end', {page: enteringPage, route: data.route});
+					App.callback(callback);
+				}
+			});
+		});
+	};
+	
+	var defaultBeginTransition = function (data, callback) {
+		var leavingPage = data.currentPage;
+		var domLeavingPage = $(leavingPage.key());
+		
+		beginCompleted = false;
+		loadCompleted = false;
+		dataIn = null;
+		
+		App.modules.notify('site.removeScroll');
+		domLeavingPage.addClass('is-bg-popup-page');
+
+		App.modules.notify('page.leaving', {
+			page: leavingPage,
+			canRemove: false
+		});
+		
+		bgTransitionPopup.fadeIn(DEFAULT_DELAY).promise().then(function () {
+			beginCompleted = true;
+			if (loadCompleted) {
+				completeAnim(dataIn);
+			}
+		});
+	};
+	
+	var defaultTransition = function (data, callback) {
+		dataIn = data;
+		loadCompleted = true;
+		if (beginCompleted) {
+			completeAnim(data, callback);
+		}
+	};
+	
+	/* LEAVING FUNCTIONS */
+	var completeLeaveAnim = function (data, callback) {
+		var leavingPage = data.currentPage;
+		var enteringPage = data.nextPage;
+		
+		var domEnteringPage = $(enteringPage.key());
+		var domLeavingPage = $(leavingPage.key());
+		
+		var popup = domLeavingPage.find(POPUP_SELECTOR);
+		
+		var isPopupReturn = domEnteringPage.hasClass('is-bg-popup-page');
+		
+		//Check if the enteringPage is the background page
+		if (!isPopupReturn) {
+			//Remove the other pages
+			var oldBgPage = sitePages.find('.is-bg-popup-page');
+			if (oldBgPage.length) {
+				body.removeClass(oldBgPage.attr('id'));
+				oldBgPage.remove();
+			}
+			
+			//Add the new class to the body
+			body.addClass(enteringPage.key().substring(1));
+		}
+		
+		//Animate leaving and start entering after leaving animation
+		//Need a delay for get all Loaded
+		domEnteringPage.ready(function () {
+			if (!isPopupReturn) {
+				win.scrollTop(0);
+			}
+			
+			domEnteringPage.css({opacity: 1, display: 'block'});
+			body.removeClass(leavingPage.key().substring(1));
+			
+			App.modules.notify('page.leaving', {
+				page: leavingPage,
+				canRemove: true
+			});
+			
+			//Notify intering page
+			App.modules.notify('page.entering', {page: enteringPage, route: data.route});
+			
+			App.modules.notify('popup.close', {
+				popup: popup,
+				closeCallback: function () {
+					App.modules.notify('site.addScroll');
+				
+					//Leave the current page
+					leavingPage.leave(data.leaveCurrent, {
+						canRemove: true
+					});
+					domLeavingPage.hide();
+
+					enteringPage.enter(data.enterNext);
+					App.modules.notify('transition.end', {page: enteringPage, route: data.route});
+					App.callback(callback);
+				}
+			});
+		});
+	};
+	
+	var endLeavebegin = function () {
+		beginCompleted = false;
+		loadCompleted = false;
+		dataIn = null;
+		
+		beginCompleted = true;
+		if (loadCompleted) {
+			completeLeaveAnim(dataIn);
+		}
+	};
+	
+	var defaultLeaveBeginTransition = function (data, callback) {
+		bgTransitionPopup.fadeOut(200).promise().then(endLeavebegin);
+	};
+	
+	var defaultLeaveTransition = function (data, callback) {
+		loadCompleted = true;
+		dataIn = data;
+		if (beginCompleted) {
+			completeLeaveAnim(data, callback);
+		}
+	};
+	
+	/*App.transitions.exports({
+		from: 'page-search',
+		beginTransition: defaultLeaveBeginTransition,
+		transition: defaultLeaveTransition,
+		canAnimate: function (data) {
+			return true;
+		}
+	});
+
+	App.transitions.exports({
+		to: 'page-search',
+		beginTransition: defaultBeginTransition,
+		transition: defaultTransition,
+		canAnimate: function (data) {
+			return true;
+		}
+	});*/
 	
 })(jQuery);
 
@@ -7090,7 +8125,11 @@
 						event: gaCat,
 						page: {
 							requestURI: cat.page || cat.location,
-							language: lang
+							page: cat.page,
+							location: cat.location,
+							language: lang,
+							referer: document.referrer,
+							title: document.title
 						}
 					}));
 				} else if (gaCat === 'event') {
