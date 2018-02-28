@@ -142,8 +142,6 @@
 			currentPageRoute = nextRoute;
 			currentPageUrl = data.route;
 			currentPageKey = data.page.key();
-			
-			$.sendPageView({page: data.route});
 		}
 	};
 	
@@ -155,6 +153,8 @@
 				window.location.host + currentPageRoute;
 			currentPageFragment = href.substring(curPageHref.length);
 			App.mediator.notify('page.fragmentChanged', currentPageFragment);
+		} else {
+			$.sendPageView({page: data.route});
 		}
 	};
 	
