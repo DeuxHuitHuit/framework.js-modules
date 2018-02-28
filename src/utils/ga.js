@@ -31,7 +31,11 @@
 						event: gaCat,
 						page: {
 							requestURI: cat.page || cat.location,
-							language: lang
+							page: cat.page,
+							location: cat.location,
+							language: lang,
+							referer: document.referrer,
+							title: document.title
 						}
 					}));
 				} else if (gaCat === 'event') {
