@@ -113,7 +113,7 @@
 			},
 			articleChanger: {
 				enter: onPageEnter
-			}	
+			}
 		};
 	};
 	

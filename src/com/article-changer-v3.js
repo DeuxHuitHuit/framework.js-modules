@@ -74,15 +74,7 @@
 		}
 	};
 
-	App.components.exports('articleChanger', function _articleChanger () {
-		var checkStartAnimAnd = function (current, next, o) {
-			isAnimating = false;
-			if (!isLoading) {
-				//Complete anim
-				o.endAnimToArticle(current, next, o);
-			}
-		};
-
+	App.components.exports('articleChanger', function articleChanger () {
 		var o;
 		var page;
 		var articleCtn;
@@ -91,8 +83,16 @@
 		var isAnimating = false;
 		var loadingUrl = '';
 
-		var init = function (_page, options) {
-			page = _page;
+		var checkStartAnimAnd = function (current, next, o) {
+			isAnimating = false;
+			if (!isLoading) {
+				//Complete anim
+				o.endAnimToArticle(current, next, o);
+			}
+		};
+
+		var init = function (p, options) {
+			page = p;
 			o = $.extend({}, defOptions, options);
 			articleCtn = $(o.containerSelector, page);
 			currentPageHandle = o.startPageHandle;
@@ -104,6 +104,40 @@
 			var currentPage = o.findArticle(articleCtn, currentPageHandle, o);
 			loadUrl = url || document.location.href;
 
+			/* jshint latedef:false */
+			var loadSuccess = function (dataLoaded, textStatus, jqXHR) {
+				//Append New article
+				isLoading = false;
+				if (loadUrl === loadingUrl) {
+					var nextPage = o.appendArticle(articleCtn, dataLoaded, newPageHandle, o);
+					var loc = document.location;
+					var cleanUrl = loc.href.substring(
+						loc.hostname.length +
+						loc.protocol.length + 2
+					);
+					
+					App.mediator.notify('pageLoad.end');
+					App.mediator.notify('articleChanger.loaded', {url: cleanUrl, data: dataLoaded});
+					
+					if (!nextPage.length) {
+						App.log({
+							args: 'Could not find new article',
+							fx: 'error',
+							me: 'Article Changer'
+						});
+					} else {
+						if (o.twoStepAnim && !isAnimating) {
+							o.endAnimToArticle(currentPage, nextPage, o);
+						} else {
+							o.startAnimToArticle(currentPage, nextPage, o, checkStartAnimAnd);
+						}
+					}
+				} else {
+					//Launch again loading
+					load();
+				}
+			};
+
 			var load = function () {
 				if (!isLoading) {
 					App.mediator.notify('pageLoad.start', {page: page});
@@ -114,7 +148,7 @@
 						url: loadUrl,
 						priority: 0, // now
 						vip: true, // bypass others
-						success: loadSucess,
+						success: loadSuccess,
 						progress: function (e) {
 							var total = e.originalEvent.total;
 							var loaded = e.originalEvent.loaded;
@@ -139,36 +173,7 @@
 					});
 				}
 			};
-
-			var loadSucess = function (dataLoaded, textStatus, jqXHR) {
-				//Append New article
-				isLoading = false;
-				if (loadUrl === loadingUrl) {
-					var nextPage = o.appendArticle(articleCtn, dataLoaded, newPageHandle, o);
-					var loc = document.location;
-					var cleanUrl = loc.href.substring(loc.hostname.length + loc.protocol.length + 2);
-					
-					App.mediator.notify('pageLoad.end');
-					App.mediator.notify('articleChanger.loaded', {url : cleanUrl, data : dataLoaded});
-					
-					if (!nextPage.length) {
-						App.log({
-							args: 'Could not find new article',
-							fx: 'error',
-							me: 'Article Changer'
-						});
-					} else {
-						if (o.twoStepAnim && !isAnimating) {
-							o.endAnimToArticle(currentPage, nextPage, o);
-						} else {
-							o.startAnimToArticle(currentPage, nextPage, o, checkStartAnimAnd);
-						}
-					}
-				} else {
-					//Launch again loading
-					load();
-				}
-			};
+			/* jshint latedef:true */
 
 			if (!o.trackHandle || currentPageHandle !== newPageHandle) {
 				

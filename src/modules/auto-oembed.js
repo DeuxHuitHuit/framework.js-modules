@@ -104,7 +104,7 @@
 		var oembed = vCtn.data(DATA_KEY);
 		
 
-		if (pauseAllOther == true) {
+		if (pauseAllOther) {
 			pauseAll($('#site'));
 		}
 

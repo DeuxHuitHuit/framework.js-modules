@@ -2,7 +2,7 @@
  *  @author Deux Huit Huit
  *
  *  Auto Invisible ReCaptcha
- *  
+ *
  *  @requires
  *    https://www.google.com/recaptcha/api.js?onload=GoogleReCaptchaCallback&amp;render=explicit
  *    https://github.com/SagaraZD/google_recaptcha

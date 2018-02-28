@@ -74,7 +74,7 @@
 			var resultContent = rCtn.find(o.resultsContentSelector);
 			
 			if (!!!appendNewResults) {
-			resultContent.empty();
+				resultContent.empty();
 			}
 
 			if (!err) {
@@ -154,8 +154,8 @@
 			}
 		};
 		
-		var init = function (_ctn) {
-			ctn = $(_ctn);
+		var init = function (c) {
+			ctn = $(c);
 			input = ctn.find(o.inputSelector);
 			resultsCtn = ctn.find(o.resultsCtnSelector);
 			

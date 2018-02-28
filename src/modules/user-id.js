@@ -14,16 +14,17 @@
 	var uId = '';
 	
 	var createUid = function () {
+		var i = 0;
 		var uId = '';
 		if (!window.Uint8Array || !window.crypto) {
-			for (var i = 0; i < LENGTH; ++i) {
+			for (i = 0; i < LENGTH; ++i) {
 				uId += (~~(Math.random() * 10000) % 255).toString(16);
 			}
 			return uId;
 		}
 		var randomPool = new window.Uint8Array(LENGTH);
-		crypto.getRandomValues(randomPool);
-		for (var i = 0; i < randomPool.length; ++i) {
+		window.crypto.getRandomValues(randomPool);
+		for (i = 0; i < randomPool.length; ++i) {
 			uId += randomPool[i].toString(16);
 		}
 		return uId;

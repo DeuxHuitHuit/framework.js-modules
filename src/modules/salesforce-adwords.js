@@ -10,15 +10,15 @@
 	var html = $('html');
 	
 	var getParam = function (p) {
-		var match = RegExp('[?&]' + p + '=([^&]*)').exec(window.location.search);
+		var match = new RegExp('[?&]' + p + '=([^&]*)').exec(window.location.search);
 		return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 	};
 	
 	var setCookie = function (name, value, days) {
 		var date = new Date();
 		date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-		var expires = "; expires=" + date.toGMTString();
-		document.cookie = name + "=" + value + expires + ";path=/";
+		var expires = '; expires=' + date.toGMTString();
+		document.cookie = name + '=' + value + expires + ';path=/';
 	};
 	
 	var storeIdInCookie = function () {
@@ -33,10 +33,10 @@
 	};
 	
 	var setIdFromCookie = function (key, data) {
-		var regEx = RegExp('(?:^|;\\s*)gclid=([^;]*)').exec(document.cookie);
+		var regEx = new RegExp('(?:^|;\\s*)gclid=([^;]*)').exec(document.cookie);
 		if (!!regEx) {
 			var id = !!regEx[1] ? regEx[1] : '';
-				
+			
 			if (!!data.input) {
 				data.input.attr('value', id);
 			}
