@@ -22,8 +22,11 @@
 		});
 		var twitterProvider = $.extend({}, abstractProvider, {
 			embed: function (container, id) {
+				var script = container.find('.js-oembed-script');
+				var scriptDom = $($(script.contents()).text());
+				container.append(scriptDom);
 				App.loaded(widgets, function (widgets) {
-					widgets.load(container.get(0) || document);
+					widgets.load(scriptDom.get(0) || document);
 				});
 			}
 		});
