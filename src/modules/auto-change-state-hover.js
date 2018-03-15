@@ -16,7 +16,7 @@
 	var findTargetItemIfAvailable = function (item, target) {
 		//Find target if present
 		if (target) {
-			var scope = site;
+			var scope = item;
 			var commonAncestor = item.attr(BUTTON_TARGET_COMMON_ANCESTOR_ATTR);
 
 			if (commonAncestor) {
