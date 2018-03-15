@@ -29,6 +29,13 @@
  *          : To specify a closer scope between the target and the current element.
  *          : Will find the scope with
  *          :     element.closest({value}).find({from})
+		 - data-sync-property-aggregate :
+ *          : To specify the aggregate function the the module will do. 
+ 			  If empty, it will take the value of the first item it found.
+ 			  The available aggregates are:
+ 			  	- sum: get summation of all values
+ 			  	- min: get smallest value
+ 			  	- max: get biggest value
  *
  */
 (function ($, undefined) {
@@ -42,6 +49,24 @@
 	var WITH_PROPERTY_ATTR = 'data-sync-property-with';
 	var SOURCE_ATTR = 'data-sync-property-from';
 	var COMMON_ANCESTOR_ATTR = 'data-sync-property-from-common-ancestor';
+	var AGGREGATE_ATTR = 'data-sync-property-aggregate';
+	
+	var getPropertyValue = function (source, property) {
+		var value = 0;
+		
+		if (property == 'height') {
+			// Ensure to get not rounded value from jquery
+			value = Math.floor(parseFloat(window.getComputedStyle(source[0]).height));
+		} else if (property == 'outerHeight-full') {
+			value = source.outerHeight(true);
+		} else if (property == 'outerWidth-full') {
+			value = source.outerWidth(true);
+		} else {
+			value = source[property]();
+		}
+		
+		return value;
+	};
 	
 	var processItem = function (t) {
 		var property = t.attr(PROPERTY_ATTR);
@@ -50,8 +75,9 @@
 			var sourceSelector = t.attr(SOURCE_ATTR);
 			var commonAncestorSelector = t.attr(COMMON_ANCESTOR_ATTR);
 			var withProperty = t.attr(WITH_PROPERTY_ATTR);
-			var scope = site;
+			var scope = t;
 			var source = null;
+			var aggregate = t.attr(AGGREGATE_ATTR);
 
 			if (!!commonAncestorSelector) {
 				scope = t.closest(commonAncestorSelector);
@@ -68,14 +94,31 @@
 
 			if (source.length) {
 				var value;
-
-				if (withProperty == 'height') {
-					// Ensure to get not rounded value from jquery
-					value = Math.floor(parseFloat(window.getComputedStyle(source[0]).height));
-				} else if (withProperty == 'outerHeight') {
-					value = source.outerHeight();
+				
+				if (aggregate == 'sum') {
+					value = 0;
+					source.each(function () {
+						value += getPropertyValue($(this), withProperty);
+					});
+				} else if (aggregate == 'min') {
+					value = _.reduce(source, function (memo, current) {
+						var curVal = getPropertyValue($(current), withProperty);
+						if (curVal < memo) {
+							return curVal;
+						}
+						return memo;
+					}, getPropertyValue(source.first(), withProperty));
+					
+				} else if (aggregate == 'max') {
+					value = _.reduce(source, function (memo, current) {
+						var curVal = getPropertyValue($(current), withProperty);
+						if (curVal > memo) {
+							return curVal;
+						}
+						return memo;
+					}, 0);
 				} else {
-					value = source[withProperty]();
+					value = getPropertyValue(source.first(), withProperty);
 				}
 
 				t.css(property, value);
