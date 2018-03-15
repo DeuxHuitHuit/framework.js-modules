@@ -15,12 +15,19 @@
 	var BUTTON_MAX_WIDTH_ATTR = 'data-change-state-max-width';
 	var BUTTON_MIN_WIDTH_ATTR = 'data-change-state-min-width';
 	var BUTTON_PREVENT_DEFAULT_ATTR = 'data-change-state-click-prevent-default';
+	var BUTTON_TARGET_COMMON_ANCESTOR_ATTR = 'data-change-state-click-target-common-ancestor';
 
 	
 	var findTargetItemIfAvailable = function (item, target) {
 		//Find target if present
 		if (target) {
-			return site.find(target);
+			var scope = item;
+			var commonAncestor = item.attr(BUTTON_TARGET_COMMON_ANCESTOR_ATTR);
+
+			if (commonAncestor) {
+				scope = item.closest(commonAncestor);
+			}
+			return scope.find(target);
 		} else {
 			return item;
 		}
