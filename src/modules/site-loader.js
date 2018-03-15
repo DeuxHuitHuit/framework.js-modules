@@ -10,6 +10,13 @@
 	var SELECTOR = '.js-site-loader';
 
 	var siteLoaderPanel = $(SELECTOR);
+	
+	var notifyFinishing = function () {
+		$('html').removeClass('block-scroll');
+		App.modules.notify('siteLoader.finishing', {
+			noDuration: true
+		});
+	};
 
 	var destroyLoader = function () {
 		siteLoaderPanel.remove();
@@ -27,6 +34,8 @@
 				state: 'close',
 				action: 'on'
 			});
+			
+			notifyFinishing();
 		}
 	};
 
@@ -42,6 +51,7 @@
 		App.modules.notify('siteLoader.initing');
 		if (App.debug()) {
 			App.modules.notify('siteLoader.closing');
+			notifyFinishing();
 			destroyLoader();
 		} else {
 			setTimeout(closeLoader, 9500);
