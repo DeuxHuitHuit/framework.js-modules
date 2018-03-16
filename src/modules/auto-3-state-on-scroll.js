@@ -7,14 +7,18 @@
  		Class that represents the element that will have its states changed.
  		
  	<add data-auto-3-state-trigger="" /> REQUIRED
- 		Selector for the trigger element. The offsetTop of this element will be used as the top reference. 
- 		If no trigger bottom is provided, the offsetBottom (offsetTop + outerHeight) of this element will be used.
+ 		Selector for the trigger element. The offsetTop of this element
+		will be used as the top reference.
+ 		If no trigger bottom is provided, the offsetBottom (offsetTop + outerHeight)
+		of this element will be used.
  		
  	<add data-auto-3-state-trigger-common-ancestor="" /> OPTIONNAL
  		Selector For common ancestor between item and trigger
  		
  	<add data-auto-3-state-trigger-bottom="" /> OPTIONNAL
- 		Selector for the trigger element. The offsetBottom (offsetTop + outerHeight) of this element will be used as the bottom reference. 
+ 		Selector for the trigger element.
+		The offsetBottom (offsetTop + outerHeight) of this element will be
+		used as the bottom reference.
  		If no trigger bottom is provided, the trigger will used as the trigger bottom.
  		
  	<add data-auto-3-state-trigger-bottom-common-ancestor="" /> OPTIONNAL
@@ -78,7 +82,7 @@
 			var fx = t.data(DATA_KEY);
 			
 			t.removeData(DATA_KEY);
-			App.callback(fx)
+			App.callback(fx);
 		});
 	};
 	
@@ -103,15 +107,22 @@
 			var bot = Math.floor(top + height);
 			
 			// trigger
-			var trigger = findTargetItemIfAvailable(t, t.attr(ATTR_TRIGGER), ATTR_TRIGGER_COMMON_ANCESTOR);
+			var trigger = findTargetItemIfAvailable(
+				t,
+				t.attr(ATTR_TRIGGER),
+				ATTR_TRIGGER_COMMON_ANCESTOR
+			);
 			
 			if (!!trigger.length) {
 				var tTop = Math.floor(trigger.offset().top);
 				
 				// bottom trigger
-				var triggerBottom = !!t.attr(ATTR_TRIGGER_BOTTOM) ? 
-					findTargetItemIfAvailable(t, t.attr(ATTR_TRIGGER_BOTTOM), ATTR_TRIGGER_BOTTOM_COMMON_ANCESTOR) : 
-					trigger;
+				var triggerBottom = !!t.attr(ATTR_TRIGGER_BOTTOM) ?
+					findTargetItemIfAvailable(
+						t,
+						t.attr(ATTR_TRIGGER_BOTTOM),
+						ATTR_TRIGGER_BOTTOM_COMMON_ANCESTOR
+					) : trigger;
 				var tBot = Math.floor(triggerBottom.offset().top + triggerBottom.outerHeight());
 				
 				if (height < tBot - tTop && tBot > tTop) {

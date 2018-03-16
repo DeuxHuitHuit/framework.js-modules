@@ -3,20 +3,21 @@
  *
  *  Auto scroll to id on load
  *
- *	Will scroll to a specific id after: site is loaded, page is entered (page.enter) 
+ *	Will scroll to a specific id after: site is loaded, page is entered (page.enter)
  *	or article is entered (articleChanger.enter)
  */
 (function ($, undefined) {
 	
 	'use strict';
 	var win = $(window);
+	var html = $('html');
 	var site = $('#site');
 	var isFirstload = true;
 	
 	var scrollToIdFromUrl = function (key, data) {
-		var h = document.location.href.split('#').length > 1 ? 
+		var h = document.location.href.split('#').length > 1 ?
 			document.location.href.split('#')[1] : '';
-		var target =  !!h ? site.find('#' + h) : $();
+		var target = !!h ? site.find('#' + h) : $();
 		var duration = !!data.noDuration ? 0 : 500;
 		
 		if (!!target.length) {
@@ -46,7 +47,8 @@
 			articleChanger: {
 				enter: scrollToIdFromUrl
 			},
-			siteLoader: scrollToIdFromUrl
+			siteLoader: {
+				finishing: scrollToIdFromUrl
 			}
 		};
 	};
@@ -56,3 +58,4 @@
 	});
 	
 })(jQuery);
+

@@ -30,7 +30,7 @@
  *          : Will find the scope with
  *          :     element.closest({value}).find({from})
 		 - data-sync-property-aggregate :
- *          : To specify the aggregate function the the module will do. 
+ *          : To specify the aggregate function the the module will do.
  			  If empty, it will take the value of the first item it found.
  			  The available aggregates are:
  			  	- sum: get summation of all values
