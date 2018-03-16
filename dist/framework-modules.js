@@ -1,4 +1,4 @@
-/*! framework.js-modules - v1.5.0 - build 356 - 2018-02-28
+/*! framework.js-modules - v1.6.0 - build 358 - 2018-03-16
  * https://github.com/DeuxHuitHuit/framework.js-modules
  * Copyright (c) 2018 Deux Huit Huit (https://deuxhuithuit.com/);
  * MIT *//**
@@ -2508,6 +2508,263 @@
 /**
  *  @author Deux Huit Huit
  *
+ *  Auto toggle class on scroll 3 state
+ 
+ 	<add class="js-auto-3-state-on-scroll" /> REQUIRED
+ 		Class that represents the element that will have its states changed.
+ 		
+ 	<add data-auto-3-state-trigger="" /> REQUIRED
+ 		Selector for the trigger element. The offsetTop of this element
+		will be used as the top reference.
+ 		If no trigger bottom is provided, the offsetBottom (offsetTop + outerHeight)
+		of this element will be used.
+ 		
+ 	<add data-auto-3-state-trigger-common-ancestor="" /> OPTIONNAL
+ 		Selector For common ancestor between item and trigger
+ 		
+ 	<add data-auto-3-state-trigger-bottom="" /> OPTIONNAL
+ 		Selector for the trigger element.
+		The offsetBottom (offsetTop + outerHeight) of this element will be
+		used as the bottom reference.
+ 		If no trigger bottom is provided, the trigger will used as the trigger bottom.
+ 		
+ 	<add data-auto-3-state-trigger-bottom-common-ancestor="" /> OPTIONNAL
+ 		Selector For common ancestor between item and trigger bottom
+ 		
+ 	<add data-auto-3-state-scroll-offset-top="" /> OPTIONNAL
+ 		Selector for the elements that offset the scroll value for the top reference only.
+ 		
+ 	STATE ATTRIBUTES
+ 	<add data-initial-state-add-class="" />
+ 	<add data-initial-state-rem-class="" />
+ 	
+ 	<add data-middle-state-add-class="" />
+ 	<add data-middle-state-rem-class="" />
+ 	
+ 	<add data-final-state-add-class="" />
+ 	<add data-final-state-rem-class="" />
+ */
+(function ($, undefined) {
+	
+	'use strict';
+	var win = $(window);
+	var site = $('#site');
+	var scrollTimer = 0;
+	var resizeTimer = 0;
+	var curY = 0;
+	
+	var SELECTOR = '.js-auto-3-state-on-scroll';
+	var ATTR_TRIGGER = 'data-auto-3-state-trigger';
+	var ATTR_TRIGGER_COMMON_ANCESTOR = 'data-auto-3-state-trigger-common-ancestor';
+	var ATTR_TRIGGER_BOTTOM = 'data-auto-3-state-trigger-bottom';
+	var ATTR_TRIGGER_BOTTOM_COMMON_ANCESTOR = 'data-auto-3-state-trigger-bottom-common-ancestor';
+	var ATTR_OFFSET_TOP = 'data-auto-3-state-scroll-offset-top';
+	
+	var DATA_KEY = '3-state-fx';
+	
+	var elements = $();
+	
+	var findTargetItemIfAvailable = function (item, target, commonAncestorAttr) {
+		//Find target if present
+		if (target) {
+			var scope = site;
+			var commonAncestor = item.attr(commonAncestorAttr);
+
+			if (commonAncestor) {
+				scope = item.closest(commonAncestor);
+			}
+			return scope.find(target);
+		} else {
+			return item;
+		}
+	};
+	
+	var refreshElements = function () {
+		elements = site.find(SELECTOR + '[' + ATTR_TRIGGER + ']');
+	};
+
+	var updateData = function () {
+		elements.each(function () {
+			var t = $(this);
+			var fx = t.data(DATA_KEY);
+			
+			t.removeData(DATA_KEY);
+			App.callback(fx);
+		});
+	};
+	
+	var getOffsetTop = function (item) {
+		var offset = 0;
+		var targets = site.find(item.attr(ATTR_OFFSET_TOP));
+		
+		targets.each(function () {
+			offset += Math.floor($(this).outerHeight());
+		});
+		
+		return offset;
+	};
+
+	var getData = function () {
+		curY = Math.floor(win.scrollTop());
+		
+		elements.each(function () {
+			var t = $(this);
+			var height = Math.floor(t.outerHeight());
+			var top = Math.floor(t.offset().top);
+			var bot = Math.floor(top + height);
+			
+			// trigger
+			var trigger = findTargetItemIfAvailable(
+				t,
+				t.attr(ATTR_TRIGGER),
+				ATTR_TRIGGER_COMMON_ANCESTOR
+			);
+			
+			if (!!trigger.length) {
+				var tTop = Math.floor(trigger.offset().top);
+				
+				// bottom trigger
+				var triggerBottom = !!t.attr(ATTR_TRIGGER_BOTTOM) ?
+					findTargetItemIfAvailable(
+						t,
+						t.attr(ATTR_TRIGGER_BOTTOM),
+						ATTR_TRIGGER_BOTTOM_COMMON_ANCESTOR
+					) : trigger;
+				var tBot = Math.floor(triggerBottom.offset().top + triggerBottom.outerHeight());
+				
+				if (height < tBot - tTop && tBot > tTop) {
+					var isMiddle = tTop <= curY + getOffsetTop(t);
+					var isFinal = tBot - curY <= height;
+					var fx;
+					
+					if (!!isFinal) {
+						fx = function () {
+							App.modules.notify('changeState.update', {
+								item: t,
+								state: 'initial',
+								action: 'off'
+							});
+							App.modules.notify('changeState.update', {
+								item: t,
+								state: 'middle',
+								action: 'off'
+							});
+							
+							App.modules.notify('changeState.update', {
+								item: t,
+								state: 'final',
+								action: 'on'
+							});
+						};
+					} else if (!!isMiddle) {
+						fx = function () {
+							App.modules.notify('changeState.update', {
+								item: t,
+								state: 'initial',
+								action: 'off'
+							});
+							App.modules.notify('changeState.update', {
+								item: t,
+								state: 'final',
+								action: 'off'
+							});
+							
+							App.modules.notify('changeState.update', {
+								item: t,
+								state: 'middle',
+								action: 'on'
+							});
+						};
+					} else {
+						fx = function () {
+							App.modules.notify('changeState.update', {
+								item: t,
+								state: 'final',
+								action: 'off'
+							});
+							App.modules.notify('changeState.update', {
+								item: t,
+								state: 'middle',
+								action: 'off'
+							});
+							
+							App.modules.notify('changeState.update', {
+								item: t,
+								state: 'initial',
+								action: 'on'
+							});
+						};
+					}
+					
+					t.data(DATA_KEY, fx);
+				}
+			}
+		});
+	};
+
+	// SCROLL
+	var onScroll = function () {
+		getData();
+	};
+
+	var onPostscroll = function () {
+		window.craf(scrollTimer);
+
+		scrollTimer = window.raf(function () {
+			updateData();
+		});
+	};
+
+	var onResize = function () {
+		window.craf(resizeTimer);
+
+		resizeTimer = window.raf(function () {
+			onScroll();
+			onPostscroll();
+		});
+	};
+
+	// PAGE / ARTICLE CHANGER EVENTS
+	var onPageEnter = function (key, data) {
+		refreshElements();
+		onResize();
+	};
+
+	var onArticleEnter = function () {
+		refreshElements();
+		onResize();
+	};
+	
+	var init = function () {
+		
+	};
+	
+	var actions = function () {
+		return {
+			site: {
+				scroll: onScroll,
+				postscroll: onPostscroll,
+				resize: onResize
+			},
+			page: {
+				enter: onPageEnter
+			},
+			articleChanger: {
+				enter: onArticleEnter
+			}
+		};
+	};
+	
+	App.modules.exports('auto-3-state-on-scroll', {
+		init: init,
+		actions: actions
+	});
+	
+})(jQuery);
+
+/**
+ *  @author Deux Huit Huit
+ *
  *  Auto change state click
  */
 (function ($, undefined) {
@@ -2522,12 +2779,19 @@
 	var BUTTON_MAX_WIDTH_ATTR = 'data-change-state-max-width';
 	var BUTTON_MIN_WIDTH_ATTR = 'data-change-state-min-width';
 	var BUTTON_PREVENT_DEFAULT_ATTR = 'data-change-state-click-prevent-default';
+	var BUTTON_TARGET_COMMON_ANCESTOR_ATTR = 'data-change-state-click-target-common-ancestor';
 
 	
 	var findTargetItemIfAvailable = function (item, target) {
 		//Find target if present
 		if (target) {
-			return site.find(target);
+			var scope = item;
+			var commonAncestor = item.attr(BUTTON_TARGET_COMMON_ANCESTOR_ATTR);
+
+			if (commonAncestor) {
+				scope = item.closest(commonAncestor);
+			}
+			return scope.find(target);
 		} else {
 			return item;
 		}
@@ -2593,7 +2857,7 @@
 	var findTargetItemIfAvailable = function (item, target) {
 		//Find target if present
 		if (target) {
-			var scope = site;
+			var scope = item;
 			var commonAncestor = item.attr(BUTTON_TARGET_COMMON_ANCESTOR_ATTR);
 
 			if (commonAncestor) {
@@ -3676,6 +3940,68 @@
 /**
  *  @author Deux Huit Huit
  *
+ *  Auto scroll to id on load
+ *
+ *	Will scroll to a specific id after: site is loaded, page is entered (page.enter)
+ *	or article is entered (articleChanger.enter)
+ */
+(function ($, undefined) {
+	
+	'use strict';
+	var win = $(window);
+	var html = $('html');
+	var site = $('#site');
+	var isFirstload = true;
+	
+	var scrollToIdFromUrl = function (key, data) {
+		var h = document.location.href.split('#').length > 1 ?
+			document.location.href.split('#')[1] : '';
+		var target = !!h ? site.find('#' + h) : $();
+		var duration = !!data.noDuration ? 0 : 500;
+		
+		if (!!target.length) {
+			html.velocity('scroll', {
+				duration: duration,
+				offset: target.offset().top + 'px',
+				mobileHA: false
+			});
+		}
+	};
+	
+	var onPageEnter = function (key, data) {
+		// on first load, the scroll will be done by site-Loader.finishing
+		if (isFirstload) {
+			isFirstload = false;
+			return;
+		}
+		
+		scrollToIdFromUrl();
+	};
+	
+	var actions = function () {
+		return {
+			page: {
+				enter: onPageEnter
+			},
+			articleChanger: {
+				enter: scrollToIdFromUrl
+			},
+			siteLoader: {
+				finishing: scrollToIdFromUrl
+			}
+		};
+	};
+	
+	App.modules.exports('auto-scroll-to-id-on-load', {
+		actions: actions
+	});
+	
+})(jQuery);
+
+
+/**
+ *  @author Deux Huit Huit
+ *
  *  Auto scroll to id
  */
 (function ($, undefined) {
@@ -3948,6 +4274,13 @@
  *          : To specify a closer scope between the target and the current element.
  *          : Will find the scope with
  *          :     element.closest({value}).find({from})
+		 - data-sync-property-aggregate :
+ *          : To specify the aggregate function the the module will do.
+ 			  If empty, it will take the value of the first item it found.
+ 			  The available aggregates are:
+ 			  	- sum: get summation of all values
+ 			  	- min: get smallest value
+ 			  	- max: get biggest value
  *
  */
 (function ($, undefined) {
@@ -3961,6 +4294,24 @@
 	var WITH_PROPERTY_ATTR = 'data-sync-property-with';
 	var SOURCE_ATTR = 'data-sync-property-from';
 	var COMMON_ANCESTOR_ATTR = 'data-sync-property-from-common-ancestor';
+	var AGGREGATE_ATTR = 'data-sync-property-aggregate';
+	
+	var getPropertyValue = function (source, property) {
+		var value = 0;
+		
+		if (property == 'height') {
+			// Ensure to get not rounded value from jquery
+			value = Math.floor(parseFloat(window.getComputedStyle(source[0]).height));
+		} else if (property == 'outerHeight-full') {
+			value = source.outerHeight(true);
+		} else if (property == 'outerWidth-full') {
+			value = source.outerWidth(true);
+		} else {
+			value = source[property]();
+		}
+		
+		return value;
+	};
 	
 	var processItem = function (t) {
 		var property = t.attr(PROPERTY_ATTR);
@@ -3969,8 +4320,9 @@
 			var sourceSelector = t.attr(SOURCE_ATTR);
 			var commonAncestorSelector = t.attr(COMMON_ANCESTOR_ATTR);
 			var withProperty = t.attr(WITH_PROPERTY_ATTR);
-			var scope = site;
+			var scope = t;
 			var source = null;
+			var aggregate = t.attr(AGGREGATE_ATTR);
 
 			if (!!commonAncestorSelector) {
 				scope = t.closest(commonAncestorSelector);
@@ -3987,14 +4339,31 @@
 
 			if (source.length) {
 				var value;
-
-				if (withProperty == 'height') {
-					// Ensure to get not rounded value from jquery
-					value = Math.floor(parseFloat(window.getComputedStyle(source[0]).height));
-				} else if (withProperty == 'outerHeight') {
-					value = source.outerHeight();
+				
+				if (aggregate == 'sum') {
+					value = 0;
+					source.each(function () {
+						value += getPropertyValue($(this), withProperty);
+					});
+				} else if (aggregate == 'min') {
+					value = _.reduce(source, function (memo, current) {
+						var curVal = getPropertyValue($(current), withProperty);
+						if (curVal < memo) {
+							return curVal;
+						}
+						return memo;
+					}, getPropertyValue(source.first(), withProperty));
+					
+				} else if (aggregate == 'max') {
+					value = _.reduce(source, function (memo, current) {
+						var curVal = getPropertyValue($(current), withProperty);
+						if (curVal > memo) {
+							return curVal;
+						}
+						return memo;
+					}, 0);
 				} else {
-					value = source[withProperty]();
+					value = getPropertyValue(source.first(), withProperty);
 				}
 
 				t.css(property, value);
@@ -4123,199 +4492,6 @@
 	};
 	
 	App.modules.exports('auto-sync-state-from-qs', {
-		init: init,
-		actions: actions
-	});
-	
-})(jQuery);
-
-/**
- *  @author Deux Huit Huit
- *
- *  Auto toggle class on scroll 3 state
- */
-(function ($, undefined) {
-	
-	'use strict';
-	var win = $(window);
-	var site = $('#site');
-	var page = $('.page');
-	var scrollTimer = 0;
-	var resizeTimer = 0;
-	var curY = 0;
-	var winH = 0;
-	var scrollOffsetTop = 0;
-
-	var CTN_SELECTOR = '.js-tcos-3-state-ctn';
-	var CONTENT_SELECTOR = '.js-tcos-3-state-content';
-	var SECOND_CLASS_ATTR = 'data-tcos-second-state-class';
-	var THIRD_CLASS_ATTR = 'data-tcos-third-state-class';
-
-	var OFFSET_SELECTOR = '.js-site-nav';
-	var OFFSET_TOP = 'data-tcos-offset-top';
-	var OFFSET_BOTTOM = 'data-tcos-offset-bottom';
-
-	var rafTimer;
-
-	var updatePageDock = function () {
-		window.craf(rafTimer);
-		rafTimer = window.raf(function () {
-			page.find(CONTENT_SELECTOR).each(function () {
-				var t = $(this);
-				App.callback(t.data('tcosFx'));
-			});
-		});
-	};
-
-	var setPageDockData = function () {
-		page.find(CONTENT_SELECTOR).each(function () {
-			var t = $(this);
-			var ctn = t.closest(CTN_SELECTOR);
-
-			var ctnOffTop = Math.floor(ctn.offset().top);
-			var ctnH = Math.floor(ctn.outerHeight());
-			var offTop = Math.floor(t.offset().top);
-			var height = Math.floor(t.outerHeight());
-
-			var doIt = function () {
-				var fixedClass = !!t.attr(SECOND_CLASS_ATTR) ?
-					t.attr(SECOND_CLASS_ATTR) : '';
-				var absClass = !!t.attr(THIRD_CLASS_ATTR) ?
-					t.attr(THIRD_CLASS_ATTR) : '';
-
-				var offsetTopElement = $();
-				if (t.attr('data-tcos-offset-top-selector')) {
-					offsetTopElement = $(t.attr('data-tcos-offset-top-selector'));
-				}
-
-				var extraOffsetTop = winH * (t.attr('data-tcos-offset-top') || 0) ;
-				var extraOffsetBottom = winH * (t.attr('data-tcos-offset-bottom') || 0);
-
-				if (offsetTopElement.length) {
-					extraOffsetTop -= offsetTopElement.outerHeight();
-				}
-
-				var oTop = ctnOffTop;
-				var oBot = ctnOffTop + ctnH;
-
-				var fx = function () {
-					t.removeClass(absClass + ' ' + fixedClass);
-				};
-
-				if (((oTop + extraOffsetTop) <= curY) &&
-					((oBot + extraOffsetBottom) - curY) > height) {
-					t.data('tcosFx', function () {
-						//Remove step 3
-						t.removeClass(absClass);
-						//Add Step 2
-						t.addClass(fixedClass);
-					});
-				} else if (((oBot + extraOffsetBottom) - curY) <= height) {
-					t.data('tcosFx', function () {
-						//Remove Step 2
-						t.removeClass(fixedClass);
-						//Add Step 3
-						t.addClass(absClass);
-					});
-				} else {
-					t.data('tcosFx', function () {
-						t.removeClass(absClass + ' ' + fixedClass);
-					});
-				}
-			};
-
-			if (ctn.height() > t.height()) {
-				doIt();
-			}
-		});
-	};
-
-	var resetPageDock = function () {
-		page.find(CONTENT_SELECTOR).each(function () {
-			var t = $(this);
-			var fixedClass = !!t.attr(SECOND_CLASS_ATTR) ?
-				t.attr(SECOND_CLASS_ATTR) : '';
-			var absClass = !!t.attr(THIRD_CLASS_ATTR) ?
-				t.attr(THIRD_CLASS_ATTR) : '';
-			t.removeClass(fixedClass + ' ' + absClass);
-		});
-	};
-
-	// SCROLL
-	var onScroll = function () {
-		scrollOffsetTop = $(OFFSET_SELECTOR).height();
-
-		curY = Math.floor(win.scrollTop() + scrollOffsetTop);
-		winH = Math.floor(win.height() - scrollOffsetTop);
-		setPageDockData();
-	};
-
-	var onPostscroll = function () {
-		window.craf(scrollTimer);
-
-		scrollTimer = window.raf(function () {
-			updatePageDock();
-		});
-	};
-
-	var onResize = function () {
-		window.craf(resizeTimer);
-
-		resizeTimer = window.raf(function () {
-			onScroll();
-			onPostscroll();
-		});
-	};
-
-	// PAGE / ARTICLE CHANGER EVENTS
-	var onPageEnter = function (key, data) {
-		page = $(data.page.key());
-
-		onScroll();
-		onPostscroll();
-	};
-
-	var onPageLeave = function (key, data) {
-		if (data.canRemove) {
-			resetPageDock();
-		}
-	};
-
-	var onArticleEnter = function () {
-		onScroll();
-		onPostscroll();
-	};
-
-	var onArticleLeave = function () {
-		resetPageDock();
-	};
-	
-	var init = function () {
-		
-	};
-	
-	var actions = function () {
-		return {
-			site: {
-				scroll: onScroll,
-				postscroll: onPostscroll,
-				resize: onResize
-			},
-			page: {
-				enter: onPageEnter,
-				leave: onPageLeave
-			},
-			articleChanger: {
-				enter: onArticleEnter,
-				leave: onArticleLeave
-			},
-			autoDockedSide: {
-				updatePageDocks: updatePageDock
-			}
-		};
-	};
-	
-	App.modules.exports('auto-toggle-class-on-scroll-3-state', {
 		init: init,
 		actions: actions
 	});
@@ -5301,6 +5477,69 @@
 /**
  *  @author Deux Huit Huit
  *
+ * Keyboard navigation:
+ *  Provides a way to only show outline when the user is using the keyboard.
+ *
+ */
+(function ($, undefined) {
+	
+	'use strict';
+	var doc = $(document);
+	var CLASS = 'keyboard-nav';
+	var KD = 'keydown';
+	var TI = 'tabindex';
+	var root = $('html');
+	
+	var click = function (e) {
+		root.removeClass(CLASS);
+		doc.on(KD, keydown);
+		App.mediator.notify('keyboardNav.disabled');
+	};
+	
+	var keydown = function (e) {
+		if (e.which === window.keys.tab) {
+			root.addClass(CLASS);
+			doc.off(KD, keydown).one('click', click);
+			App.mediator.notify('keyboardNav.enabled');
+		}
+	};
+	
+	var init = function () {
+		doc.on(KD, keydown);
+	};
+	
+	var toggleTabIndex = function (key, data) {
+		if (!data || !data.item) {
+			return;
+		}
+		if (!data.item.is('.js-focusable')) {
+			return;
+		}
+		if (data.trigger === 'after') {
+			data.item.removeAttr(TI);
+		} else {
+			data.item.attr(TI, '-1');
+		}
+	};
+	
+	var actions = function () {
+		return {
+			autoToggleClassOnScroll: {
+				executed: toggleTabIndex
+			}
+		};
+	};
+	
+	App.modules.exports('keyboard-nav', {
+		init: init,
+		actions: actions
+	});
+	
+})(jQuery);
+
+/**
+ *  @author Deux Huit Huit
+ *
  *  Links modules
  *     Makes all external links added into the dom load in a new page
  *     Makes all internal links mapped to the mediator
@@ -5661,8 +5900,11 @@
 		});
 		var twitterProvider = $.extend({}, abstractProvider, {
 			embed: function (container, id) {
+				var script = container.find('.js-oembed-script');
+				var scriptDom = $($(script.contents()).text());
+				container.append(scriptDom);
 				App.loaded(widgets, function (widgets) {
-					widgets.load(container.get(0) || document);
+					widgets.load(scriptDom.get(0) || document);
 				});
 			}
 		});
@@ -6407,6 +6649,13 @@
 	var SELECTOR = '.js-site-loader';
 
 	var siteLoaderPanel = $(SELECTOR);
+	
+	var notifyFinishing = function () {
+		$('html').removeClass('block-scroll');
+		App.modules.notify('siteLoader.finishing', {
+			noDuration: true
+		});
+	};
 
 	var destroyLoader = function () {
 		siteLoaderPanel.remove();
@@ -6424,6 +6673,8 @@
 				state: 'close',
 				action: 'on'
 			});
+			
+			notifyFinishing();
 		}
 	};
 
@@ -6439,6 +6690,7 @@
 		App.modules.notify('siteLoader.initing');
 		if (App.debug()) {
 			App.modules.notify('siteLoader.closing');
+			notifyFinishing();
 			destroyLoader();
 		} else {
 			setTimeout(closeLoader, 9500);
@@ -6786,6 +7038,32 @@
 	};
 	
 	App.modules.exports('slide', {
+		actions: actions
+	});
+	
+})(jQuery);
+
+/**
+ *  @author Deux Huit Huit
+ *
+ */
+(function ($, undefined) {
+
+	'use strict';
+	
+	var resetTab = function () {
+		$('.js-tab-reset').focus();
+	};
+	
+	var actions = function () {
+		return {
+			page: {
+				enter: resetTab
+			}
+		};
+	};
+
+	App.modules.exports('tab-navigation', {
 		actions: actions
 	});
 	
