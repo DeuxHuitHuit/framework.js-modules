@@ -1,4 +1,4 @@
-# framework.js: Modules [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/) [![Build Status](https://travis-ci.org/DeuxHuitHuit/framework.js-modules.svg)](https://travis-ci.org/DeuxHuitHuit/framework.js-modules) [![David DM](https://david-dm.org/DeuxHuitHuit/framework.js-modules/dev-status.svg?style=flat)](https://david-dm.org/DeuxHuitHuit/framework.js-modules#info=devDependencies) [![Greenkeeper badge](https://badges.greenkeeper.io/DeuxHuitHuit/framework.js-modules.svg)](https://greenkeeper.io/)
+# framework.js: Modules [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/) [![Build Status](https://travis-ci.org/DeuxHuitHuit/framework.js-modules.svg)](https://travis-ci.org/DeuxHuitHuit/framework.js-modules) [![David DM](https://david-dm.org/DeuxHuitHuit/framework.js-modules/dev-status.svg?style=flat)](https://david-dm.org/DeuxHuitHuit/framework.js-modules?type=dev) [![Greenkeeper badge](https://badges.greenkeeper.io/DeuxHuitHuit/framework.js-modules.svg)](https://greenkeeper.io/)
 
 ##### Works with the latest version of [Deux Huit Huit's framework](https://github.com/DeuxHuitHuit/framework.js).
 
