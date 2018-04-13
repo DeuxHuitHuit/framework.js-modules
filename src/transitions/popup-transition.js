@@ -1,7 +1,7 @@
 /**
  * @author Deux Huit Huit
  *
- * Default page transition
+ * Popup page transition
  *
  */
 (function ($, undefined) {
@@ -15,7 +15,7 @@
 	var bgTransitionPopup = $('#bg-transition-popup');
 	var DEFAULT_DELAY = 350;
 	var POPUP_SELECTOR = '.js-popup';
-			
+
 	var beginCompleted = false;
 	var loadCompleted = false;
 
@@ -31,21 +31,23 @@
 		
 		var popup = domEnteringPage.find(POPUP_SELECTOR);
 		
-		//Leave the current page
-		leavingPage.leave(
-			data.leaveCurrent,
-			{
-				canRemove: false
-			}
-		);
+		// Leave the current page
+		leavingPage.leave(data.leaveCurrent, {
+			canRemove: false
+		});
 		
+		// Make the page hidden for assistive technology
+		domLeavingPage.attr('aria-hidden', 'true').attr('role', 'presentation');
+		domEnteringPage.removeAttr('aria-hidden').removeAttr('role');
+		
+		// Add body class
 		body.addClass(enteringPage.key().substring(1));
 		
-		//Notify intering page
+		// Notify entering page
 		App.modules.notify('page.entering', {page: enteringPage, route: data.route});
 		
-		//Animate leaving and start entering after leaving animation
-		//Need a delay for get all Loaded
+		// Animate leaving and start entering after leaving animation
+		// Need a delay for get all Loaded
 		domEnteringPage.ready(function () {
 			// close popup if already opened
 			if (popup.hasClass('is-popup-poped')) {
