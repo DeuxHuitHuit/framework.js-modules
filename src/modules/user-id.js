@@ -56,7 +56,7 @@
 		};
 	};
 
-	App.modules.exports('auto-cycle', {
+	App.modules.exports('user-id', {
 		init: init,
 		actions: actions
 	});
