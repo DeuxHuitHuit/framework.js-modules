@@ -161,14 +161,18 @@
 								percent: percent
 							});
 						},
-						error: function () {
-							App.mediator.notify('article.loaderror');
+						error: function (jqXHR) {
 							App.mediator.notify('pageLoad.end');
 							isLoading = false;
+
+							App.mediator.notify('articleChanger.loaderror', {
+								jqXHR: jqXHR
+							});
 						},
 						giveup: function (e) {
 							App.mediator.notify('pageLoad.end');
 							isLoading = false;
+							App.log('Article changer load giveup');
 						}
 					});
 				}
