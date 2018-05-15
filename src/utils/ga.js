@@ -108,9 +108,6 @@
 			App.log({fx: 'err', args: 'No ga-cat found. Cannot continue.'});
 			return;
 		}
-		if (!o.label) {
-			App.log({fx: 'err', args: 'No ga-label found. Reverting to text'});
-		}
 		if (!!options.event) {
 			if (!options.event.gaHandled) {
 				options.event.gaHandled = true;
@@ -119,6 +116,9 @@
 			}
 		}
 		if (!!send) {
+			if (!options.label) {
+				App.log({fx: 'err', args: 'No ga-label found. Reverted to text'});
+			}
 			$.sendEvent(o.cat, o.action, o.label, o.value, undefined, o.category);
 		}
 	};
