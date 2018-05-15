@@ -39,7 +39,7 @@
 		var track = function (action, label, value) {
 			var cat = ctn.attr('data-ga-form-cat') || options.gaCat;
 			label = label || ctn.attr('data-ga-form-label') || options.gaLabel;
-			$.sendEvent('conversion', action, label, value);
+			$.sendEvent(cat, action, label, value);
 		};
 		
 		var reset = function () {
