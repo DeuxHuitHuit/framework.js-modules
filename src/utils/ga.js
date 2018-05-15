@@ -136,33 +136,47 @@
 		var downloadLinks = _.map(downloadExtensions, function (ext) {
 			return 'a[href$=".' + ext + '"], ';
 		}).join('') + 'a[href$="?dl"], a[download]';
-		var notAlreadyTagged = ':not([data-ga-cat])';
-		$('#site').on(App.device.events.click, '[data-ga-cat]', function (e) {
-			$(this).sendClickEvent({
-				event: e
-			});
-		})
-		.on(App.device.events.click, externalLinks + notAlreadyTagged, function (e) {
+		var getRefLinkLabel = function (t) {
+			var url = $(t).attr('href');
+			if (!url) {
+				return undefined;
+			}
+			url = url.replace(/^mailto:/, '');
+			url = url.replace(/^tel:/, '');
+			url = url.replace(origin, '');
+			return url;
+		};
+		$('#site')
+		.on(App.device.events.click, externalLinks, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-external',
+				label: getRefLinkLabel(this),
 				event: e
 			});
 		})
-		.on(App.device.events.click, downloadLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, downloadLinks, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-download',
+				label: getRefLinkLabel(this),
 				event: e
 			});
 		})
-		.on(App.device.events.click, mailtoLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, mailtoLinks, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-mailto',
+				label: getRefLinkLabel(this),
 				event: e
 			});
 		})
-		.on(App.device.events.click, telLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, telLinks, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-tel',
+				label: getRefLinkLabel(this),
+				event: e
+			});
+		})
+		.on(App.device.events.click, '[data-ga-cat]', function (e) {
+			$(this).sendClickEvent({
 				event: e
 			});
 		});
