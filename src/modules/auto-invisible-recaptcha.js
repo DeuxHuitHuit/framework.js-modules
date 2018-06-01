@@ -49,6 +49,18 @@
 		});
 	};
 
+	var onForceUpdate = function () {
+		try {
+			if (!!window.grecaptcha) {
+				window.grecaptcha.reset();
+			} else {
+				App.log('Recaptcha Lib not found');
+			}
+		} catch (e) {
+			App.log('Recaptcha Force update fail with error');
+		}
+	};
+
 	var pageEnter = function (key, data) {
 		if (!!data.page) {
 			page = $(data.page.key());
@@ -64,7 +76,7 @@
 			load();
 		};
 	};
-	
+
 	var actions = function () {
 		return {
 			page: {
@@ -72,13 +84,16 @@
 			},
 			articleChanger: {
 				enter: pageEnter
+			},
+			recaptcha: {
+				forceUpdate: onForceUpdate
 			}
 		};
 	};
-	
+
 	App.modules.exports('auto-invisible-recaptcha', {
 		init: init,
 		actions: actions
 	});
-	
+
 })(jQuery);
