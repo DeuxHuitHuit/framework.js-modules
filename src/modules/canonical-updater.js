@@ -18,7 +18,7 @@
 		var data = '';
 		var metas = $('link[rel=canonical][href]', document);
 
-		if (metas.length == 0) {
+		if (metas.length === 0) {
 			App.log({args: ['No canonical meta found.'], fx: 'warn'});
 		} else if (metas.length != 1) {
 			App.log({args: ['Multiple canonical meta found.'], fx: 'error'});
