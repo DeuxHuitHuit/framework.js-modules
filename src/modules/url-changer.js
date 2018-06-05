@@ -120,10 +120,9 @@
 		
 		if (currentPageRoute === '') {
 			triggerFirstFragmentChange = true;
-		}
-		if (currentPageRoute !== '') {
+		} else {
 			url = url + currentPageFragment;
-		
+
 			if (!isPopingState) {
 				historyPush(newRoute + currentPageFragment);
 			}
@@ -146,14 +145,19 @@
 	};
 	
 	var onPageEntered = function (key, data, e) {
+		var handled = false;
 		if (triggerFirstFragmentChange) {
-			//Detect if we have a fragment
+			// Detect if we have a fragment
 			var href = window.location.href;
 			var curPageHref = window.location.protocol + '//' +
 				window.location.host + currentPageRoute;
 			currentPageFragment = href.substring(curPageHref.length);
-			App.mediator.notify('page.fragmentChanged', currentPageFragment);
-		} else {
+			App.mediator.notify('page.fragmentChanged', currentPageFragment, function () {
+				handled = true;
+			});
+		}
+		
+		if (!handled) {
 			$.sendPageView({page: data.route});
 		}
 	};
@@ -180,18 +184,18 @@
 	};
 	
 	var generateQsString = function () {
-		var result = '';
+		var result = [];
 		
 		$.each(currentQsFragment, function (prop, value) {
+			prop = window.encodeURIComponent(prop);
 			if (!!value) {
-				if (!!result.length) {
-					result += '&';
-				}
-				result += (prop + '=' + value);
+				result.push(prop + '=' + window.encodeURIComponent(value));
+			} else {
+				result.push(prop);
 			}
 		});
 		
-		return result;
+		return result.join('&');
 	};
 	
 	var onUpdateQsFragment = function (key, options, e) {
