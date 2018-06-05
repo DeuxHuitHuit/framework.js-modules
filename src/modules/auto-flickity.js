@@ -33,10 +33,19 @@
 		initedClass: 'is-flickity-inited',
 		selectedClass: 'is-selected',
 
-		imagesLoaded: true
+		imagesLoaded: true,
+		accessibility: false
 	};
 
 	var flickities = [];
+	
+	var unpausePlayers = function () {
+		$.each(flickities, function (i, t) {
+			setTimeout(function () {
+				t.unpause();
+			}, 1500 + (i * 200));
+		});
+	};
 	
 	var onResize = function () {
 		$.each(flickities, function () {
@@ -44,35 +53,45 @@
 		});
 	};
 
-	var initAllSliders = function () {
-		page.find(o.sliderCtn).find(o.cellCtn).not('.' + o.initedClass).each(function () {
+	var initAllSliders = function (ctn) {
+		ctn.find(o.sliderCtn).find(o.cellCtn).not('.' + o.initedClass).each(function () {
 			var t = $(this);
 			var comp = App.components.create('flickity', o);
-			comp.init(t, page);
+			comp.init(t, ctn);
 			if (comp.isInited()) {
 				flickities.push(comp);
 			}
+			
+			setTimeout(function () {
+				comp.resize();
+			}, 500);
 		});
 	};
 	
 	var pageEnter = function (key, data) {
 		page = $(data.page.key());
-		initAllSliders();
+		initAllSliders(page);
+		unpausePlayers();
 	};
 	
-	var pageLeaving = function (key, data) {
-		if (!!data && !!data.canRemove) {
+	var pageLeave = function (key, data) {
+		if (data.canRemove) {
 			$.each(flickities, function () {
 				this.destroy();
 			});
 			flickities = [];
+		} else {
+			$.each(flickities, function () {
+				this.pause();
+			});
 		}
 		
 		page = $();
 	};
 
 	var onArticleEntering = function () {
-		initAllSliders();
+		initAllSliders(page);
+		unpausePlayers();
 	};
 	
 	var actions = function () {
@@ -82,10 +101,19 @@
 			},
 			page: {
 				enter: pageEnter,
-				leaving: pageLeaving
+				leaving: pageLeave
 			},
 			articleChanger: {
 				entering: onArticleEntering
+			},
+			siteLoader: {
+				finishing: unpausePlayers
+			},
+			popupTransition: {
+				beforeEnter: function (key, data) {
+					initAllSliders(data.page);
+					unpausePlayers();
+				}
 			}
 		};
 	};
