@@ -29,7 +29,7 @@
 				loadfatalerror: function (key, data) {
 					defaultLoadFatalError(key, data);
 				}
-			}, 
+			},
 			articleChanger: {
 				loaderror: function (key, data) {
 					defaultLoadFatalError(key, data);

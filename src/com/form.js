@@ -102,8 +102,7 @@
 			
 			if (!processData) {
 				data = new FormData(ctn[0]);
-			}
-			else {
+			} else {
 				$.each(ctn.serializeArray(), function () {
 					data[this.name] = this.value;
 				});
