@@ -4,13 +4,13 @@
  *  Auto mailto
  */
 (function ($, global, undefined) {
-	
+
 	'use strict';
-	
+
 	var firstTime = true;
 	var site = $('#site');
 	var page = $('.page');
-	
+
 	var update = function (ctn) {
 		ctn.find('a[data-mailto]').each(function () {
 			var t = $(this);
@@ -30,7 +30,7 @@
 	var init = function () {
 		update(site);
 	};
-	
+
 	var actions = function () {
 		return {
 			page: {
@@ -38,13 +38,18 @@
 			},
 			articleChanger: {
 				enter: onArticleEnter
+			},
+			autoMailto: {
+				update: function (key, data) {
+					update(data.ctn);
+				}
 			}
 		};
 	};
-	
+
 	var AutoMailto = App.modules.exports('auto-mailto', {
 		init: init,
 		actions: actions
 	});
-	
+
 })(jQuery, window);
