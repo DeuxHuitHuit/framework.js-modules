@@ -19,7 +19,7 @@
 			}
 			args.push(a);
 		});
-		App.log({args: ['%cga(' + args.join(',') + ');', 'color:navy']});
+		App.log({args: ['%cga(' + args.join(',') + ');', 'color:cornflowerblue']});
 	};
 	
 	var getGa = function () {
