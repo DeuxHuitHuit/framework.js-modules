@@ -13,21 +13,24 @@
 	var KD = 'keydown';
 	var TI = 'tabindex';
 	var root = $('html');
-	
+
+	var keydown = function (e) {
+		if (e.which === window.keys.tab) {
+			root.addClass(CLASS);
+			// This ignore is needed beacause of the module method structure. We should fix this.
+			/* jshint ignore:start */
+			doc.off(KD, keydown).one('click', click);
+			/* jshint ignore:end */
+			App.mediator.notify('keyboardNav.enabled');
+		}
+	};
+
 	var click = function (e) {
 		root.removeClass(CLASS);
 		doc.on(KD, keydown);
 		App.mediator.notify('keyboardNav.disabled');
 	};
-	
-	var keydown = function (e) {
-		if (e.which === window.keys.tab) {
-			root.addClass(CLASS);
-			doc.off(KD, keydown).one('click', click);
-			App.mediator.notify('keyboardNav.enabled');
-		}
-	};
-	
+
 	var init = function () {
 		doc.on(KD, keydown);
 	};
@@ -39,10 +42,11 @@
 		if (!data.item.is('.js-focusable')) {
 			return;
 		}
+		var stack = data.item.add(data.item.find('.js-focusable-child'));
 		if (data.trigger === 'after') {
-			data.item.removeAttr(TI);
+			stack.removeAttr(TI);
 		} else {
-			data.item.attr(TI, '-1');
+			stack.attr(TI, '-1');
 		}
 	};
 	
