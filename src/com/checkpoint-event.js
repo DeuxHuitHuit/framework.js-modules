@@ -12,9 +12,9 @@
 	var defaults = {
 		checkPoints: [0, 25, 50, 75, 90, 100],
 		category: 'Scroll',
-		action: 'scroll'
+		action: 'scroll',
+		checkPointReached: $.noop
 	};
-	var body = $('body');
 
 	App.components.exports('checkpoint-event', function (options) {
 		var o = $.extend({}, defaults, options);
@@ -25,7 +25,10 @@
 				$.isNumeric(perc) && o.checkPoints[gate] <= perc) {
 				var action = o.action + ' ' + o.checkPoints[gate] + '%';
 				var label = o.label || action;
-				$.sendEvent(o.category, action, label, o.checkPoints[gate]);
+				if (o.category) {
+					$.sendEvent(o.category, action, label, o.checkPoints[gate]);
+				}
+				App.callback(o.checkPointReached, [gate, o.checkPoints[gate]]);
 				gate++;
 			}
 		};
@@ -34,7 +37,8 @@
 			gate = 0;
 		};
 		
-		var init = function () {
+		var init = function (options) {
+			o = $.extend(o, options);
 			reset();
 		};
 		
