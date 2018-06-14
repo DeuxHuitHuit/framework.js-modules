@@ -160,6 +160,9 @@
 			},
 			articleChanger: {
 				enter: onPageEnter
+			},
+			autoSyncProperty: {
+				update: processAllItems
 			}
 		};
 	};
