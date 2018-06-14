@@ -58,7 +58,7 @@
 			gaCat: 'Search',
 			gaAction: 'search',
 			gaTimer: 1000,
-			_templateSettings: {
+			templateSettings: {
 				interpolate: /__(.+?)__/g,
 				evaluate: /_%([\s\S]+?)%_/g,
 				escape: /_%-([\s\S]+?)%_/g
@@ -96,7 +96,7 @@
 					o.defaultResultsTemplateString;
 				
 				var originalSettings = _.templateSettings;
-				_.templateSettings = o._templateSettings;
+				_.templateSettings = o.templateSettings;
 				
 				tmplString = tmplString.replace(/ _and_ /g, ' && ');
 				tmplString = tmplString.replace(/%5B/g, '[').replace(/%5D/g, ']');
@@ -152,43 +152,20 @@
 			});
 		};
 
-		var search = function (pageToRetrieve, appendNewResults) {
+		var searchByContainer = function (pageToRetrieve, query, appendNewResults, ctn) {
 			var queries = [];
-			var val = input.val();
-			var p = parseInt(pageToRetrieve) || 0;
-			var isMultipleWords = val.split(' ').length > 1;
-			var query = isMultipleWords ? '"' + val + '"' : val;
+			var val = !!query ? query : input.val();
+			var p = parseInt(pageToRetrieve, 10) || 0;
 			
 			App.callback(o.beforeSearchCallback, [{
 				resultsCtn: resultsCtn
 			}]);
-			
-			resultsCtn.each(function () {
-				var t = $(this);
-				
-				var facets = !!t.attr(o.facetsAttr) ?
-					t.attr(o.facetsAttr).split(',') : o.defaultFacets;
-				var facetFilters = !!t.attr(o.facetFiltersAttr) ?
-					t.attr(o.facetFiltersAttr).split(',') : o.defaultFacetFilters;
 
-				queries.push({
-					scope: t,
-					query: {
-						indexName: o.algolia.index,
-						query: query,
-						page: p,
-						advancedSyntax: isMultipleWords,
-						params: {
-							facets: facets,
-							facetFilters: facetFilters,
-							attributesToRetrieve: o.algoliaAttributesToRetrieve,
-							attributesToHighlight: o.algoliaAttributesToHighlight,
-							restrictSearchableAttributes: o.algoliaSearchableAttributes
-						}
-					}
-				});
+			ctn.each(function () {
+				var t = $(this);
+				queries.push(extractSingleQueryParams(p, val, t));
 			});
-			
+
 			// Search all queries
 			aClient.search(getQueriesOnly(queries), function (err, content) {
 				if (!!err) {
@@ -198,9 +175,47 @@
 					return;
 				}
 				_.each(content.results, function (results, i) {
-					searchCallback(queries[i].scope, results, val);
+					searchCallback(queries[i].scope, results, val, appendNewResults);
 				});
 			});
+		};
+
+		var extractSingleQueryParams = function (page, val, ctn) {
+			var facets = !!ctn.attr(o.facetsAttr) ?
+				ctn.attr(o.facetsAttr).split(',') : o.defaultFacets;
+			var facetFilters = !!ctn.attr(o.facetFiltersAttr) ?
+				ctn.attr(o.facetFiltersAttr).split(',') : o.defaultFacetFilters;
+
+			var isMultipleWords = val.split(' ').length > 1;
+			val = isMultipleWords ? '"' + val + '"' : val;
+
+			var queryParams = {
+				page: page,
+				facets: facets,
+				attributesToRetrieve: o.algoliaAttributesToRetrieve,
+				attributesToHighlight: o.algoliaAttributesToHighlight,
+				restrictSearchableAttributes: o.algoliaSearchableAttributes
+			};
+
+			if (ctn.filter('[data-algolia-filters-mode=filters]').length) {
+				queryParams.filters = encodeURI(facetFilters);
+			} else {
+				queryParams.facetFilters = facetFilters;
+			}
+
+			return {
+				scope: ctn,
+				query: {
+					indexName: o.algolia.index,
+					query: val,
+					advancedSyntax: isMultipleWords,
+					params: queryParams
+				}
+			};
+		};
+
+		var search = function (pageToRetrieve, query, appendNewResults) {
+			searchByContainer(pageToRetrieve, query, appendNewResults, resultsCtn);
 		};
 
 		var recommendCallback = function (rCtn, content, val) {
@@ -420,6 +435,7 @@
 		return {
 			init: init,
 			search: search,
+			searchByContainer: searchByContainer,
 			recommend: recommend,
 			updateInputVal: function (val) {
 				input.val(val);
@@ -432,6 +448,9 @@
 			},
 			getVal: function () {
 				return input.val();
+			},
+			getInput: function () {
+				return input;
 			},
 			clear: clear
 		};
