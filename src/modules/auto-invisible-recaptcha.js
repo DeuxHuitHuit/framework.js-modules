@@ -25,27 +25,28 @@
 	var loaded = false;
 	var ids = 0;
 
-	var load = function () {
-		if (!loaded || !page) {
+	var load = function (ctn) {
+		if (!loaded || !ctn) {
 			return;
 		}
-		page.find(options.trigger).each(function () {
+		ctn.find(options.trigger).each(function () {
 			var t = $(this);
 			if (t.attr('id')) {
 				return;
 			}
 			var id = options.prefix + (++ids);
 			t.attr('id', id);
-			window.grecaptcha.render(id, {
+			var recaptchaId = window.grecaptcha.render(id, {
 				sitekey: t.attr('data-sitekey'),
 				callback: function (result) {
-					page.find(options.target).val(result);
+					ctn.find(options.target).val(result);
 					App.mediator.notify('recaptcha.updated', {
 						result: result,
 						lastTarget: t
 					});
 				}
 			});
+			t.data('recaptcha-id', recaptchaId);
 		});
 	};
 
@@ -67,13 +68,13 @@
 		} else if (!!data.article) {
 			page = $(data.article);
 		}
-		load();
+		load(page);
 	};
 
 	var init = function () {
 		window.GoogleReCaptchaCallback = function () {
 			loaded = true;
-			load();
+			load(site);
 		};
 	};
 
