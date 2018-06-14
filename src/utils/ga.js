@@ -87,38 +87,60 @@
 	};
 	/* jshint maxparams:5 */
 	
+	var getTextValue = function (t, key) {
+		return t.attr(key) || undefined;
+	};
+
 	$.fn.sendClickEvent = function (options) {
 		options = options || {};
 		var t = $(this).eq(0);
 		var send = true;
-		if (!options.action) {
-			options.action = 'click';
-		}
-		if (!options.label) {
-			options.label = $.trim(t.text());
-		}
-		var o = $.extend({}, options, {
-			cat: t.attr('data-ga-cat') || undefined,
-			category: t.attr('data-ga-category') || undefined,
-			action: t.attr('data-ga-action') || undefined,
-			label: t.attr('data-ga-label') || undefined,
-			value: parseInt(t.attr('data-ga-value'), 10) || undefined
-		});
-		if (!o.cat) {
-			App.log({fx: 'err', args: 'No ga-cat found. Cannot continue.'});
+
+		var setMinimalOptions = function () {
+			if (!options.action) {
+				options.action = 'click';
+			}
+
+			if (!options.label) {
+				options.label = $.trim(t.text());
+			}
+
+			if (!!options.event) {
+				if (!options.event.gaHandled) {
+					options.event.gaHandled = true;
+				} else {
+					send = false;
+				}
+			}
+		};
+
+		setMinimalOptions();
+		if (!send) {
 			return;
 		}
-		if (!!options.event) {
-			if (!options.event.gaHandled) {
-				options.event.gaHandled = true;
-			} else {
+		
+		var o = $.extend({}, options, {
+			cat: getTextValue(t, 'data-ga-cat'),
+			category: getTextValue(t, 'data-ga-category'),
+			action: getTextValue(t, 'data-ga-action'),
+			label: getTextValue(t, 'data-ga-label'),
+			value: parseInt(t.attr('data-ga-value'), 10) || undefined
+		});
+
+		var detectError = function () {
+			if (!o.cat) {
+				App.log({fx: 'err', args: 'No ga-cat found. Cannot continue.'});
 				send = false;
 			}
-		}
-		if (!!send) {
-			if (!options.label) {
-				App.log({fx: 'err', args: 'No ga-label found. Reverted to text'});
+			
+			if (!o.label) {
+				App.log({fx: 'warn', args: 'No ga-label found. Reverting to text'});
 			}
+		};
+
+		detectError();
+		
+		if (!!send) {
 			$.sendEvent(o.cat, o.action, o.label, o.value, undefined, o.category);
 		}
 	};
