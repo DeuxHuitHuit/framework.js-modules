@@ -190,8 +190,6 @@
 			prop = window.encodeURIComponent(prop);
 			if (!!value) {
 				result.push(prop + '=' + window.encodeURIComponent(value));
-			} else {
-				result.push(prop);
 			}
 		});
 		
