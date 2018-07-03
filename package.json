@@ -16,8 +16,8 @@
     "url": "https://github.com/DeuxHuitHuit/framework.js-modules/issues"
   },
   "license": "MIT",
-  "dependencies": {},
   "keywords": [],
+  "dependencies": {},
   "devDependencies": {
     "grunt": ">=1.0.2",
     "grunt-contrib-connect": "~1.0.2",
@@ -27,6 +27,12 @@
     "grunt-contrib-concat": "~1.0.1",
     "grunt-jscs": "^3.0.1",
     "grunt-complexity": "~1.1.0",
-    "matchdep": "~2.0.0"
-  }
+    "matchdep": "~2.0.0",
+    "snyk": "^1.88.0"
+  },
+  "scripts": {
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
+  },
+  "snyk": true
 }
