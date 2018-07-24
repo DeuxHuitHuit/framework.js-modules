@@ -73,13 +73,18 @@
 			}
 		},
 		rulesOptions: {
-			
+
 		},
 		formatters: {
-			
-		}
+
+		},
+		onFocus: null,
+		onBlur: null,
+		onKeyup: null,
+		onKeydown: null,
+		onChangeOrInput: null
 	};
-	
+
 	var extendedDateRules = null;
 
 	if (window.moment) {
@@ -109,6 +114,7 @@
 		var progress;
 		var rules = [];
 		var self;
+		var isList = false;
 
 		options = $.extend(true, {}, defaults, extendedDateRules, options);
 
@@ -121,16 +127,16 @@
 				submitting: t.attr('data-submitting-class')
 			};
 		};
-		
+
 		var getStateClass = function (state) {
 			return state.attr('data-state-class');
 		};
-		
+
 		var setStateClass = function (fx, s) {
 			var state = states.filter('[data-state="' + s + '"]');
 			state[fx](getStateClass(state));
 		};
-		
+
 		var enable = function (enable) {
 			if (enable) {
 				input.enable();
@@ -139,11 +145,11 @@
 				input.disable();
 			}
 		};
-		
+
 		var focus = function () {
 			input.focus();
 		};
-		
+
 		var previewFile = function (ctn, file) {
 			ctn.empty();
 			//Change label caption
@@ -196,6 +202,10 @@
 			if (input.attr('type') == 'file') {
 				if (options.changeLabelTextToFilename) {
 					label.text(label.attr('data-text'));
+				} else {
+					var target = ctn.find('.js-filename');
+					var defaultFilename = ctn.attr('data-default-text-filename');
+					target.text(defaultFilename);
 				}
 
 				//Reset preview
@@ -218,7 +228,40 @@
 				}
 			} else if (input.hasClass('js-form-field-radio-list')) {
 				var selectedInput = input.find('input[type=\'radio\']:checked');
-				value = selectedInput.prop('checked') ? selectedInput.val() : '';
+				var nb = selectedInput.length;
+				
+				selectedInput.each(function (i) {
+					var t = $(this);
+					var label = t.closest('.js-form-field-radio-ctn').find('label');
+					if (t.prop('checked')) {
+						if (!!!value) {
+							value = '';
+						}
+						value += label.text();
+						
+						if (i < nb - 1) {
+							value += ', ';
+						}
+					}
+				});
+			} else if (input.hasClass('js-form-field-checkbox-list')) {
+				var selectedInput = input.find('input[type=\'checkbox\']:checked');
+				var nb = selectedInput.length;
+				
+				selectedInput.each(function (i) {
+					var t = $(this);
+					var label = t.closest('.js-form-field-checkbox-ctn').find('label');
+					if (t.prop('checked')) {
+						if (!!!value) {
+							value = '';
+						}
+						value += label.text();
+						
+						if (i < nb - 1) {
+							value += ', ';
+						}
+					}
+				});
 			} else {
 				value = input.val();
 			}
@@ -239,7 +282,7 @@
 			label[emptyFx](labelClasses.empty);
 			label[notEmptyFx](labelClasses.notEmpty);
 		};
-		
+
 		var preview = function (e) {
 			var p = ctn.find(options.preview);
 			if (input.attr('type') == 'file') {
@@ -251,7 +294,7 @@
 				}
 			}
 		};
-		
+
 		var tryValidate = function (value) {
 			try {
 				var constraints = {};
@@ -264,7 +307,7 @@
 						rulesOptions = $.extend(rulesOptions, options.rulesOptions[rule]);
 					}
 				});
-				
+
 				return w.validate.single(value, constraints, rulesOptions);
 			}
 			catch (ex) {
@@ -273,6 +316,10 @@
 			return false;
 		};
 		
+		var isValid = function () {
+			return !tryValidate(value());
+		};
+
 		var format = function () {
 			_.each(rules, function (rule) {
 				if (!!options.formatters[rule]) {
@@ -280,29 +327,33 @@
 				}
 			});
 		};
-		
+
 		var validate = function () {
 			var result = tryValidate(value());
-			
+
 			var errorFx = !result ? 'removeClass' : 'addClass';
 			var validFx = !result ? 'addClass' : 'removeClass';
 			var errorMessages = !result ? '' :
-				(options.onlyShowFirstError ? result[0] : result.join('<br />'));
+				(options.onlyShowFirstError ? result[0] : result.join('. '));
 			var inputClasses = getStateClasses(input);
 			var ctnClasses = getStateClasses(ctn);
 			var labelClasses = getStateClasses(label);
+			var inputFollowers = $(ctn.attr('data-input-error-followers'));
 			
+
 			input[errorFx](inputClasses.error);
 			input[validFx](inputClasses.valid);
-			
+			inputFollowers[errorFx](inputClasses.error);
+			inputFollowers[validFx](inputClasses.valid);
+
 			ctn[errorFx](ctnClasses.error);
 			ctn[validFx](ctnClasses.valid);
-			
+
 			label[errorFx](labelClasses.error);
 			label[validFx](labelClasses.valid);
-			
+
 			error.html(errorMessages);
-			
+
 			if (!result) {
 				// valid!
 				error.removeClass(getStateClass(error));
@@ -315,16 +366,17 @@
 			setStateClass('removeClass', 'valid');
 			return {
 				result: result,
-				field: self
+				field: self,
+				errorMessages: errorMessages
 			};
 		};
-		
+
 		var submitting = function (submitting) {
 			var submittingFx = submitting ? 'addClass' : 'removeClass';
 			var inputClasses = getStateClasses(input);
 			input[submittingFx](inputClasses.submitting);
 		};
-		
+
 		var init = function (o) {
 			options = $.extend(true, options, o);
 			ctn = $(options.container);
@@ -335,6 +387,8 @@
 			clear = ctn.find(options.clear);
 			progress = ctn.find(options.progress);
 			rules = _.filter((ctn.attr('data-rules') || '').split(/[|,\s]/g));
+			isList = input.hasClass('js-form-field-checkbox-list') ||
+				input.hasClass('js-form-field-radio-list');
 
 			if (!!options.formatEvents) {
 				input.on(options.formatEvents, format);
@@ -348,11 +402,57 @@
 			if (!!options.previewEvents) {
 				input.on(options.previewEvents, preview);
 			}
-			if (!!ctn.find('[selected]').length) {
-				checkEmptiness();
+			if (!!$.isFunction(options.onFocus)) {
+				var i = input;
+				if (isList) {
+					i = input.find('input[type="radio"],input[type="checkbox"]');
+				} else if (ctn.hasClass('js-form-field-file')) {
+					i = ctn.find('.js-form-field-label-ctn');
+				}
+				i.on('focus', function () {
+					options.onFocus({
+						field: self
+					});
+				});
 			}
+			if (!!$.isFunction(options.onBlur)) {
+				var i = input;
+				if (isList) {
+					i = input.find('input[type="radio"],input[type="checkbox"]');
+				}
+				i.on('blur', function () {
+					options.onBlur({
+						field: self
+					});
+				});
+			}
+			if (!!$.isFunction(options.onKeyup)) {
+				input.on('keyup', function () {
+					options.onKeyup({
+						field: self
+					});
+				});
+			}
+			if (!!$.isFunction(options.onKeydown)) {
+				input.on('keyup', function (e) {
+					options.onKeydown({
+						field: self,
+						e: e
+					});
+				});
+			}
+			if (!!$.isFunction(options.onChangeOrInput)) {
+				input.on('change input', function (e) {
+					options.onChangeOrInput({
+						field: self,
+						e: e
+					});
+				});
+			}
+
+			checkEmptiness();
 		};
-		
+
 		self = {
 			init: init,
 			validate: validate,
@@ -384,9 +484,19 @@
 			},
 			required: function () {
 				return !!~rules.indexOf('required');
+			},
+			isEmpty: function () {
+				return w.validate.isEmpty(value());
+			},
+			isValid: isValid,
+			getCtn: function () {
+				return ctn;
+			},
+			getInput: function () {
+				return input;
 			}
 		};
 		return self;
 	});
-	
+
 })(jQuery, window, document, window.moment);
