@@ -219,6 +219,8 @@
 
 		var value = function () {
 			var value;
+			var selectedInput;
+			var nb;
 			if (input.attr('type') == 'checkbox') {
 				value = input.prop('checked') ? 'true' : '';
 			} else if (input.attr('type') == 'radio') {
@@ -231,8 +233,8 @@
 					value = input.prop('checked') ? input.val() : '';
 				}
 			} else if (input.hasClass('js-form-field-radio-list')) {
-				var selectedInput = input.find('input[type=\'radio\']:checked');
-				var nb = selectedInput.length;
+				selectedInput = input.find('input[type=\'radio\']:checked');
+				nb = selectedInput.length;
 				
 				selectedInput.each(function (i) {
 					var t = $(this);
@@ -249,8 +251,8 @@
 					}
 				});
 			} else if (input.hasClass('js-form-field-checkbox-list')) {
-				var selectedInput = input.find('input[type=\'checkbox\']:checked');
-				var nb = selectedInput.length;
+				selectedInput = input.find('input[type=\'checkbox\']:checked');
+				nb = selectedInput.length;
 				
 				selectedInput.each(function (i) {
 					var t = $(this);
@@ -381,7 +383,9 @@
 			input[submittingFx](inputClasses.submitting);
 		};
 
+		/* jshint maxstatements:38 */
 		var init = function (o) {
+			var i;
 			options = $.extend(true, options, o);
 			ctn = $(options.container);
 			input = ctn.find(options.input);
@@ -407,7 +411,7 @@
 				input.on(options.previewEvents, preview);
 			}
 			if (!!$.isFunction(options.onFocus)) {
-				var i = input;
+				i = input;
 				if (isList) {
 					i = input.find('input[type="radio"],input[type="checkbox"]');
 				} else if (ctn.hasClass('js-form-field-file')) {
@@ -420,7 +424,7 @@
 				});
 			}
 			if (!!$.isFunction(options.onBlur)) {
-				var i = input;
+				i = input;
 				if (isList) {
 					i = input.find('input[type="radio"],input[type="checkbox"]');
 				}
