@@ -150,6 +150,10 @@
 			
 			if (isValid(results)) {
 				App.callback(options.onValid);
+				var cancel = App.callback(options.onBeforePost, [e]);
+				if (cancel === true) {
+					return w.pd(e);
+				}
 				if (!!options.post) {
 					post();
 				} else {
