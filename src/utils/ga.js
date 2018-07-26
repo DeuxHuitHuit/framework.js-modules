@@ -7,7 +7,8 @@
 (function ($) {
 	'use strict';
 	
-	var lang = $('html').attr('lang');
+	var html = $('html');
+	var lang = html.attr('lang');
 	
 	var log = function () {
 		var args = [];
@@ -75,7 +76,11 @@
 		if ($.isFunction($.formatLocation)) {
 			args.location = $.formatLocation(args.location);
 		}
-		ga('send', 'pageview', args);
+		if (!html.filter('[data-no-ga]').length) {
+			ga('send', 'pageview', args);
+		} else {
+			log('sendPageView bypassed by attribute');
+		}
 	};
 	
 	/* jshint maxparams:6 */
@@ -83,7 +88,11 @@
 		var ga = getGa();
 		cat = cat || '';
 		options = cat.options || options || {nonInteraction: 1};
-		ga('send', 'event', cat, action, label, value, options, category);
+		if (!html.filter('[data-no-ga]').length) {
+			ga('send', 'event', cat, action, label, value, options, category);
+		} else {
+			log('sendEvent bypassed by attribute');
+		}
 	};
 	/* jshint maxparams:5 */
 	
