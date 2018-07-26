@@ -149,6 +149,10 @@
 		var focus = function () {
 			input.focus();
 		};
+		
+		var scrollTo = function (options) {
+			$.scrollTo(ctn, options);
+		};
 
 		var previewFile = function (ctn, file) {
 			ctn.empty();
@@ -461,6 +465,7 @@
 			focus: focus,
 			reset: reset,
 			preview: preview,
+			scrollTo: scrollTo,
 			checkEmptiness: checkEmptiness,
 			group: function () {
 				return options.group;
