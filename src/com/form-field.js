@@ -383,21 +383,8 @@
 			input[submittingFx](inputClasses.submitting);
 		};
 
-		/* jshint maxstatements:38 */
-		var init = function (o) {
+		var attachEvents = function () {
 			var i;
-			options = $.extend(true, options, o);
-			ctn = $(options.container);
-			input = ctn.find(options.input);
-			error = ctn.find(options.error);
-			label = ctn.find(options.label);
-			states = ctn.find(options.states);
-			clear = ctn.find(options.clear);
-			progress = ctn.find(options.progress);
-			rules = _.filter((ctn.attr('data-rules') || '').split(/[|,\s]/g));
-			isList = input.hasClass('js-form-field-checkbox-list') ||
-				input.hasClass('js-form-field-radio-list');
-
 			if (!!options.formatEvents) {
 				input.on(options.formatEvents, format);
 			}
@@ -457,7 +444,23 @@
 					});
 				});
 			}
+		};
 
+		/* jshint maxstatements:38 */
+		var init = function (o) {
+			options = $.extend(true, options, o);
+			ctn = $(options.container);
+			input = ctn.find(options.input);
+			error = ctn.find(options.error);
+			label = ctn.find(options.label);
+			states = ctn.find(options.states);
+			clear = ctn.find(options.clear);
+			progress = ctn.find(options.progress);
+			rules = _.filter((ctn.attr('data-rules') || '').split(/[|,\s]/g));
+			isList = input.hasClass('js-form-field-checkbox-list') ||
+				input.hasClass('js-form-field-radio-list');
+
+			attachEvents();
 			checkEmptiness();
 		};
 
