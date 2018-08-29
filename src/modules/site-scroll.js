@@ -113,8 +113,8 @@
 			var direction = getWheelDirection(e);
 
 			if (scrollingDistanceTotal <= 0 ||
-				direction == 'down' && scrollingDistance == scrollingDistanceTotal ||
-				direction == 'up' && scrollingDistance == 0) {
+				direction === 'down' && scrollingDistance === scrollingDistanceTotal ||
+				direction === 'up' && scrollingDistance === 0) {
 				shouldPrevent = true;
 			}
 		}
