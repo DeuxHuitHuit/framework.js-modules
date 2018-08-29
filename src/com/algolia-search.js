@@ -40,7 +40,9 @@
 			algoliaAttributesToHighlight: 'title',
 			algoliaSearchableAttributes: [],
 			resultsTemplateStringSelector: '.js-algolia-results-template-string',
+			facets: null,
 			facetsAttr: 'data-algolia-facets',
+			facetFilters: null,
 			facetFiltersAttr: 'data-algolia-facet-filters',
 			onCreateResultsTemplatingObject: createResultsTemplatingObject,
 			defaultResultsTemplateString: '<div><a href="__url__">__title__</a></div>',
@@ -48,6 +50,9 @@
 			defaultFacetFilters: 'lang:' + lg,
 			defaultRecommandFacets: ['facet', 'lang'],
 			defaultRecommandFacetFilters: ['facet:recommend', 'lang:' + lg],
+			defaultRecommandGroup: null,
+			hitsPerPage: 20,
+			hitsPerPageAttr: 'data-algolia-hits',
 			searchCallback: $.noop,
 			recommendCallback: $.noop,
 			errorCallback: $.noop,
@@ -55,6 +60,8 @@
 			beforeSearchCallback: $.noop,
 			beforeAppendNewItem: $.noop,
 			recommendResultsLimit: 5,
+			recommendHitsPerPage: 10,
+			minChar: 3,
 			gaCat: 'Search',
 			gaAction: 'search',
 			gaTimer: 1000,
@@ -117,7 +124,7 @@
 				});
 				
 				_.templateSettings = originalSettings;
-			} else if (!!val && val.length > 2) {
+			} else if (!!val && val.length >= o.minChar) {
 				appendNoResults(rCtn);
 			}
 		};
@@ -181,10 +188,12 @@
 		};
 
 		var extractSingleQueryParams = function (page, val, ctn) {
-			var facets = !!ctn.attr(o.facetsAttr) ?
-				ctn.attr(o.facetsAttr).split(',') : o.defaultFacets;
-			var facetFilters = !!ctn.attr(o.facetFiltersAttr) ?
-				ctn.attr(o.facetFiltersAttr).split(',') : o.defaultFacetFilters;
+			var facets = o.facets || (!!ctn.attr(o.facetsAttr) ?
+				ctn.attr(o.facetsAttr).split(',') :
+				o.defaultFacets);
+			var facetFilters = o.facetFilters || (!!ctn.attr(o.facetFiltersAttr) ?
+				ctn.attr(o.facetFiltersAttr).split(',') :
+				o.defaultFacetFilters);
 
 			var isMultipleWords = val.split(' ').length > 1;
 			val = isMultipleWords ? '"' + val + '"' : val;
@@ -192,6 +201,7 @@
 			var queryParams = {
 				page: page,
 				facets: facets,
+				hitsPerPage: parseInt(ctn.attr(o.hitsPerPageAttr), 10) || o.hitsPerPage,
 				attributesToRetrieve: o.algoliaAttributesToRetrieve,
 				attributesToHighlight: o.algoliaAttributesToHighlight,
 				restrictSearchableAttributes: o.algoliaSearchableAttributes
@@ -266,7 +276,8 @@
 				var facetFilters = !!t.attr(o.facetFiltersAttr) ?
 					t.attr(o.facetFiltersAttr).split(',') :
 					[].concat(o.defaultRecommandFacetFilters);
-				var group = t.attr(groupAttr);
+				var group = !!t.attr(groupAttr) ? t.attr(groupAttr) :
+					[].concat(o.defaultRecommandGroup);
 				
 				if (!!group) {
 					facets.push('recommendFacet');
@@ -301,7 +312,7 @@
 							params: {
 								facets: facets,
 								facetFilters: facetFilters,
-								hitsPerPage: 10,
+								hitsPerPage: o.recommendHitsPerPage,
 								typoTolerance: false,
 								attributesToRetrieve: o.algoliaAttributesToRetrieve,
 								attributesToHighlight: o.algoliaAttributesToHighlight,
@@ -413,7 +424,7 @@
 		var onInputKeyUp = function () {
 			var val = input.val();
 		
-			if (val.length > 2) {
+			if (val.length >= o.minChar) {
 				search();
 			} else {
 				clear();
