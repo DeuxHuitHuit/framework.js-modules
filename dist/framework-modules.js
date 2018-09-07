@@ -1,8 +1,9 @@
-/*! framework.js-modules - v1.6.0 - build 358 - 2018-03-16
+/*! framework.js-modules - v1.10.0 - build 359 - 2018-09-06
  * https://github.com/DeuxHuitHuit/framework.js-modules
  * Copyright (c) 2018 Deux Huit Huit (https://deuxhuithuit.com/);
  * MIT *//**
  * @author Deux Huit Huit
+ *
  */
 
 (function ($, win, undefined) {
@@ -12,7 +13,6 @@
 	App.components.exports('algolia-search', function (options) {
 		var ctn;
 		var aClient;
-		var aIndex;
 		var input;
 		var resultsCtn;
 		var rootUrl = document.location.protocol + '//' + document.location.host;
@@ -20,11 +20,17 @@
 		var searchBarInput;
 		var searchTaggingTimer = 0;
 		
-		var createResultsTemplatingObject = function (hit) {
-			return {
-				title: hit.title,
-				url: hit.url.replace(rootUrl, '')
-			};
+		var createResultsTemplatingObject = function (hit, opts) {
+			var attribs = !opts.algoliaAttributesToRetrieve ?
+				['url', 'title'] :
+				opts.algoliaAttributesToRetrieve.split(',');
+			return _.reduce(attribs, function (memo, k) {
+				memo[k] = hit[k];
+				if (!!memo[k] && k === 'url') {
+					memo[k] = memo[k].replace(rootUrl, '');
+				}
+				return memo;
+			}, {});
 		};
 		
 		var defaultOptions = {
@@ -35,34 +41,54 @@
 			resultsItemTemplateSelector: '.js-algolia-results-item-template',
 			algoliaAttributesToRetrieve: 'title,url,image',
 			algoliaAttributesToHighlight: 'title',
+			algoliaSearchableAttributes: [],
 			resultsTemplateStringSelector: '.js-algolia-results-template-string',
+			facets: null,
 			facetsAttr: 'data-algolia-facets',
+			facetFilters: null,
 			facetFiltersAttr: 'data-algolia-facet-filters',
 			onCreateResultsTemplatingObject: createResultsTemplatingObject,
 			defaultResultsTemplateString: '<div><a href="__url__">__title__</a></div>',
 			defaultFacets: 'lang',
 			defaultFacetFilters: 'lang:' + lg,
+			defaultRecommandFacets: ['facet', 'lang'],
+			defaultRecommandFacetFilters: ['facet:recommend', 'lang:' + lg],
+			defaultRecommandGroup: null,
+			hitsPerPage: 20,
+			hitsPerPageAttr: 'data-algolia-hits',
 			searchCallback: $.noop,
+			recommendCallback: $.noop,
+			errorCallback: $.noop,
 			clearCallback: $.noop,
 			beforeSearchCallback: $.noop,
+			beforeAppendNewItem: $.noop,
+			recommendResultsLimit: 5,
+			recommendHitsPerPage: 10,
+			minChar: 3,
 			gaCat: 'Search',
 			gaAction: 'search',
 			gaTimer: 1000,
-			_templateSettings: {
+			templateSettings: {
 				interpolate: /__(.+?)__/g,
 				evaluate: /_%([\s\S]+?)%_/g,
 				escape: /_%-([\s\S]+?)%_/g
 			},
 			algolia: {
+				// DO NOT EDIT THOSE, set them on init
 				app: '',
 				key: '',
 				index: ''
-			}
+			},
+			inputKeyUpCallback: null,
+			showNoResultsWhenCleared: false
 		};
 		
 		var o = $.extend({}, defaultOptions, options);
 
 		var trackSearch = function (val, nb) {
+			if (!o.gaCat) {
+				return;
+			}
 			$.sendEvent(o.gaCat, o.gaAction, val, nb);
 		};
 
@@ -73,68 +99,315 @@
 			resultContent.append(noResults);
 		};
 		
-		var searchCallback = function (rCtn, err, content, val, appendNewResults) {
+		var applyTemplate = function (rCtn, resultContent, content, val) {
+			if (!!content.nbHits) {
+				var tmplString = !!rCtn.find(o.resultsItemTemplateSelector).length ?
+					rCtn.find(o.resultsItemTemplateSelector).text() :
+					o.defaultResultsTemplateString;
+				
+				var originalSettings = _.templateSettings;
+				_.templateSettings = o.templateSettings;
+				
+				tmplString = tmplString.replace(/ _and_ /g, ' && ');
+				tmplString = tmplString.replace(/%5B/g, '[').replace(/%5D/g, ']');
+				
+				var tplt = _.template(tmplString);
+				
+				_.each(content.hits, function (t) {
+					var cleanData = o.onCreateResultsTemplatingObject(t, o);
+					var newItem = tplt(cleanData);
+					App.callback(o.beforeAppendNewItem, [
+						rCtn,
+						resultContent,
+						newItem,
+						cleanData,
+						t
+					]);
+					resultContent.append(newItem);
+				});
+				
+				_.templateSettings = originalSettings;
+			} else if (!!val && val.length >= o.minChar) {
+				appendNoResults(rCtn);
+			}
+		};
+		
+		var errorCallback = function (rCtn, content, val, err) {
 			var resultContent = rCtn.find(o.resultsContentSelector);
 			
-			if (!!!appendNewResults) {
+			resultContent.empty();
+			
+			App.callback(o.errorCallback, [rCtn, content, o, val, err]);
+		};
+		
+		var searchCallback = function (rCtn, content, val, appendNewResults) {
+			var resultContent = rCtn.find(o.resultsContentSelector);
+			
+			if (!appendNewResults) {
 				resultContent.empty();
 			}
-
-			if (!err) {
-				if (!!content.nbHits) {
-					var tmplString = !!rCtn.find(o.resultsItemTemplateSelector).length ?
-						rCtn.find(o.resultsItemTemplateSelector).text() :
-						o.defaultResultsTemplateString;
-					
-					var originalSettings = _.templateSettings;
-					_.templateSettings = o._templateSettings;
-					
-					var tplt = _.template(tmplString);
-					
-					$.each(content.hits, function () {
-						var t = this;
-						
-						var cleanData = o.onCreateResultsTemplatingObject(t);
-						var newItem = tplt(cleanData);
-						resultContent.append(newItem);
-					});
-					
-					_.templateSettings = originalSettings;
-				} else if (!!val && val.length > 2) {
-					appendNoResults(rCtn);
-				}
-				clearTimeout(searchTaggingTimer);
-				searchTaggingTimer = setTimeout(function () {
-					trackSearch(val, !content ? 0 : (content.nbHits || 0));
-				}, o.gaTimer);
-			}
-			App.callback(o.searchCallback, [rCtn, err, content, o, val]);
+			
+			applyTemplate(rCtn, resultContent, content, val);
+			clearTimeout(searchTaggingTimer);
+			searchTaggingTimer = setTimeout(function () {
+				trackSearch(val, !content ? 0 : (content.nbHits || 0));
+			}, o.gaTimer);
+			
+			App.callback(o.searchCallback, [rCtn, content, o, val]);
 		};
 
-		var search = function (pageToRetrieve, appendNewResults) {
-			var val = input.val();
-			var p = !!parseInt(pageToRetrieve) ? parseInt(pageToRetrieve) : 0;
+		var getQueriesOnly = function (queries) {
+			return _.map(queries, function (q) {
+				return q.query;
+			});
+		};
+
+		var searchByContainer = function (pageToRetrieve, query, appendNewResults, ctn) {
+			var queries = [];
+			var val = !!query ? query : input.val();
+			var p = parseInt(pageToRetrieve, 10) || 0;
 			
 			App.callback(o.beforeSearchCallback, [{
 				resultsCtn: resultsCtn
 			}]);
+
+			ctn.each(function () {
+				var t = $(this);
+				queries.push(extractSingleQueryParams(p, val, t));
+			});
+
+			// Search all queries
+			aClient.search(getQueriesOnly(queries), function (err, content) {
+				if (!!err) {
+					_.each(queries, function (query) {
+						errorCallback(query.scope, content, val, err);
+					});
+					return;
+				}
+				_.each(content.results, function (results, i) {
+					searchCallback(queries[i].scope, results, val, appendNewResults);
+				});
+			});
+		};
+
+		var extractSingleQueryParams = function (page, val, ctn) {
+			var facets = o.facets || (!!ctn.attr(o.facetsAttr) ?
+				ctn.attr(o.facetsAttr).split(',') :
+				o.defaultFacets);
+			var facetFilters = o.facetFilters || (!!ctn.attr(o.facetFiltersAttr) ?
+				ctn.attr(o.facetFiltersAttr).split(',') :
+				o.defaultFacetFilters);
+
+			var isMultipleWords = val.split(' ').length > 1;
+			val = isMultipleWords ? '"' + val + '"' : val;
+
+			var queryParams = {
+				page: page,
+				facets: facets,
+				hitsPerPage: parseInt(ctn.attr(o.hitsPerPageAttr), 10) || o.hitsPerPage,
+				attributesToRetrieve: o.algoliaAttributesToRetrieve,
+				attributesToHighlight: o.algoliaAttributesToHighlight,
+				restrictSearchableAttributes: o.algoliaSearchableAttributes
+			};
+
+			if (ctn.filter('[data-algolia-filters-mode=filters]').length) {
+				queryParams.filters = encodeURI(facetFilters);
+			} else {
+				queryParams.facetFilters = facetFilters;
+			}
+
+			return {
+				scope: ctn,
+				query: {
+					indexName: o.algolia.index,
+					query: val,
+					advancedSyntax: isMultipleWords,
+					params: queryParams
+				}
+			};
+		};
+
+		var search = function (pageToRetrieve, query, appendNewResults) {
+			searchByContainer(pageToRetrieve, query, appendNewResults, resultsCtn);
+		};
+
+		var recommendCallback = function (rCtn, content, val) {
+			var resultContent = rCtn.find(o.resultsContentSelector);
+			resultContent.empty();
+			applyTemplate(rCtn, resultContent, content, val);
+			App.callback(o.recommendCallback, [resultContent, content, o, val]);
+		};
+
+		var recommend = function (terms, groupAttr) {
+			var queries = [];
 			
+			if ((!terms || !terms.length) && App.debug()) {
+				resultsCtn.prepend(
+					$('<div />')
+						.text('No recommend terms (categories) found. Defaults to all')
+						.css({
+							background: 'rgba(255, 100, 0, 0.6)',
+							color: '#EEE',
+							fontSize: '16px',
+							padding: '10px',
+							margin: '10px 0'
+						})
+				);
+				terms = ['*'];
+			} else if (App.debug()) {
+				resultsCtn.prepend(
+					$('<div />')
+						.text('Search terms: ' + terms.join(', '))
+						.css({
+							background: 'rgba(0, 0, 250, 0.6)',
+							color: '#EEE',
+							fontSize: '16px',
+							padding: '10px',
+							margin: '10px 0'
+						})
+				);
+			}
+			
+			// Create queries for each containers
+			// TODO: remove terms and use data-attribute
 			resultsCtn.each(function () {
 				var t = $(this);
 				
 				var facets = !!t.attr(o.facetsAttr) ?
-					t.attr(o.facetsAttr) : o.defaultFacets;
+					t.attr(o.facetsAttr).split(',') :
+					[].concat(o.defaultRecommandFacets);
 				var facetFilters = !!t.attr(o.facetFiltersAttr) ?
-					t.attr(o.facetFiltersAttr) : o.defaultFacetFilters;
-
-				aIndex.search(val, {
-					facets: facets,
-					facetFilters: facetFilters,
-					attributesToRetrieve: o.algoliaAttributesToRetrieve,
-					attributesToHighlight: o.algoliaAttributesToHighlight,
-					page: p
-				}, function (err, content) {
-					searchCallback(t, err, content, val, appendNewResults);
+					t.attr(o.facetFiltersAttr).split(',') :
+					[].concat(o.defaultRecommandFacetFilters);
+				var group = !!t.attr(groupAttr) ? t.attr(groupAttr) :
+					[].concat(o.defaultRecommandGroup);
+				
+				if (!!group) {
+					facets.push('recommendFacet');
+					facetFilters.push('recommendFacet:' + group);
+				}
+				
+				if (App.debug()) {
+					t.prepend(
+						$('<div />')
+							.text(!group ?
+								'Results not segmented' :
+								'Results segmented by `' + group + '`'
+							)
+							.css({
+								background: 'rgba(255, 200, 0, 0.6)',
+								color: '#333',
+								fontSize: '16px',
+								padding: '10px',
+								margin: '10px 0'
+							})
+					);
+				}
+				
+				queries = queries.concat(_.map(terms, function (term, i) {
+					return {
+						scope: t,
+						query: {
+							indexName: o.algolia.index,
+							query: term,
+							customRanking: ['desc(rating.' + term + '.r)'],
+							ranking: ['custom', 'typo'],
+							params: {
+								facets: facets,
+								facetFilters: facetFilters,
+								hitsPerPage: o.recommendHitsPerPage,
+								typoTolerance: false,
+								attributesToRetrieve: o.algoliaAttributesToRetrieve,
+								attributesToHighlight: o.algoliaAttributesToHighlight,
+								restrictSearchableAttributes: ['recommend']
+							}
+						}
+					};
+				}));
+			});
+			
+			if (!queries || !queries.length) {
+				if (!App.debug()) {
+					ctn.remove();
+				}
+				return;
+			}
+			
+			// Search all queries
+			aClient.search(getQueriesOnly(queries), {
+				strategy: 'stopIfEnoughMatches'
+			}, function (err, content) {
+				if (!!err) {
+					resultsCtn.remove();
+					_.each(queries, function (query) {
+						errorCallback(query.scope, content, queries.join('+'), err);
+					});
+					return;
+				}
+				// Merge results
+				resultsCtn.each(function () {
+					var rCtn = $(this);
+					// Keep only queries from this scope
+					var filtered = _.reduce(content.results, function (memo, results, i) {
+						if (queries[i].scope.is(rCtn)) {
+							// Invert the results -> hits relationship
+							memo = memo.concat(_.map(results.hits, function (hit) {
+								hit.results = results;
+								return hit;
+							}));
+							// Break the cycle
+							delete results.hits;
+						}
+						return memo;
+					}, []);
+					// Group records by url
+					var merged = _.reduce(filtered, function (memo, hit, i) {
+						// Remove the current page
+						if (document.location.toString().indexOf(hit.url) !== -1) {
+							return memo;
+						}
+						if (!memo[hit.url]) {
+							memo[hit.url] = [hit];
+						} else {
+							memo[hit.url].push(hit);
+						}
+						return memo;
+					}, {});
+					// Create a sum of the scores
+					var summed = _.map(merged, function (result, i) {
+						var r = result[0];
+						r.computedRating = _.reduce(result, function (sum, r) {
+							var index = r.results.query === '*' ? '_global' : r.results.query;
+							if (!r.rating || !r.rating[index]) {
+								return sum;
+							}
+							return sum + r.rating[index].r;
+						}, 0);
+						return r;
+					});
+					// Sort and limit
+					var sorted = _.sortBy(summed, function (hit) {
+						return -hit.computedRating;
+					}).slice(0, o.recommendResultsLimit);
+					// Fake algolia result
+					var results = {
+						nbHits: sorted.length,
+						hits: sorted
+					};
+					recommendCallback(rCtn, results, terms);
+					if (App.debug() && !results.nbHits) {
+						rCtn.prepend(
+							$('<div />')
+								.text('No result found')
+								.css({
+									background: 'rgba(255, 0, 0, 0.6)',
+									padding: '10px',
+									margin: '10px 0',
+									color: '#EEE',
+									fontSize: '16px'
+								})
+						);
+					}
 				});
 			});
 		};
@@ -143,6 +416,10 @@
 			resultsCtn.each(function () {
 				var resultContent = $(this).find(o.resultsContentSelector);
 				resultContent.empty();
+				
+				if (!!o.showNoResultsWhenCleared) {
+					appendNoResults($(this));
+				}
 			});
 			App.callback(o.clearCallback, [resultsCtn, o]);
 		};
@@ -150,11 +427,13 @@
 		var onInputKeyUp = function () {
 			var val = input.val();
 		
-			if (val.length > 2) {
+			if (val.length >= o.minChar) {
 				search();
 			} else {
 				clear();
 			}
+			
+			App.callback(options.inputKeyUpCallback);
 		};
 		
 		var init = function (c) {
@@ -164,18 +443,28 @@
 			
 			// init algolia
 			aClient = window.algoliasearch(o.algolia.app, o.algolia.key);
-			aIndex = aClient.initIndex(o.algolia.index);
 			input.on('keyup', onInputKeyUp);
 		};
 		
 		return {
 			init: init,
 			search: search,
+			searchByContainer: searchByContainer,
+			recommend: recommend,
 			updateInputVal: function (val) {
 				input.val(val);
 			},
+			focus: function () {
+				input.focus();
+			},
+			blur: function () {
+				input.blur();
+			},
 			getVal: function () {
 				return input.val();
+			},
+			getInput: function () {
+				return input;
 			},
 			clear: clear
 		};
@@ -346,14 +635,18 @@
 								percent: percent
 							});
 						},
-						error: function () {
-							App.mediator.notify('article.loaderror');
+						error: function (jqXHR) {
 							App.mediator.notify('pageLoad.end');
 							isLoading = false;
+
+							App.mediator.notify('articleChanger.loaderror', {
+								jqXHR: jqXHR
+							});
 						},
 						giveup: function (e) {
 							App.mediator.notify('pageLoad.end');
 							isLoading = false;
+							App.log('Article changer load giveup');
 						}
 					});
 				}
@@ -584,9 +877,9 @@
 	var defaults = {
 		checkPoints: [0, 25, 50, 75, 90, 100],
 		category: 'Scroll',
-		action: 'scroll'
+		action: 'scroll',
+		checkPointReached: $.noop
 	};
-	var body = $('body');
 
 	App.components.exports('checkpoint-event', function (options) {
 		var o = $.extend({}, defaults, options);
@@ -597,7 +890,10 @@
 				$.isNumeric(perc) && o.checkPoints[gate] <= perc) {
 				var action = o.action + ' ' + o.checkPoints[gate] + '%';
 				var label = o.label || action;
-				$.sendEvent(o.category, action, label, o.checkPoints[gate]);
+				if (o.category) {
+					$.sendEvent(o.category, action, label, o.checkPoints[gate]);
+				}
+				App.callback(o.checkPointReached, [gate, o.checkPoints[gate]]);
 				gate++;
 			}
 		};
@@ -606,7 +902,8 @@
 			gate = 0;
 		};
 		
-		var init = function () {
+		var init = function (options) {
+			o = $.extend(o, options);
 			reset();
 		};
 		
@@ -622,7 +919,14 @@
 /**
  * @author Deux Huit Huit
  *
- *	Flickity component
+ * Flickity component
+ *
+ * @uses jQuery.fn.data()
+ *  The used keys are:
+ *   1. `acc-tabindex` used to store the tabindex
+ *   2. `flickity` used to store all the data-flickity-* options
+ *
+ * @requires https://cdnjs.cloudflare.com/ajax/libs/flickity/2.1.1/flickity.pkgd.min.js"
  */
 
 (function ($, win, undefined) {
@@ -676,16 +980,30 @@
 			slider.flickity('resize');
 		};
 
+		var getCurrentSlide = function () {
+			var d = slider.data('flickity');
+			if (!d) {
+				return $();
+			}
+			var currentSlide = d.selectedIndex;
+			return slider.find(o.cellSelector + ':eq(' + currentSlide + ')');
+		};
+
 		var setActiveSlideSeen = function () {
-			var currentSlide = slider.data('flickity').selectedIndex;
-
-			slider.find(o.cellSelector + ':eq(' + currentSlide + ')').addClass(o.seenClass);
-
+			getCurrentSlide().addClass(o.seenClass);
 			slider.find(o.cellSelector + '.' + o.seenClass).each(function () {
 				slider.find('.flickity-page-dots li:eq(' + $(this).index() + ')')
 					.addClass(o.seenClass);
 			});
-
+		};
+		
+		var sliderPlay = function () {
+			slider.flickity('playPlayer');
+			slider.attr('tabindex', slider.data('acc-tabindex') || '0');
+		};
+		
+		var sliderPause = function () {
+			slider.flickity('pausePlayer');
 		};
 		
 		var init = function (item, s) {
@@ -700,11 +1018,70 @@
 				slider.flickity('resize');
 				slider.addClass(o.initedClass);
 				isInited = true;
-
+				// Make dots accessible with the keyboard
+				slider.find('.flickity-page-dots li').attr('tabindex', '0').keydown(function (e) {
+					if (e.which === window.keys.enter) {
+						var t = $(this);
+						slider.flickity('select', t.index());
+						t.focus();
+					}
+				});
+				//set slide aria-label on corresponding page dot
+				slider.find('.flickity-page-dots li').each(function (i) {
+					var t = $(this);
+					var ariaLabel = slider.find(o.cellSelector + ':eq(' + i + ')')
+						.attr('aria-label');
+					
+					if (!!ariaLabel) {
+						t.attr('aria-label', ariaLabel);
+					}
+				});
+				// Limit focus to active slide's content only
+				slider.on('blur', function () {
+					slider.data('acc-tabindex', slider.attr('tabindex'));
+					slider.removeAttr('tabindex');
+				})
+				.on('settle.flickity', function () {
+					var curSlide = getCurrentSlide();
+					slider.find(o.cellSelector).removeAttr('tabindex');
+					slider.find('button, a').attr('tabindex', '-1');
+					curSlide.add(curSlide.find('button, a')).attr('tabindex', '0');
+					
+					// restart autoplay slider after user action for touch devices
+					if (!!flickOptions.autoPlay &&
+						!!flickOptions.restartAutoplayOnMouseleave &&
+						$.mobile) {
+						sliderPlay();
+					}
+				});
 				if (!!flickOptions.pageDots) {
 					slider.on('settle.flickity', setActiveSlideSeen);
 				}
 				slider.find('img[data-src-format]').jitImage();
+				if (!!flickOptions.pauseOnFocus) {
+					// Make sure it is focusable
+					var tab = slider.attr('tabindex');
+					if (!tab) {
+						slider.attr('tabindex', '0');
+					}
+					slider.on('focus', function (e) {
+						slider.flickity('pausePlayer');
+					}).on('focus', '*', function (e) {
+						slider.flickity('pausePlayer');
+					});
+				}
+				
+				if (!!flickOptions.pauseOnInit) {
+					slider.flickity('pausePlayer');
+				}
+				
+				// restart autoplay slider after user action for desktop devices
+				if (!!flickOptions.autoPlay &&
+					!!flickOptions.restartAutoplayOnMouseleave &&
+					!$.mobile) {
+					slider.on('mouseleave', sliderPlay);
+				}
+				
 				App.callback(o.inited);
 			} else if (slider.find(o.cellSelector.length == 1)) {
 				slider.addClass(o.abortedClass);
@@ -718,9 +1095,17 @@
 				slider.flickity('destroy');
 				slider.removeClass(o.initedClass);
 				slider.off('settle.flickity', setActiveSlideSeen);
+				slider.off('mouseleave', sliderPlay);
+				slider.off('focus').off('focus', '*');
+				slider.off('blur').attr('tabindex', slider.data('acc-tabindex') || '0');
+				
 				slider = $();
 				App.callback(o.destroyed);
 			}
+		};
+		
+		var unpausePlayer = function () {
+			slider.flickity('unpausePlayer');
 		};
 
 		return {
@@ -729,7 +1114,9 @@
 			destroy: destroy,
 			isInited: function () {
 				return isInited;
-			}
+			},
+			unpause: unpausePlayer,
+			pause: sliderPause
 		};
 	});
 
@@ -810,13 +1197,18 @@
 			}
 		},
 		rulesOptions: {
-			
+
 		},
 		formatters: {
-			
-		}
+
+		},
+		onFocus: null,
+		onBlur: null,
+		onKeyup: null,
+		onKeydown: null,
+		onChangeOrInput: null
 	};
-	
+
 	var extendedDateRules = null;
 
 	if (window.moment) {
@@ -846,6 +1238,7 @@
 		var progress;
 		var rules = [];
 		var self;
+		var isList = false;
 
 		options = $.extend(true, {}, defaults, extendedDateRules, options);
 
@@ -858,16 +1251,16 @@
 				submitting: t.attr('data-submitting-class')
 			};
 		};
-		
+
 		var getStateClass = function (state) {
 			return state.attr('data-state-class');
 		};
-		
+
 		var setStateClass = function (fx, s) {
 			var state = states.filter('[data-state="' + s + '"]');
 			state[fx](getStateClass(state));
 		};
-		
+
 		var enable = function (enable) {
 			if (enable) {
 				input.enable();
@@ -876,11 +1269,15 @@
 				input.disable();
 			}
 		};
-		
+
 		var focus = function () {
 			input.focus();
 		};
 		
+		var scrollTo = function (options) {
+			$.scrollTo(ctn, options);
+		};
+
 		var previewFile = function (ctn, file) {
 			ctn.empty();
 			//Change label caption
@@ -933,6 +1330,10 @@
 			if (input.attr('type') == 'file') {
 				if (options.changeLabelTextToFilename) {
 					label.text(label.attr('data-text'));
+				} else {
+					var target = ctn.find('.js-filename');
+					var defaultFilename = ctn.attr('data-default-text-filename');
+					target.text(defaultFilename);
 				}
 
 				//Reset preview
@@ -942,6 +1343,8 @@
 
 		var value = function () {
 			var value;
+			var selectedInput;
+			var nb;
 			if (input.attr('type') == 'checkbox') {
 				value = input.prop('checked') ? 'true' : '';
 			} else if (input.attr('type') == 'radio') {
@@ -954,8 +1357,41 @@
 					value = input.prop('checked') ? input.val() : '';
 				}
 			} else if (input.hasClass('js-form-field-radio-list')) {
-				var selectedInput = input.find('input[type=\'radio\']:checked');
-				value = selectedInput.prop('checked') ? selectedInput.val() : '';
+				selectedInput = input.find('input[type=\'radio\']:checked');
+				nb = selectedInput.length;
+				
+				selectedInput.each(function (i) {
+					var t = $(this);
+					var label = t.closest('.js-form-field-radio-ctn').find('label');
+					if (t.prop('checked')) {
+						if (!!!value) {
+							value = '';
+						}
+						value += label.text();
+						
+						if (i < nb - 1) {
+							value += ', ';
+						}
+					}
+				});
+			} else if (input.hasClass('js-form-field-checkbox-list')) {
+				selectedInput = input.find('input[type=\'checkbox\']:checked');
+				nb = selectedInput.length;
+				
+				selectedInput.each(function (i) {
+					var t = $(this);
+					var label = t.closest('.js-form-field-checkbox-ctn').find('label');
+					if (t.prop('checked')) {
+						if (!!!value) {
+							value = '';
+						}
+						value += label.text();
+						
+						if (i < nb - 1) {
+							value += ', ';
+						}
+					}
+				});
 			} else {
 				value = input.val();
 			}
@@ -976,7 +1412,7 @@
 			label[emptyFx](labelClasses.empty);
 			label[notEmptyFx](labelClasses.notEmpty);
 		};
-		
+
 		var preview = function (e) {
 			var p = ctn.find(options.preview);
 			if (input.attr('type') == 'file') {
@@ -988,7 +1424,7 @@
 				}
 			}
 		};
-		
+
 		var tryValidate = function (value) {
 			try {
 				var constraints = {};
@@ -1001,7 +1437,7 @@
 						rulesOptions = $.extend(rulesOptions, options.rulesOptions[rule]);
 					}
 				});
-				
+
 				return w.validate.single(value, constraints, rulesOptions);
 			}
 			catch (ex) {
@@ -1010,6 +1446,10 @@
 			return false;
 		};
 		
+		var isValid = function () {
+			return !tryValidate(value());
+		};
+
 		var format = function () {
 			_.each(rules, function (rule) {
 				if (!!options.formatters[rule]) {
@@ -1017,29 +1457,33 @@
 				}
 			});
 		};
-		
+
 		var validate = function () {
 			var result = tryValidate(value());
-			
+
 			var errorFx = !result ? 'removeClass' : 'addClass';
 			var validFx = !result ? 'addClass' : 'removeClass';
 			var errorMessages = !result ? '' :
-				(options.onlyShowFirstError ? result[0] : result.join('<br />'));
+				(options.onlyShowFirstError ? result[0] : result.join('. '));
 			var inputClasses = getStateClasses(input);
 			var ctnClasses = getStateClasses(ctn);
 			var labelClasses = getStateClasses(label);
+			var inputFollowers = $(ctn.attr('data-input-error-followers'));
 			
+
 			input[errorFx](inputClasses.error);
 			input[validFx](inputClasses.valid);
-			
+			inputFollowers[errorFx](inputClasses.error);
+			inputFollowers[validFx](inputClasses.valid);
+
 			ctn[errorFx](ctnClasses.error);
 			ctn[validFx](ctnClasses.valid);
-			
+
 			label[errorFx](labelClasses.error);
 			label[validFx](labelClasses.valid);
-			
+
 			error.html(errorMessages);
-			
+
 			if (!result) {
 				// valid!
 				error.removeClass(getStateClass(error));
@@ -1052,27 +1496,19 @@
 			setStateClass('removeClass', 'valid');
 			return {
 				result: result,
-				field: self
+				field: self,
+				errorMessages: errorMessages
 			};
 		};
-		
+
 		var submitting = function (submitting) {
 			var submittingFx = submitting ? 'addClass' : 'removeClass';
 			var inputClasses = getStateClasses(input);
 			input[submittingFx](inputClasses.submitting);
 		};
-		
-		var init = function (o) {
-			options = $.extend(true, options, o);
-			ctn = $(options.container);
-			input = ctn.find(options.input);
-			error = ctn.find(options.error);
-			label = ctn.find(options.label);
-			states = ctn.find(options.states);
-			clear = ctn.find(options.clear);
-			progress = ctn.find(options.progress);
-			rules = _.filter((ctn.attr('data-rules') || '').split(/[|,\s]/g));
 
+		var attachEvents = function () {
+			var i;
 			if (!!options.formatEvents) {
 				input.on(options.formatEvents, format);
 			}
@@ -1085,11 +1521,73 @@
 			if (!!options.previewEvents) {
 				input.on(options.previewEvents, preview);
 			}
-			if (!!ctn.find('[selected]').length) {
-				checkEmptiness();
+			if (!!$.isFunction(options.onFocus)) {
+				i = input;
+				if (isList) {
+					i = input.find('input[type="radio"],input[type="checkbox"]');
+				} else if (ctn.hasClass('js-form-field-file')) {
+					i = ctn.find('.js-form-field-label-ctn');
+				}
+				i.on('focus', function () {
+					options.onFocus({
+						field: self
+					});
+				});
+			}
+			if (!!$.isFunction(options.onBlur)) {
+				i = input;
+				if (isList) {
+					i = input.find('input[type="radio"],input[type="checkbox"]');
+				}
+				i.on('blur', function () {
+					options.onBlur({
+						field: self
+					});
+				});
+			}
+			if (!!$.isFunction(options.onKeyup)) {
+				input.on('keyup', function () {
+					options.onKeyup({
+						field: self
+					});
+				});
+			}
+			if (!!$.isFunction(options.onKeydown)) {
+				input.on('keyup', function (e) {
+					options.onKeydown({
+						field: self,
+						e: e
+					});
+				});
+			}
+			if (!!$.isFunction(options.onChangeOrInput)) {
+				input.on('change input', function (e) {
+					options.onChangeOrInput({
+						field: self,
+						e: e
+					});
+				});
 			}
 		};
-		
+
+		/* jshint maxstatements:38 */
+		var init = function (o) {
+			options = $.extend(true, options, o);
+			ctn = $(options.container);
+			input = ctn.find(options.input);
+			error = ctn.find(options.error);
+			label = ctn.find(options.label);
+			states = ctn.find(options.states);
+			clear = ctn.find(options.clear);
+			progress = ctn.find(options.progress);
+			rules = _.filter((ctn.attr('data-rules') || '').split(/[|,\s]/g));
+			isList = input.hasClass('js-form-field-checkbox-list') ||
+				input.hasClass('js-form-field-radio-list');
+
+			attachEvents();
+			checkEmptiness();
+		};
+
 		self = {
 			init: init,
 			validate: validate,
@@ -1098,6 +1596,7 @@
 			focus: focus,
 			reset: reset,
 			preview: preview,
+			scrollTo: scrollTo,
 			checkEmptiness: checkEmptiness,
 			group: function () {
 				return options.group;
@@ -1121,11 +1620,21 @@
 			},
 			required: function () {
 				return !!~rules.indexOf('required');
+			},
+			isEmpty: function () {
+				return w.validate.isEmpty(value());
+			},
+			isValid: isValid,
+			getCtn: function () {
+				return ctn;
+			},
+			getInput: function () {
+				return input;
 			}
 		};
 		return self;
 	});
-	
+
 })(jQuery, window, document, window.moment);
 
 /**
@@ -1169,7 +1678,7 @@
 		var track = function (action, label, value) {
 			var cat = ctn.attr('data-ga-form-cat') || options.gaCat;
 			label = label || ctn.attr('data-ga-form-label') || options.gaLabel;
-			$.sendEvent('conversion', action, label, value);
+			$.sendEvent(cat, action, label, value);
 		};
 		
 		var reset = function () {
@@ -1232,8 +1741,7 @@
 			
 			if (!processData) {
 				data = new FormData(ctn[0]);
-			}
-			else {
+			} else {
 				$.each(ctn.serializeArray(), function () {
 					data[this.name] = this.value;
 				});
@@ -1281,6 +1789,10 @@
 			
 			if (isValid(results)) {
 				App.callback(options.onValid);
+				var cancel = App.callback(options.onBeforePost, [e]);
+				if (cancel === true) {
+					return w.pd(e);
+				}
 				if (!!options.post) {
 					post();
 				} else {
@@ -3061,10 +3573,10 @@
  *
  *  |- FLICKITY CTN : .js-auto-flickity-slider-ctn
  *  |    |- CELL-CTN : .js-auto-flickity-ctn
- *  |    |    |- CELL (REPEATED): .js-auto-flickity-item
+ *  |    |    |- CELL (REPEATED): .js-auto-flickity-cell
  *
  *  Requirements:
- *		- https://cdnjs.cloudflare.com/ajax/libs/flickity/1.1.2/flickity.pkgd.min.js
+ *		- https://cdnjs.cloudflare.com/ajax/libs/flickity/2.1.0/flickity.pkgd.min.js
  *		- Component Flickity.js
  *
  *  You can have more info on the options of Flickity at
@@ -3088,10 +3600,19 @@
 		initedClass: 'is-flickity-inited',
 		selectedClass: 'is-selected',
 
-		imagesLoaded: true
+		imagesLoaded: true,
+		accessibility: false
 	};
 
 	var flickities = [];
+	
+	var unpausePlayers = function () {
+		$.each(flickities, function (i, t) {
+			setTimeout(function () {
+				t.unpause();
+			}, 1500 + (i * 200));
+		});
+	};
 	
 	var onResize = function () {
 		$.each(flickities, function () {
@@ -3099,35 +3620,45 @@
 		});
 	};
 
-	var initAllSliders = function () {
-		page.find(o.sliderCtn).find(o.cellCtn).not('.' + o.initedClass).each(function () {
+	var initAllSliders = function (ctn) {
+		ctn.find(o.sliderCtn).find(o.cellCtn).not('.' + o.initedClass).each(function () {
 			var t = $(this);
 			var comp = App.components.create('flickity', o);
-			comp.init(t, page);
+			comp.init(t, ctn);
 			if (comp.isInited()) {
 				flickities.push(comp);
 			}
+			
+			setTimeout(function () {
+				comp.resize();
+			}, 500);
 		});
 	};
 	
 	var pageEnter = function (key, data) {
 		page = $(data.page.key());
-		initAllSliders();
+		initAllSliders(page);
+		unpausePlayers();
 	};
 	
-	var pageLeaving = function (key, data) {
-		if (!!data && !!data.canRemove) {
+	var pageLeave = function (key, data) {
+		if (data.canRemove) {
 			$.each(flickities, function () {
 				this.destroy();
 			});
 			flickities = [];
+		} else {
+			$.each(flickities, function () {
+				this.pause();
+			});
 		}
 		
 		page = $();
 	};
 
 	var onArticleEntering = function () {
-		initAllSliders();
+		initAllSliders(page);
+		unpausePlayers();
 	};
 	
 	var actions = function () {
@@ -3137,10 +3668,19 @@
 			},
 			page: {
 				enter: pageEnter,
-				leaving: pageLeaving
+				leaving: pageLeave
 			},
 			articleChanger: {
 				entering: onArticleEntering
+			},
+			siteLoader: {
+				finishing: unpausePlayers
+			},
+			popupTransition: {
+				beforeEnter: function (key, data) {
+					initAllSliders(data.page);
+					unpausePlayers();
+				}
 			}
 		};
 	};
@@ -3178,28 +3718,41 @@
 	var loaded = false;
 	var ids = 0;
 
-	var load = function () {
-		if (!loaded || !page) {
+	var load = function (ctn) {
+		if (!loaded || !ctn) {
 			return;
 		}
-		page.find(options.trigger).each(function () {
+		ctn.find(options.trigger).each(function () {
 			var t = $(this);
 			if (t.attr('id')) {
 				return;
 			}
 			var id = options.prefix + (++ids);
 			t.attr('id', id);
-			window.grecaptcha.render(id, {
+			var recaptchaId = window.grecaptcha.render(id, {
 				sitekey: t.attr('data-sitekey'),
 				callback: function (result) {
-					page.find(options.target).val(result);
+					ctn.find(options.target).val(result);
 					App.mediator.notify('recaptcha.updated', {
 						result: result,
 						lastTarget: t
 					});
 				}
 			});
+			t.data('recaptcha-id', recaptchaId);
 		});
+	};
+
+	var onForceUpdate = function () {
+		try {
+			if (!!window.grecaptcha) {
+				window.grecaptcha.reset();
+			} else {
+				App.log('Recaptcha Lib not found');
+			}
+		} catch (e) {
+			App.log('Recaptcha Force update fail with error');
+		}
 	};
 
 	var pageEnter = function (key, data) {
@@ -3208,16 +3761,16 @@
 		} else if (!!data.article) {
 			page = $(data.article);
 		}
-		load();
+		load(page);
 	};
 
 	var init = function () {
 		window.GoogleReCaptchaCallback = function () {
 			loaded = true;
-			load();
+			load(site);
 		};
 	};
-	
+
 	var actions = function () {
 		return {
 			page: {
@@ -3225,15 +3778,18 @@
 			},
 			articleChanger: {
 				enter: pageEnter
+			},
+			recaptcha: {
+				forceUpdate: onForceUpdate
 			}
 		};
 	};
-	
+
 	App.modules.exports('auto-invisible-recaptcha', {
 		init: init,
 		actions: actions
 	});
-	
+
 })(jQuery);
 
 /**
@@ -3298,13 +3854,13 @@
  *  Auto mailto
  */
 (function ($, global, undefined) {
-	
+
 	'use strict';
-	
+
 	var firstTime = true;
 	var site = $('#site');
 	var page = $('.page');
-	
+
 	var update = function (ctn) {
 		ctn.find('a[data-mailto]').each(function () {
 			var t = $(this);
@@ -3324,7 +3880,7 @@
 	var init = function () {
 		update(site);
 	};
-	
+
 	var actions = function () {
 		return {
 			page: {
@@ -3332,15 +3888,20 @@
 			},
 			articleChanger: {
 				enter: onArticleEnter
+			},
+			autoMailto: {
+				update: function (key, data) {
+					update(data.ctn);
+				}
 			}
 		};
 	};
-	
+
 	var AutoMailto = App.modules.exports('auto-mailto', {
 		init: init,
 		actions: actions
 	});
-	
+
 })(jQuery, window);
 
 /**
@@ -3695,6 +4256,32 @@
 	});
 	
 })(jQuery, window);
+
+/**
+ *  @author Deux Huit Huit
+ *
+ *  Auto print
+ *
+ */
+(function ($, undefined) {
+	
+	'use strict';
+	
+	var site = $('#site');
+	
+	var init = function () {
+		site.on(App.device.events.click, '.js-auto-print', function (e) {
+			// print is sync, so we need to delay it to get stats before hand
+			setTimeout(window.print, 10);
+			return window.pd(e);
+		});
+	};
+	
+	App.modules.exports('auto-print', {
+		init: init
+	});
+	
+})(jQuery);
 
 /**
  *  @author Deux Huit Huit
@@ -4325,7 +4912,11 @@
 			var aggregate = t.attr(AGGREGATE_ATTR);
 
 			if (!!commonAncestorSelector) {
-				scope = t.closest(commonAncestorSelector);
+				if (commonAncestorSelector == 'self') {
+					scope = t;
+				} else {
+					scope = t.closest(commonAncestorSelector);
+				}
 			}
 
 			if (!!scope.length) {
@@ -4365,7 +4956,7 @@
 				} else {
 					value = getPropertyValue(source.first(), withProperty);
 				}
-
+				
 				t.css(property, value);
 			}
 		}
@@ -4401,6 +4992,9 @@
 			},
 			articleChanger: {
 				enter: onPageEnter
+			},
+			autoSyncProperty: {
+				update: processAllItems
 			}
 		};
 	};
@@ -4978,6 +5572,97 @@
 })(jQuery);
 
 /**
+ * @author Deux Huit Huit
+ *
+ * Canonical Updater
+ *
+ * Auto update the meta rel=canonical with the actual url of the page throught all navigation
+ */
+(function ($, undefined) {
+	
+	'use strict';
+	
+	var win = $(window);
+	var canonicalList = {};
+	var metaElemDom = $();
+	
+	var init = function () {
+		//Create initial value
+		var data = '';
+		var metas = $('link[rel=canonical][href]', document);
+
+		if (metas.length === 0) {
+			App.log({args: ['No canonical meta found.'], fx: 'warn'});
+		} else if (metas.length != 1) {
+			App.log({args: ['Multiple canonical meta found.'], fx: 'error'});
+		}
+
+		metas.each(function (i, e) {
+			var t = $(this);
+			data = t.attr('href');
+
+			//Store Dom Element for future use
+			metaElemDom = t;
+		});
+
+		//Store initial data
+		canonicalList[document.location.pathname] = data;
+	};
+	
+	var onPageLoaded = function (key, data, e) {
+		if (data.data) {
+
+			var canonicalUrl = '';
+			
+			//Will keep the first found meta canonical href value
+			$(data.data).each(function (i, e) {
+				if ($(e).is('link')) {
+					var t = $(e);
+					if (t.attr('rel') && t.attr('rel') == 'canonical') {
+						canonicalUrl = t.attr('href');
+						return true;
+					}
+				}
+			});
+
+			if (!!!data.url) {
+				data.url = document.location.pathname;
+			}
+
+			canonicalList[data.url] = canonicalUrl;
+		}
+	};
+	
+	var onEnter = function (key, data, e) {
+		if (canonicalList[document.location.pathname]) {
+			//Update meta in dom
+			metaElemDom.attr('href', canonicalList[document.location.pathname]);
+		}
+	};
+	
+	var actions = function () {
+		return {
+			pages: {
+				loaded: onPageLoaded
+			},
+			page: {
+				enter: onEnter
+			},
+			articleChanger: {
+				loaded: onPageLoaded,
+				enter: onEnter
+			}
+		};
+	};
+	
+	var CanonicalUpdater = App.modules.exports('canonical-updater', {
+		init: init,
+		actions: actions
+	});
+	
+})(jQuery);
+
+/**
  *  @author Deux Huit Huit
  *
  *  Change state
@@ -5489,21 +6174,24 @@
 	var KD = 'keydown';
 	var TI = 'tabindex';
 	var root = $('html');
-	
+
+	var keydown = function (e) {
+		if (e.which === window.keys.tab) {
+			root.addClass(CLASS);
+			// This ignore is needed beacause of the module method structure. We should fix this.
+			/* jshint ignore:start */
+			doc.off(KD, keydown).one('click', click);
+			/* jshint ignore:end */
+			App.mediator.notify('keyboardNav.enabled');
+		}
+	};
+
 	var click = function (e) {
 		root.removeClass(CLASS);
 		doc.on(KD, keydown);
 		App.mediator.notify('keyboardNav.disabled');
 	};
-	
-	var keydown = function (e) {
-		if (e.which === window.keys.tab) {
-			root.addClass(CLASS);
-			doc.off(KD, keydown).one('click', click);
-			App.mediator.notify('keyboardNav.enabled');
-		}
-	};
-	
+
 	var init = function () {
 		doc.on(KD, keydown);
 	};
@@ -5515,10 +6203,11 @@
 		if (!data.item.is('.js-focusable')) {
 			return;
 		}
+		var stack = data.item.add(data.item.find('.js-focusable-child'));
 		if (data.trigger === 'after') {
-			data.item.removeAttr(TI);
+			stack.removeAttr(TI);
 		} else {
-			data.item.attr(TI, '-1');
+			stack.attr(TI, '-1');
 		}
 	};
 	
@@ -5678,6 +6367,59 @@
 		init: init
 	});
 	
+})(jQuery);
+
+/**
+ * @author Deux Huit Huit
+ *
+ */
+(function ($, undefined) {
+
+	'use strict';
+
+	var win = $(window);
+	var site = $('#site');
+	
+	var isLoading = false;
+	
+	var CLASS_LOADING = 'is-loading';
+	var CLASS_LOADED = 'is-loaded';
+
+	var load = function (key, data) {
+		if (!!$(data.item).length && !!data.url && !data.item.hasClass(CLASS_LOADING)) {
+			data.item.addClass(CLASS_LOADING);
+			
+			Loader.load({
+				url: data.url,
+				success: function () {
+					data.item.removeClass(CLASS_LOADING)
+						.addClass(CLASS_LOADED);
+					App.callback(data.successCallback);
+				},
+				error: function () {
+					data.item.removeClass(CLASS_LOADING);
+					App.console.log('Error loading async');
+				},
+				giveup: function (e) {
+					data.item.removeClass(CLASS_LOADING);
+					App.console.log('Gave up loading async');
+				}
+			});
+		}
+	};
+
+	var actions = function () {
+		return {
+			loadAsync: {
+				load: load
+			}
+		};
+	};
+
+	App.modules.exports('load-async', {
+		actions: actions
+	});
+
 })(jQuery);
 
 /**
@@ -6172,6 +6914,11 @@
 				loadfatalerror: function (key, data) {
 					defaultLoadFatalError(key, data);
 				}
+			},
+			articleChanger: {
+				loaderror: function (key, data) {
+					defaultLoadFatalError(key, data);
+				}
 			}
 		};
 	};
@@ -6355,6 +7102,72 @@
 	var POPUP_SELECTOR = '.js-popup';
 	var BG_SELECTOR = '.js-popup-bg';
 	var RESET_ON_CLOSE_ATTR = 'data-popup-reset-on-close';
+	var FOCUSABLE = [
+		'a[href]',
+		'area[href]',
+		'input:not([disabled])',
+		'select:not([disabled])',
+		'textarea:not([disabled])',
+		'button:not([disabled])',
+		'iframe, object, embed',
+		'[tabindex], [contenteditable]'
+	].join(',');
+	
+	var focusable = function (popup) {
+		return $(FOCUSABLE).filter(function () {
+			var t = $(this);
+			// element not in popup or is background
+			return !t.closest(popup).length || t.is(BG_SELECTOR);
+		});
+	};
+	
+	var restoreFocusable = function (i, e) {
+		var t = $(e);
+		var tab = t.data('acc-tabindex');
+		if (tab) {
+			t.attr('tabindex', tab);
+		} else {
+			t.removeAttr('tabindex');
+		}
+	};
+	
+	var keyUp = function (e) {
+		if (e.which === window.keys.escape) {
+			$(this).find('.js-popup-close-btn').click();
+		}
+	};
+	
+	var removeFocusable = function (i, e) {
+		var t = $(e);
+		var tab = t.attr('tabindex');
+		if (tab === '-1') {
+			return;
+		}
+		t.data('acc-tabindex', tab || undefined);
+		t.attr('tabindex', '-1');
+	};
+	
+	var a11y = function (popup) {
+		if (!popup || !popup.length) {
+			return;
+		}
+		// Disable focus for accessibility
+		focusable(popup).each(removeFocusable);
+		// Re enable focus for accessibility
+		popup.find(FOCUSABLE).each(restoreFocusable);
+		popup.on('keyup', keyUp);
+	};
+	
+	var a11yReset = function (popup) {
+		if (!popup || !popup.length) {
+			return;
+		}
+		// Re enable focus for accessibility
+		focusable(popup).each(restoreFocusable);
+		// Disable focus for accessibility
+		popup.find(FOCUSABLE).each(restoreFocusable);
+		popup.off('keyup', keyUp);
+	};
 	
 	var toggleAnimInited = function (action, popup) {
 		popup.addClass('noanim');
@@ -6395,6 +7208,7 @@
 			});
 			// do the anim
 			toggleAnim('on', popup);
+			a11y(popup);
 		}
 	};
 	
@@ -6421,6 +7235,7 @@
 			
 			//do the anim
 			toggleAnim('off', popup);
+			a11yReset(popup);
 		}
 	};
 	
@@ -6435,6 +7250,10 @@
 		}
 	};
 	
+	var init = function () {
+		a11y($(POPUP_SELECTOR));
+	};
+	
 	var actions = function () {
 		return {
 			popup: {
@@ -6446,7 +7265,208 @@
 	};
 	
 	App.modules.exports('popup', {
-		actions: actions
+		actions: actions,
+		init: init
+	});
+	
+})(jQuery);
+
+/**
+ *  @author Deux Huit Huit
+ *
+ *  Rating module
+ *
+ */
+(function ($, undefined) {
+	
+	'use strict';
+	var win = $(window);
+	var rateList = {};
+	var SEL = '.js-rate-it';
+	var URL_ATTR = 'data-rating-url';
+	var CAT_ATTR = 'data-rating-categories';
+	var DELAY = App.debug() ? 3000 : 10000;
+	var scope = $();
+	var pageEnterTimeout = 0;
+	
+	var rate = function () {
+		var url = scope.attr(URL_ATTR);
+		if (!url) {
+			return;
+		}
+		var path = document.location.pathname;
+		if (!!rateList[path]) {
+			return;
+		}
+		var key = document.location.protocol + '//' + document.location.hostname + path;
+		var data = {
+			'fields[0][key]': key,
+			'fields[0][tag]': '',
+			'action[rate]': ''
+		};
+		var cats = (scope.attr(CAT_ATTR) || '').split(',');
+		$.each(cats, function (i, c) {
+			if (!c) {
+				return;
+			}
+			i++;
+			data['fields[' + i + '][key]'] = key;
+			data['fields[' + i + '][tag]'] = c;
+		});
+		rateList[path] = true;
+		window.Loader.load({
+			url: url,
+			type: 'POST',
+			data: data,
+			error: function (err) {
+				App.log(err);
+				rateList[path] = false;
+			},
+			success: function () {
+				rateList[path] = true;
+			}
+		});
+	};
+	
+	var onEnter = function (key, data, e) {
+		if (!!data.page) {
+			scope = $(data.page.key()).find(SEL);
+		} else if (!!data.article) {
+			scope = $(data.article).find(SEL);
+		} else {
+			scope = $();
+		}
+		clearTimeout(pageEnterTimeout);
+		pageEnterTimeout = setTimeout(rate, DELAY);
+	};
+	
+	var actions = {
+		page: {
+			enter: onEnter
+		},
+		articleChanger: {
+			enter: onEnter
+		}
+	};
+	
+	var Rating = App.modules.exports('rating', {
+		actions: function () {
+			return actions;
+		}
+	});
+	
+})(jQuery);
+
+/**
+ *  @author Deux Huit Huit
+ *
+ *  Recommendations module
+ *
+ */
+(function ($, undefined) {
+	
+	'use strict';
+	var win = $(window);
+	var rateList = {};
+	var SEL = '.js-recommend-ctn';
+	var CON = '.js-recommend-content';
+	var TEM = '.js-recommend-template';
+	var RES = '.js-recommend-results';
+	var CAT_ATTR = 'data-recommend-categories';
+	var GRP_ATTR = 'data-recommend-group';
+	var DELAY = App.debug() ? 1000 : 3000;
+	var scope = $();
+	var pageEnterTimeout = 0;
+	var rootUrl = document.location.protocol + '//' + document.location.host;
+	
+	var insureArray = function (a) {
+		return $.isArray(a) ? a : [a];
+	};
+	
+	var createTemplatingObject = function (hit) {
+		var category = !!hit.category ? insureArray(hit.category) : [];
+		var categoryHandle = !!hit.categoryHandle ? insureArray(hit.categoryHandle) : [];
+		var links = category;
+		var linksHandle = categoryHandle;
+		var url = hit.categoryUrl;
+		return {
+			title: !!hit.title ? hit.title : '',
+			url: hit.url.replace(rootUrl, ''),
+			links: !url ? [] : _.map(links, function (link, i) {
+				return {
+					url: url + linksHandle[i],
+					value: link
+				};
+			}),
+			date: !!hit.date ? hit.date : '',
+			author: !!hit.author ? hit.author : '',
+			img: !!hit.img ? hit.img : '',
+			imgSrc: !!hit.imgSrc ? hit.imgSrc : '',
+			imgJitFormat: !!hit.imgJitFormat ? hit.imgJitFormat : ''
+		};
+	};
+	
+	var comAlgolia = App.components.create('algolia-search', {
+		resultsCtnSelector: RES,
+		resultsContentSelector: CON,
+		resultsItemTemplateSelector: TEM,
+		algoliaAttributesToRetrieve: [
+			'title',
+			'url',
+			'hightlightedContent',
+			'category',
+			'categoryHandle',
+			'categoryUrl',
+			'img',
+			'imgJitFormat',
+			'imgSrc',
+			'rating',
+			'whitelist',
+			'blacklist'
+		].join(','),
+		algoliaAttributesToHighlight: '',
+		gaCat: null, // No analytics
+		recommendCallback: function (resultContent, content, o, val) {
+			if (!content.nbHits && !App.debug()) {
+				resultContent.closest(SEL).remove();
+			}
+			
+			App.modules.notify('recommendations.searchCompleted');
+		},
+		onCreateResultsTemplatingObject: createTemplatingObject
+	});
+	
+	var load = function () {
+		var cats = _.filter((scope.attr(CAT_ATTR) || '').split(','));
+		comAlgolia.init(scope);
+		comAlgolia.recommend(cats, GRP_ATTR);
+	};
+	
+	var onEnter = function (key, data, e) {
+		if (!!data.page) {
+			scope = $(data.page.key).find(SEL);
+		} else if (!!data.article) {
+			scope = $(data.article).find(SEL);
+		} else {
+			scope = $();
+		}
+		clearTimeout(pageEnterTimeout);
+		pageEnterTimeout = setTimeout(load, DELAY);
+	};
+	
+	var actions = {
+		page: {
+			enter: onEnter
+		},
+		articleChanger: {
+			enter: onEnter
+		}
+	};
+	
+	var Recommendations = App.modules.exports('recommendations', {
+		actions: function () {
+			return actions;
+		}
 	});
 	
 })(jQuery);
@@ -6827,6 +7847,9 @@
 			},
 			page: {
 				enter: onPageEnter
+			},
+			articleChanger: {
+				enter: onPageEnter
 			}
 		};
 	};
@@ -6849,37 +7872,146 @@
  *      -pad : Add/remove padding-right scrollbar size fix
  *      -right : Add/remove right scrollbar size fix
  *      -margin : Add/remove margin-right scrollbar size fix
+
+ *  Strategies
+ *      You can pass a strategy in the data object when notifying site addScroll/removeScroll
+ *      - hideOverflow (default): Add css to limit the overflow of html and body
+ *      - preventEvent: Blocks mousewheel, swipe, and some keys events to disable
+ *        scrolling without changing the css
+
+ *  Scrolling zone
+ *      For the preventEvent strategy, it is possible to have a scrolling zone
+ *      where the events wont be block if the zone is scrollable
  */
+
 (function ($, undefined) {
 
 	'use strict';
 	
 	var win = $(window);
 	var html = $('html');
+
+	var selectors = {
+		scrollingZone: '.js-scrolling-zone',
+		scrollingZoneContent: '.js-scrolling-zone-content'
+	};
+
+	var strategies = {
+		preventEvent: {
+			add: function () {
+				if (window.removeEventListener) {
+					window.removeEventListener('DOMMouseScroll', preventDefault, false);
+				}
+				window.onmousewheel = document.onmousewheel = null;
+				window.onwheel = null;
+				window.ontouchmove = null;
+				document.onkeydown = null;
+			},
+			remove: function () {
+				if (window.addEventListener) {// older FF
+					window.addEventListener('DOMMouseScroll', preventDefault, false);
+				}
+				window.onwheel = preventDefault; // modern standard
+				window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
+				window.ontouchmove = preventDefault; // mobile
+				document.onkeydown = preventDefaultForScrollKeys;
+			}
+		},
+		hideOverflow: {
+			add: function () {
+				html.removeClass('no-scroll');
+				fixScroll(0);
+			},
+			remove: function () {
+				if (!html.hasClass('no-scroll')) {
+					var x = win.width();
+					html.addClass('no-scroll');
+					fixScroll(win.width() - x);
+				}
+			}
+		}
+	};
 	
+	var keys = {
+		ArrowDown: true,
+		ArrowUp: true,
+		End: true,
+		Home: true,
+		PageDown: true,
+		PageUp: true
+	};
+
 	var fixScroll = function (value) {
 		$('.js-fix-scroll-pad').css({paddingRight: value || ''});
 		$('.js-fix-scroll-right').css({right: value || ''});
 		$('.js-fix-scroll-margin').css({marginRight: value || ''});
 	};
-	
-	var addScroll = function () {
-		html.removeClass('no-scroll');
-		fixScroll(0);
+
+	var getWheelDirection = function (e) {
+		var delta = null;
+		var direction = false;
+
+		if (e.wheelDelta) {
+			delta = e.wheelDelta / 60;
+		} else if (e.detail) {
+			delta = -e.detail / 2;
+		}
+		if (delta !== null) {
+			direction = delta > 0 ? 'up' : 'down';
+		}
+		return direction;
 	};
-	
-	var removeScroll = function () {
-		if (!html.hasClass('no-scroll')) {
-			var x = win.width();
-			html.addClass('no-scroll');
-			fixScroll(win.width() - x);
+
+	var preventDefault = function (e) {
+		var scrollingZone = $(e.target).closest(selectors.scrollingZone);
+		var shouldPrevent = false;
+		
+		if (scrollingZone.length > 0) {
+			var scrollingZoneHeight = scrollingZone.height() || 0;
+			var scrollingZoneContent = scrollingZone.find(selectors.scrollingZoneContent);
+			var scrollingZoneContentHeight = scrollingZoneContent.height() || 0;
+			var scrollingStartOffset = scrollingZone.offset().top;
+			var scrollingDistanceTotal = scrollingZoneContentHeight - scrollingZoneHeight;
+			var scrollingDistance = -(scrollingZoneContent.offset().top - scrollingStartOffset);
+			var direction = getWheelDirection(e);
+
+			if (scrollingDistanceTotal <= 0 ||
+				direction === 'down' && scrollingDistance === scrollingDistanceTotal ||
+				direction === 'up' && scrollingDistance === 0) {
+				shouldPrevent = true;
+			}
+		}
+		else {
+			shouldPrevent = true;
+		}
+		if (shouldPrevent) {
+			e = e || window.event;
+			if (e.preventDefault) {
+				e.preventDefault();
+			}
+			e.returnValue = false;
 		}
 	};
-	
-	var init = function () {
-		
+
+	var preventDefaultForScrollKeys = function (e) {
+		if (keys[e.key]) {
+			preventDefault(e);
+			return false;
+		}
 	};
-	
+
+	var getStrategy = function (data) {
+		return data && data.strategy ? data.strategy : 'hideOverflow';
+	};
+
+	var addScroll = function (key, data) {
+		strategies[getStrategy(data)].add();
+	};
+
+	var removeScroll = function (key, data) {
+		strategies[getStrategy(data)].remove();
+	};
+
 	var actions = function () {
 		return {
 			site: {
@@ -6890,7 +8022,6 @@
 	};
 
 	App.modules.exports('siteScroll', {
-		init: init,
 		actions: actions
 	});
 	
@@ -7051,14 +8182,33 @@
 
 	'use strict';
 	
-	var resetTab = function () {
-		$('.js-tab-reset').focus();
+	var tabReset = $('.js-tab-reset');
+	var lastFocus = $();
+	
+	var resetTab = function (item) {
+		item.focus();
+	};
+	
+	var onPageEnter = function (key, data) {
+		var p = $(data.page.key());
+		
+		if (p.hasClass('js-tab-reset-alt')) {
+			lastFocus = $(document.activeElement);
+			resetTab(p);
+		} else {
+			if (lastFocus.length && lastFocus.is(':visible')) {
+				resetTab(lastFocus);
+			} else {
+				resetTab(tabReset);
+			}
+			lastFocus = $();
+		}
 	};
 	
 	var actions = function () {
 		return {
 			page: {
-				enter: resetTab
+				enter: onPageEnter
 			}
 		};
 	};
@@ -7491,10 +8641,9 @@
 		
 		if (currentPageRoute === '') {
 			triggerFirstFragmentChange = true;
-		}
-		if (currentPageRoute !== '') {
+		} else {
 			url = url + currentPageFragment;
-		
+
 			if (!isPopingState) {
 				historyPush(newRoute + currentPageFragment);
 			}
@@ -7517,14 +8666,19 @@
 	};
 	
 	var onPageEntered = function (key, data, e) {
+		var handled = false;
 		if (triggerFirstFragmentChange) {
-			//Detect if we have a fragment
+			// Detect if we have a fragment
 			var href = window.location.href;
 			var curPageHref = window.location.protocol + '//' +
 				window.location.host + currentPageRoute;
 			currentPageFragment = href.substring(curPageHref.length);
-			App.mediator.notify('page.fragmentChanged', currentPageFragment);
-		} else {
+			App.mediator.notify('page.fragmentChanged', currentPageFragment, function () {
+				handled = true;
+			});
+		}
+		
+		if (!handled) {
 			$.sendPageView({page: data.route});
 		}
 	};
@@ -7551,18 +8705,16 @@
 	};
 	
 	var generateQsString = function () {
-		var result = '';
+		var result = [];
 		
 		$.each(currentQsFragment, function (prop, value) {
+			prop = window.encodeURIComponent(prop);
 			if (!!value) {
-				if (!!result.length) {
-					result += '&';
-				}
-				result += (prop + '=' + value);
+				result.push(prop + '=' + window.encodeURIComponent(value));
 			}
 		});
 		
-		return result;
+		return result.join('&');
 	};
 	
 	var onUpdateQsFragment = function (key, options, e) {
@@ -7786,7 +8938,7 @@
 		};
 	};
 
-	App.modules.exports('auto-cycle', {
+	App.modules.exports('user-id', {
 		init: init,
 		actions: actions
 	});
@@ -7884,7 +9036,7 @@
 	var body = $('body');
 	var sitePages = $('#site-pages');
 	
-	var DEFAULT_DELAY = 350;
+	var DEFAULT_DELAY = 90;
 			
 	var beginCompleted = false;
 	var loadCompleted = false;
@@ -7899,23 +9051,32 @@
 		var domEnteringPage = $(enteringPage.key());
 		var domLeavingPage = $(leavingPage.key());
 		
-		//Leave the current page
+		// Leave the current page
 		leavingPage.leave(data.leaveCurrent, {
 			canRemove: true
 		});
 		
+		// Make the page hidden for assistive technology
+		domLeavingPage.attr('aria-hidden', 'true').attr('role', 'presentation');
+		domEnteringPage.removeAttr('aria-hidden').removeAttr('role');
+		
+		// Add body class
 		body.addClass(enteringPage.key().substring(1));
-		//Notify intering page
+		
+		// Notify entering page
 		App.modules.notify('page.entering', {page: enteringPage, route: data.route});
 		
-		//Animate leaving and start entering after leaving animation
-		//Need a delay for get all Loaded
+		// Animate leaving and start entering after leaving animation
+		// Need a delay for get all Loaded
 		domEnteringPage.ready(function () {
+			domLeavingPage.hide();
 			domEnteringPage.css({opacity: 1, display: 'block'});
+			win.scrollTop(0);
 			enteringPage.enter(data.enterNext);
-			
+
 			bgTransition.fadeOut(DEFAULT_DELAY).promise().then(function () {
 				App.modules.notify('transition.end', {page: enteringPage, route: data.route});
+				App.mediator.notify('site.addScroll');
 			});
 			
 			App.callback(callback);
@@ -7941,9 +9102,6 @@
 				canRemove: true
 			});
 			
-			win.scrollTop(0);
-		
-			domLeavingPage.hide();
 			beginCompleted = true;
 			
 			if (loadCompleted) {
@@ -7973,7 +9131,7 @@
 /**
  * @author Deux Huit Huit
  *
- * Default page transition
+ * Popup page transition
  *
  */
 (function ($, undefined) {
@@ -7987,7 +9145,7 @@
 	var bgTransitionPopup = $('#bg-transition-popup');
 	var DEFAULT_DELAY = 350;
 	var POPUP_SELECTOR = '.js-popup';
-			
+
 	var beginCompleted = false;
 	var loadCompleted = false;
 
@@ -8003,21 +9161,23 @@
 		
 		var popup = domEnteringPage.find(POPUP_SELECTOR);
 		
-		//Leave the current page
-		leavingPage.leave(
-			data.leaveCurrent,
-			{
-				canRemove: false
-			}
-		);
+		// Leave the current page
+		leavingPage.leave(data.leaveCurrent, {
+			canRemove: false
+		});
 		
+		// Make the page hidden for assistive technology
+		domLeavingPage.attr('aria-hidden', 'true').attr('role', 'presentation');
+		domEnteringPage.removeAttr('aria-hidden').removeAttr('role');
+		
+		// Add body class
 		body.addClass(enteringPage.key().substring(1));
 		
-		//Notify intering page
+		// Notify entering page
 		App.modules.notify('page.entering', {page: enteringPage, route: data.route});
 		
-		//Animate leaving and start entering after leaving animation
-		//Need a delay for get all Loaded
+		// Animate leaving and start entering after leaving animation
+		// Need a delay for get all Loaded
 		domEnteringPage.ready(function () {
 			// close popup if already opened
 			if (popup.hasClass('is-popup-poped')) {
@@ -8379,7 +9539,8 @@
 (function ($) {
 	'use strict';
 	
-	var lang = $('html').attr('lang');
+	var html = $('html');
+	var lang = html.attr('lang');
 	
 	var log = function () {
 		var args = [];
@@ -8391,7 +9552,7 @@
 			}
 			args.push(a);
 		});
-		App.log({args: ['%cga(' + args.join(',') + ');', 'color:navy']});
+		App.log({args: ['%cga(' + args.join(',') + ');', 'color:cornflowerblue']});
 	};
 	
 	var getGa = function () {
@@ -8447,7 +9608,11 @@
 		if ($.isFunction($.formatLocation)) {
 			args.location = $.formatLocation(args.location);
 		}
-		ga('send', 'pageview', args);
+		if (!html.filter('[data-no-ga]').length) {
+			ga('send', 'pageview', args);
+		} else {
+			log('sendPageView bypassed by attribute');
+		}
 	};
 	
 	/* jshint maxparams:6 */
@@ -8455,41 +9620,67 @@
 		var ga = getGa();
 		cat = cat || '';
 		options = cat.options || options || {nonInteraction: 1};
-		ga('send', 'event', cat, action, label, value, options, category);
+		if (!html.filter('[data-no-ga]').length) {
+			ga('send', 'event', cat, action, label, value, options, category);
+		} else {
+			log('sendEvent bypassed by attribute');
+		}
 	};
 	/* jshint maxparams:5 */
 	
+	var getTextValue = function (t, key) {
+		return t.attr(key) || undefined;
+	};
+
 	$.fn.sendClickEvent = function (options) {
 		options = options || {};
 		var t = $(this).eq(0);
 		var send = true;
-		if (!options.action) {
-			options.action = 'click';
-		}
-		if (!options.label) {
-			options.label = $.trim(t.text());
-		}
-		var o = $.extend({}, options, {
-			cat: t.attr('data-ga-cat') || undefined,
-			category: t.attr('data-ga-category') || undefined,
-			action: t.attr('data-ga-action') || undefined,
-			label: t.attr('data-ga-label') || undefined,
-			value: parseInt(t.attr('data-ga-value'), 10) || undefined
-		});
-		if (!o.cat) {
-			App.log({fx: 'err', args: 'No ga-cat found. Cannot continue.'});
+
+		var setMinimalOptions = function () {
+			if (!options.action) {
+				options.action = 'click';
+			}
+
+			if (!options.label) {
+				options.label = $.trim(t.text());
+			}
+
+			if (!!options.event) {
+				if (!options.event.gaHandled) {
+					options.event.gaHandled = true;
+				} else {
+					send = false;
+				}
+			}
+		};
+
+		setMinimalOptions();
+		if (!send) {
 			return;
 		}
-		if (!o.label) {
-			App.log({fx: 'err', args: 'No ga-label found. Reverting to text'});
-		}
-		if (!!options.event) {
-			if (!options.event.gaHandled) {
-				options.event.gaHandled = true;
-			} else {
+		
+		var o = $.extend({}, options, {
+			cat: getTextValue(t, 'data-ga-cat'),
+			category: getTextValue(t, 'data-ga-category'),
+			action: getTextValue(t, 'data-ga-action'),
+			label: getTextValue(t, 'data-ga-label'),
+			value: parseInt(t.attr('data-ga-value'), 10) || undefined
+		});
+
+		var detectError = function () {
+			if (!o.cat) {
+				App.log({fx: 'err', args: 'No ga-cat found. Cannot continue.'});
 				send = false;
 			}
-		}
+			
+			if (!o.label) {
+				App.log({fx: 'warn', args: 'No ga-label found. Reverting to text'});
+			}
+		};
+
+		detectError();
+		
 		if (!!send) {
 			$.sendEvent(o.cat, o.action, o.label, o.value, undefined, o.category);
 		}
@@ -8508,33 +9699,47 @@
 		var downloadLinks = _.map(downloadExtensions, function (ext) {
 			return 'a[href$=".' + ext + '"], ';
 		}).join('') + 'a[href$="?dl"], a[download]';
-		var notAlreadyTagged = ':not([data-ga-cat])';
-		$('#site').on(App.device.events.click, '[data-ga-cat]', function (e) {
-			$(this).sendClickEvent({
-				event: e
-			});
-		})
-		.on(App.device.events.click, externalLinks + notAlreadyTagged, function (e) {
+		var getRefLinkLabel = function (t) {
+			var url = $(t).attr('href');
+			if (!url) {
+				return undefined;
+			}
+			url = url.replace(/^mailto:/, '');
+			url = url.replace(/^tel:/, '');
+			url = url.replace(origin, '');
+			return url;
+		};
+		$('#site')
+		.on(App.device.events.click, externalLinks, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-external',
+				label: getRefLinkLabel(this),
 				event: e
 			});
 		})
-		.on(App.device.events.click, downloadLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, downloadLinks, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-download',
+				label: getRefLinkLabel(this),
 				event: e
 			});
 		})
-		.on(App.device.events.click, mailtoLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, mailtoLinks, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-mailto',
+				label: getRefLinkLabel(this),
 				event: e
 			});
 		})
-		.on(App.device.events.click, telLinks + notAlreadyTagged, function (e) {
+		.on(App.device.events.click, telLinks, function (e) {
 			$(this).sendClickEvent({
 				cat: 'link-tel',
+				label: getRefLinkLabel(this),
+				event: e
+			});
+		})
+		.on(App.device.events.click, '[data-ga-cat]', function (e) {
+			$(this).sendClickEvent({
 				event: e
 			});
 		});
