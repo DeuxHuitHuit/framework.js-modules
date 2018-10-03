@@ -1,4 +1,4 @@
-/*! framework.js-modules - v1.10.0 - build 359 - 2018-09-06
+/*! framework.js-modules - v1.10.2 - build 361 - 2018-10-02
  * https://github.com/DeuxHuitHuit/framework.js-modules
  * Copyright (c) 2018 Deux Huit Huit (https://deuxhuithuit.com/);
  * MIT *//**
@@ -1010,7 +1010,7 @@
 			slider = item;
 			scope = s;
 
-			if (slider.find(o.cellSelector).length > 1) {
+			if (slider.find(o.cellSelector).length === 1) {
 
 				var flickOptions = flickityOptions();
 
@@ -1083,9 +1083,12 @@
 				}
 				
 				App.callback(o.inited);
-			} else if (slider.find(o.cellSelector.length == 1)) {
+			} else if (slider.find(o.cellSelector).length === 1) {
 				slider.addClass(o.abortedClass);
 				slider.find(o.cellSelector).addClass(o.selectedClass);
+				App.callback(o.aborted);
+			} else {
+				App.log('No flickity found or multiple flickity in the scope');
 				App.callback(o.aborted);
 			}
 		};
@@ -5114,9 +5117,9 @@
 	var ATTR_PREFIX = 'data-toggle-class-on-scroll-';
 
 	var ATTR_ADD_BEFORE = ATTR_PREFIX + 'add-before';
-	var ATTR_REM_BEFORE = ATTR_PREFIX + 'remove-before';
+	var ATTR_REM_BEFORE = ATTR_PREFIX + 'rem-before';
 	var ATTR_ADD_AFTER = ATTR_PREFIX + 'add-after';
-	var ATTR_REM_AFTER = ATTR_PREFIX + 'remove-after';
+	var ATTR_REM_AFTER = ATTR_PREFIX + 'rem-after';
 	var ATTR_REF_COMMON_ANCESTOR = ATTR_PREFIX + 'ref-common-ancestor';
 	var ATTR_REF = ATTR_PREFIX + 'ref';
 	var ATTR_SCREEN_OFFSET = ATTR_PREFIX + 'screen-offset';
