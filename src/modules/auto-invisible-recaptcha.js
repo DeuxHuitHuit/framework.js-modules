@@ -11,6 +11,9 @@
  *    On the button
  *    <add class="js-recaptcha" />
  *    <set data-sitekey="{/data/params/recaptcha-sitekey}" />
+ *    Optional
+ *    <set data-size="invisible" />
+ *    <set data-badge="inline" />
  */
 (function ($, undefined) {
 	'use strict';
@@ -25,35 +28,45 @@
 	var loaded = false;
 	var ids = 0;
 
-	var load = function (ctn) {
-		if (!loaded || !ctn) {
+	var load = function () {
+		if (!loaded || !page) {
 			return;
 		}
-		ctn.find(options.trigger).each(function () {
+		page.find(options.trigger).each(function () {
 			var t = $(this);
 			if (t.attr('id')) {
 				return;
 			}
 			var id = options.prefix + (++ids);
 			t.attr('id', id);
-			var recaptchaId = window.grecaptcha.render(id, {
+			var wid = window.grecaptcha.render(id, {
 				sitekey: t.attr('data-sitekey'),
+				badge: t.attr('data-badge') || 'bottomright',
 				callback: function (result) {
-					ctn.find(options.target).val(result);
+					page.find(options.target).val(result);
 					App.mediator.notify('recaptcha.updated', {
 						result: result,
 						lastTarget: t
 					});
 				}
 			});
-			t.data('recaptcha-id', recaptchaId);
+			t.data(options.prefix, wid);
 		});
 	};
 
-	var onForceUpdate = function () {
+	var resolveCaptchaId = function (data) {
+		var id = (!!data && data.id) || undefined;
+		if (!id && !!data && data.ctn) {
+			id = data.ctn.find(options.trigger).data(options.prefix);
+		}
+		return id;
+	};
+
+	var onForceUpdate = function (key, data) {
 		try {
+			var id = resolveCaptchaId(data);
 			if (!!window.grecaptcha) {
-				window.grecaptcha.reset();
+				window.grecaptcha.reset(id);
 			} else {
 				App.log('Recaptcha Lib not found');
 			}
@@ -62,19 +75,38 @@
 		}
 	};
 
+	var onExecute = function (key, data) {
+		try {
+			var id = resolveCaptchaId(data);
+			if (!!window.grecaptcha) {
+				if (!window.grecaptcha.getResponse(id)) {
+					window.grecaptcha.execute(id);
+					return true;
+				} else {
+					App.log('Recaptcha already executed');
+				}
+			} else {
+				App.log('Recaptcha Lib not found');
+			}
+		} catch (e) {
+			App.log('Recaptcha executed with error');
+		}
+		return false;
+	};
+
 	var pageEnter = function (key, data) {
 		if (!!data.page) {
 			page = $(data.page.key());
 		} else if (!!data.article) {
 			page = $(data.article);
 		}
-		load(page);
+		load();
 	};
 
 	var init = function () {
 		window.GoogleReCaptchaCallback = function () {
 			loaded = true;
-			load(site);
+			load();
 		};
 	};
 
@@ -87,7 +119,8 @@
 				enter: pageEnter
 			},
 			recaptcha: {
-				forceUpdate: onForceUpdate
+				forceUpdate: onForceUpdate,
+				execute: onExecute
 			}
 		};
 	};
