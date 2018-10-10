@@ -22,17 +22,19 @@
 	var options = {
 		target: '.js-recaptcha-response',
 		trigger: '.js-recaptcha',
-		prefix: 'g-recaptcha-'
+		prefix: 'g-recaptcha-',
+		container: 'form'
 	};
 	var page = null;
 	var loaded = false;
 	var ids = 0;
 
-	var load = function () {
-		if (!loaded || !page) {
+	var load = function (ctx) {
+		ctx = ctx || page;
+		if (!loaded || !ctx) {
 			return;
 		}
-		page.find(options.trigger).each(function () {
+		ctx.find(options.trigger).each(function () {
 			var t = $(this);
 			if (t.attr('id')) {
 				return;
@@ -43,7 +45,7 @@
 				sitekey: t.attr('data-sitekey'),
 				badge: t.attr('data-badge') || 'bottomright',
 				callback: function (result) {
-					page.find(options.target).val(result);
+					t.closest(options.container).find(options.target).val(result);
 					App.mediator.notify('recaptcha.updated', {
 						result: result,
 						lastTarget: t
@@ -103,10 +105,24 @@
 		load();
 	};
 
+	var resolveTriggersNotInPage = function () {
+		return site.find(options.trigger).filter(function (i, t) {
+			// Keep only those who are not in a .page element
+			return !$(t).closest('.page').length;
+		}).map(function (i, t) {
+			// Return the parent of the container of each object
+			// The values NEEDS to be a DOM Element, not a jQuery object, for some reasons
+			return $(t).closest(options.container).get(0);
+		});
+	};
+
 	var init = function () {
 		window.GoogleReCaptchaCallback = function () {
 			loaded = true;
+			// Trigger at page level
 			load();
+			// Trigger for not in page
+			load(resolveTriggersNotInPage());
 		};
 	};
 
