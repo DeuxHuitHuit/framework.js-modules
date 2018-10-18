@@ -19,7 +19,7 @@
   "keywords": [],
   "dependencies": {},
   "devDependencies": {
-    "grunt": ">=1.0.3",
+    "grunt": "~1.0.3",
     "grunt-contrib-uglify": "~4.0.0",
     "grunt-contrib-jshint": "~2.0.0",
     "grunt-contrib-concat": "~1.0.1",
