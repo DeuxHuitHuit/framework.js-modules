@@ -18,6 +18,7 @@
 (function ($, undefined) {
 	'use strict';
 
+	var html = $('html');
 	var site = $('#site');
 	var options = {
 		target: '.js-recaptcha-response',
@@ -44,6 +45,7 @@
 			var wid = window.grecaptcha.render(id, {
 				sitekey: t.attr('data-sitekey'),
 				badge: t.attr('data-badge') || 'bottomright',
+				hl: html.attr('lang'),
 				callback: function (result) {
 					t.closest(options.container).find(options.target).val(result);
 					App.mediator.notify('recaptcha.updated', {
