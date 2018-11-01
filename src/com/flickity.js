@@ -30,7 +30,9 @@
 			selectedClass: 'is-selected',
 			seenClass: 'is-seen',
 
-			dataAttrPrefix: 'flickity'
+			dataAttrPrefix: 'flickity',
+			
+			aborted: null   //Aborted callback
 		};
 
 		var o = $.extend({}, defaultOptions, options);
