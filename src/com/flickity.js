@@ -69,15 +69,13 @@
 			if (!d) {
 				return $();
 			}
-			var currentSlide = d.selectedIndex;
-			return slider.find(o.cellSelector + ':eq(' + currentSlide + ')');
+			return slider.find(o.cellSelector).eq(d.selectedIndex);
 		};
 
 		var setActiveSlideSeen = function () {
 			getCurrentSlide().addClass(o.seenClass);
 			slider.find(o.cellSelector + '.' + o.seenClass).each(function () {
-				slider.find('.flickity-page-dots li:eq(' + $(this).index() + ')')
-					.addClass(o.seenClass);
+				slider.find('.flickity-page-dots li').eq($(this).index()).addClass(o.seenClass);
 			});
 		};
 		
@@ -113,9 +111,7 @@
 				//set slide aria-label on corresponding page dot
 				slider.find('.flickity-page-dots li').each(function (i) {
 					var t = $(this);
-					var ariaLabel = slider.find(o.cellSelector + ':eq(' + i + ')')
-						.attr('aria-label');
-					
+					var ariaLabel = slider.find(o.cellSelector).eq(i).attr('aria-label');
 					if (!!ariaLabel) {
 						t.attr('aria-label', ariaLabel);
 					}
