@@ -57,14 +57,15 @@ module.exports = function fxGruntConfig (grunt) {
 			files: SRC_FILES.concat(GRUNT_FILE),
 			//force: true,
 			options: {
+				esversion: 5,
 				bitwise: false,
 				camelcase: false,
 				curly: true,
 				eqeqeq: false, // allow ==
 				forin: true,
-				//freeze: true,
+				freeze: true,
 				immed: false, //
-				latedef: false, // late definition
+				latedef: true, // late definition
 				newcap: true, // capitalize ctos
 				noempty: true,
 				nonew: true, // no new ..()
@@ -76,29 +77,28 @@ module.exports = function fxGruntConfig (grunt) {
 				maxdepth: 5,
 				maxstatements: 30,
 				maxlen: 100,
-				//maxcomplexity: 10,
-				
+				nonbsp: true,
+
 				// relax options
-				//boss: true,
-				//eqnull: true,
-				esnext: true,
 				regexp: true,
 				strict: true,
 				trailing: false,
 				sub: true, // [] notation
 				smarttabs: true,
 				lastsemic: false, // enforce semicolons
-				white: true,
-				
+
 				// env
 				browser: true,
+
 				globals: {
 					jQuery: true,
 					console: true,
 					App: true,
 					Loader: true,
 					_: true,
-					google: true
+					google: true,
+					module: true,
+					CSS3: true
 				}
 			}
 		},
