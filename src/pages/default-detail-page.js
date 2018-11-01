@@ -25,7 +25,7 @@
 		var onFragmentChanged = function (key, data) {
 			var frag = !!data ? data : '';
 
-			changer.navigateTo(frag.split('/')[0]);
+			changer.navigateTo(frag.split('?')[0].split('/')[0]);
 		};
 		
 		var init = function () {
