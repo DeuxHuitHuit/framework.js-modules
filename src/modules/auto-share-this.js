@@ -12,7 +12,7 @@
 	var site = $('#site');
 	
 	var getCurrentUrl = function () {
-		var docLoc = document.location;
+		var docLoc = window.location;
 		return docLoc.protocol + '//' + docLoc.host + docLoc.pathname;
 	};
 	

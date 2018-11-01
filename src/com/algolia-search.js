@@ -12,7 +12,7 @@
 		var aClient;
 		var input;
 		var resultsCtn;
-		var rootUrl = document.location.protocol + '//' + document.location.host;
+		var rootUrl = window.location.protocol + '//' + window.location.host;
 		var lg = $('html').attr('lang');
 		var searchBarInput;
 		var searchTaggingTimer = 0;
@@ -360,7 +360,7 @@
 					// Group records by url
 					var merged = _.reduce(filtered, function (memo, hit, i) {
 						// Remove the current page
-						if (document.location.toString().indexOf(hit.url) !== -1) {
+						if (window.location.toString().indexOf(hit.url) !== -1) {
 							return memo;
 						}
 						if (!memo[hit.url]) {

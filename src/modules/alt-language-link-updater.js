@@ -17,7 +17,7 @@
 			var t = $(this);
 			data[t.attr('hreflang')] = t.attr('href');
 		});
-		linkList[document.location.pathname] = data;
+		linkList[window.location.pathname] = data;
 	};
 	
 	var onPageLoaded = function (key, data, e) {
@@ -46,11 +46,11 @@
 	};
 	
 	var onEnter = function (key, data, e) {
-		if (linkList[document.location.pathname]) {
+		if (linkList[window.location.pathname]) {
 			//Update links
 			$(linkSelector).each(function () {
 				var t = $(this);
-				var value = linkList[document.location.pathname][t.data('lg')];
+				var value = linkList[window.location.pathname][t.data('lg')];
 				
 				if (value) {
 					t.attr('href', value);

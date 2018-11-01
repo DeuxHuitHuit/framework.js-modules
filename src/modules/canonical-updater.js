@@ -33,7 +33,7 @@
 		});
 
 		//Store initial data
-		canonicalList[document.location.pathname] = data;
+		canonicalList[window.location.pathname] = data;
 	};
 	
 	var onPageLoaded = function (key, data, e) {
@@ -53,7 +53,7 @@
 			});
 
 			if (!!!data.url) {
-				data.url = document.location.pathname;
+				data.url = window.location.pathname;
 			}
 
 			canonicalList[data.url] = canonicalUrl;
@@ -61,9 +61,9 @@
 	};
 	
 	var onEnter = function (key, data, e) {
-		if (canonicalList[document.location.pathname]) {
+		if (canonicalList[window.location.pathname]) {
 			//Update meta in dom
-			metaElemDom.attr('href', canonicalList[document.location.pathname]);
+			metaElemDom.attr('href', canonicalList[window.location.pathname]);
 		}
 	};
 	

@@ -102,7 +102,7 @@
 
 		var navigateTo = function (newPageHandle, url) {
 			var currentPage = o.findArticle(articleCtn, currentPageHandle, o);
-			loadUrl = url || document.location.href;
+			loadUrl = url || window.location.href;
 
 			/* jshint latedef:false */
 			var loadSuccess = function (dataLoaded, textStatus, jqXHR) {
@@ -110,7 +110,7 @@
 				isLoading = false;
 				if (loadUrl === loadingUrl) {
 					var nextPage = o.appendArticle(articleCtn, dataLoaded, newPageHandle, o);
-					var loc = document.location;
+					var loc = window.location;
 					var cleanUrl = loc.href.substring(
 						loc.hostname.length +
 						loc.protocol.length + 2

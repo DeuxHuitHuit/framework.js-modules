@@ -94,11 +94,11 @@
 		
 		var navigateTo = function (newPageHandle, url) {
 			var currentPage = o.findArticle(articleCtn, currentPageHandle, o);
-			var loadUrl = url || document.location.href;
+			var loadUrl = url || window.location.href;
 			var loadSucess = function (dataLoaded, textStatus, jqXHR) {
 				//Append New article
 				var nextPage = o.appendArticle(articleCtn, dataLoaded, newPageHandle, o);
-				var loc = document.location;
+				var loc = window.location;
 				var cleanUrl = loc.href.substring(loc.hostname.length + loc.protocol.length + 2);
 				
 				App.mediator.notify('pageLoad.end');

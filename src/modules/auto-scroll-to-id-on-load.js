@@ -15,8 +15,8 @@
 	var isFirstload = true;
 	
 	var scrollToIdFromUrl = function (key, data) {
-		var h = document.location.href.split('#').length > 1 ?
-			document.location.href.split('#')[1] : '';
+		var h = window.location.href.split('#').length > 1 ?
+			window.location.href.split('#')[1] : '';
 		var target = !!h ? site.find('#' + h) : $();
 		var duration = !!data.noDuration ? 0 : 500;
 		
@@ -58,4 +58,3 @@
 	});
 	
 })(jQuery);
-

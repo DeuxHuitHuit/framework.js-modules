@@ -59,7 +59,7 @@
 		var key = t.attr(KEY_ATTR);
 		var removeKeys = t.attr(REMOVE_KEYS_ATTR);
 		var value = t.attr(VALUE_ATTR) || null;
-		var qs = App.routing.querystring.parse(document.location.search);
+		var qs = App.routing.querystring.parse(window.location.search);
 		
 		// Minimal attribute needed for proceeding
 		if (!!key) {

@@ -37,7 +37,7 @@
 		}
 
 		site.on($.click, 'a[href^=\'#\']', function (e) {
-			var newUrl = document.location.pathname + document.location.search;
+			var newUrl = window.location.pathname + window.location.search;
 			newUrl += $(this).attr('href');
 			App.mediator.goto(newUrl);
 			return window.pd(e);

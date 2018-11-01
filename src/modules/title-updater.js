@@ -12,7 +12,7 @@
 	var titleList = {};
 	
 	var init = function () {
-		titleList[document.location.pathname] = $('title').text();
+		titleList[window.location.pathname] = $('title').text();
 	};
 	
 	var onPageLoaded = function (key, data, e) {
@@ -25,15 +25,15 @@
 				}
 			});
 			if (!!!data.url) {
-				data.url = document.location.pathname;
+				data.url = window.location.pathname;
 			}
 			titleList[data.url] = title;
 		}
 	};
 	
 	var onEnter = function (key, data, e) {
-		if (titleList[document.location.pathname]) {
-			document.title = titleList[document.location.pathname];
+		if (titleList[window.location.pathname]) {
+			document.title = titleList[window.location.pathname];
 		}
 	};
 	

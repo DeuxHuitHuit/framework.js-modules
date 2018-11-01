@@ -21,11 +21,11 @@
 		if (!url) {
 			return;
 		}
-		var path = document.location.pathname;
+		var path = window.location.pathname;
 		if (!!rateList[path]) {
 			return;
 		}
-		var key = document.location.protocol + '//' + document.location.hostname + path;
+		var key = window.location.protocol + '//' + window.location.hostname + path;
 		var data = {
 			'fields[0][key]': key,
 			'fields[0][tag]': '',

@@ -10,10 +10,10 @@
 	var defaultLoadFatalError = function (key, data) {
 		if (data && data.url) {
 			//Full reload url
-			document.location = data.url;
+			window.location = data.url;
 		} else {
 			//Should never append from the framework event
-			document.location = document.location;
+			window.location = window.location;
 		}
 	};
 	

@@ -287,7 +287,7 @@
 	var throttledScroll = _.throttle(function () {
 		onReplaceState(null, {
 			title: document.title,
-			url: document.location.pathname + document.location.search + document.location.hash
+			url: window.location.pathname + window.location.search + window.location.hash
 		});
 	}, 500, {});
 	

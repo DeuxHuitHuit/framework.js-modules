@@ -11,8 +11,8 @@
 		return {
 			pages: {
 				routeNotFound: function (key, data) {
-					if (!!data && !!data.url && data.url !== document.location.pathname) {
-						document.location = data.url;
+					if (!!data && !!data.url && data.url !== window.location.pathname) {
+						window.location = data.url;
 					}
 				}
 			}

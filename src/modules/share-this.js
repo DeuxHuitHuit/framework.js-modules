@@ -12,7 +12,7 @@
 	var site = $('#site');
 	
 	var onApplyButton = function (key, options, e) {
-		var docLoc = document.location;
+		var docLoc = window.location;
 		var url = docLoc.protocol + '//' + docLoc.host + docLoc.pathname;
 		var defaultShareThisOption = {
 			service: 'sharethis',

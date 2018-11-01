@@ -18,7 +18,7 @@
 	var DELAY = App.debug() ? 1000 : 3000;
 	var scope = $();
 	var pageEnterTimeout = 0;
-	var rootUrl = document.location.protocol + '//' + document.location.host;
+	var rootUrl = window.location.protocol + '//' + window.location.host;
 	
 	var insureArray = function (a) {
 		return $.isArray(a) ? a : [a];
