@@ -33,42 +33,12 @@
 		scrollingZoneContent: '.js-scrolling-zone-content'
 	};
 
-	var strategies = {
-		preventEvent: {
-			add: function () {
-				if (window.removeEventListener) {
-					window.removeEventListener('DOMMouseScroll', preventDefault, false);
-				}
-				window.onmousewheel = document.onmousewheel = null;
-				window.onwheel = null;
-				window.ontouchmove = null;
-				document.onkeydown = null;
-			},
-			remove: function () {
-				if (window.addEventListener) {// older FF
-					window.addEventListener('DOMMouseScroll', preventDefault, false);
-				}
-				window.onwheel = preventDefault; // modern standard
-				window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
-				window.ontouchmove = preventDefault; // mobile
-				document.onkeydown = preventDefaultForScrollKeys;
-			}
-		},
-		hideOverflow: {
-			add: function () {
-				html.removeClass('no-scroll');
-				fixScroll(0);
-			},
-			remove: function () {
-				if (!html.hasClass('no-scroll')) {
-					var x = win.width();
-					html.addClass('no-scroll');
-					fixScroll(win.width() - x);
-				}
-			}
-		}
+	var fixScroll = function (value) {
+		$('.js-fix-scroll-pad').css({paddingRight: value || ''});
+		$('.js-fix-scroll-right').css({right: value || ''});
+		$('.js-fix-scroll-margin').css({marginRight: value || ''});
 	};
-	
+
 	var keys = {
 		ArrowDown: true,
 		ArrowUp: true,
@@ -76,12 +46,6 @@
 		Home: true,
 		PageDown: true,
 		PageUp: true
-	};
-
-	var fixScroll = function (value) {
-		$('.js-fix-scroll-pad').css({paddingRight: value || ''});
-		$('.js-fix-scroll-right').css({right: value || ''});
-		$('.js-fix-scroll-margin').css({marginRight: value || ''});
 	};
 
 	var getWheelDirection = function (e) {
@@ -134,6 +98,42 @@
 		if (keys[e.key]) {
 			preventDefault(e);
 			return false;
+		}
+	};
+
+	var strategies = {
+		preventEvent: {
+			add: function () {
+				if (window.removeEventListener) {
+					window.removeEventListener('DOMMouseScroll', preventDefault, false);
+				}
+				window.onmousewheel = document.onmousewheel = null;
+				window.onwheel = null;
+				window.ontouchmove = null;
+				document.onkeydown = null;
+			},
+			remove: function () {
+				if (window.addEventListener) {// older FF
+					window.addEventListener('DOMMouseScroll', preventDefault, false);
+				}
+				window.onwheel = preventDefault; // modern standard
+				window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
+				window.ontouchmove = preventDefault; // mobile
+				document.onkeydown = preventDefaultForScrollKeys;
+			}
+		},
+		hideOverflow: {
+			add: function () {
+				html.removeClass('no-scroll');
+				fixScroll(0);
+			},
+			remove: function () {
+				if (!html.hasClass('no-scroll')) {
+					var x = win.width();
+					html.addClass('no-scroll');
+					fixScroll(win.width() - x);
+				}
+			}
 		}
 	};
 

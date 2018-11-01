@@ -159,34 +159,6 @@
 			});
 		};
 
-		var searchByContainer = function (pageToRetrieve, query, appendNewResults, ctn) {
-			var queries = [];
-			var val = !!query ? query : input.val();
-			var p = parseInt(pageToRetrieve, 10) || 0;
-			
-			App.callback(o.beforeSearchCallback, [{
-				resultsCtn: resultsCtn
-			}]);
-
-			ctn.each(function () {
-				var t = $(this);
-				queries.push(extractSingleQueryParams(p, val, t));
-			});
-
-			// Search all queries
-			aClient.search(getQueriesOnly(queries), function (err, content) {
-				if (!!err) {
-					_.each(queries, function (query) {
-						errorCallback(query.scope, content, val, err);
-					});
-					return;
-				}
-				_.each(content.results, function (results, i) {
-					searchCallback(queries[i].scope, results, val, appendNewResults);
-				});
-			});
-		};
-
 		var extractSingleQueryParams = function (page, val, ctn) {
 			var facets = o.facets || (!!ctn.attr(o.facetsAttr) ?
 				ctn.attr(o.facetsAttr).split(',') :
@@ -222,6 +194,34 @@
 					params: queryParams
 				}
 			};
+		};
+
+		var searchByContainer = function (pageToRetrieve, query, appendNewResults, ctn) {
+			var queries = [];
+			var val = !!query ? query : input.val();
+			var p = parseInt(pageToRetrieve, 10) || 0;
+			
+			App.callback(o.beforeSearchCallback, [{
+				resultsCtn: resultsCtn
+			}]);
+
+			ctn.each(function () {
+				var t = $(this);
+				queries.push(extractSingleQueryParams(p, val, t));
+			});
+
+			// Search all queries
+			aClient.search(getQueriesOnly(queries), function (err, content) {
+				if (!!err) {
+					_.each(queries, function (query) {
+						errorCallback(query.scope, content, val, err);
+					});
+					return;
+				}
+				_.each(content.results, function (results, i) {
+					searchCallback(queries[i].scope, results, val, appendNewResults);
+				});
+			});
 		};
 
 		var search = function (pageToRetrieve, query, appendNewResults) {

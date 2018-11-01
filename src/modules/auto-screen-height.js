@@ -47,6 +47,34 @@
 		return result;
 	};
 
+	var makeMediaQuery = function (minWidth, maxWidth) {
+		var result = '';
+
+		var hasMinWidth = minWidth !== 0;
+		var hasMaxWidth = maxWidth !== 0;
+
+		if (hasMinWidth) {
+			result = '(min-width: ' + minWidth + 'px)';
+		}
+		if (hasMinWidth && hasMaxWidth) {
+			result += ' and ';
+		}
+		if (hasMaxWidth) {
+			result += '(max-width: ' + maxWidth + 'px)';
+		}
+		return result;
+	};
+
+	var canUseMediaQuery = function (useMediaQuery) {
+		var boolUseMediaQuery = true;
+		if (useMediaQuery && useMediaQuery.length) {
+			boolUseMediaQuery = useMediaQuery === 'true';
+		}
+
+		//Disable Media Query when not supported
+		return !!window.matchMedia && boolUseMediaQuery;
+	};
+
 	var resizeItem = function () {
 		var t = $(this);
 		var winWidth = win.width();
@@ -59,43 +87,25 @@
 		var maxWidth = parseInt(t.attr('data-screen-height-max-width'), 10) || 0;
 		var useMediaQuery = t.attr('data-screen-height-use-media-query');
 		var useJitImage = t.attr('data-screen-height-jitimage') || true;
-		var makeMediaQuery = function makeMediaQuery () {
-			var result = '';
+		var mediaQuery = makeMediaQuery(minWidth, maxWidth);
+		var boolUseMediaQuery = canUseMediaQuery(useMediaQuery);
 
-			var hasMinWidth = minWidth !== 0;
-			var hasMaxWidth = maxWidth !== 0;
-
-			if (hasMinWidth) {
-				result = '(min-width: ' + minWidth + 'px)';
-			}
-			if (hasMinWidth && hasMaxWidth) {
-				result += ' and ';
-			}
-			if (hasMaxWidth) {
-				result += '(max-width: ' + maxWidth + 'px)';
-			}
-			return result;
+		var isBetweenMinMax = function () {
+			return platformsVal &&
+				!boolUseMediaQuery &&
+				winWidth > minWidth &&
+				(maxWidth === 0 || winWidth < maxWidth);
 		};
-		var mediaQuery = makeMediaQuery();
-		var boolUseMediaQuery = true;	//True by default
-		if (useMediaQuery && useMediaQuery.length) {
-			boolUseMediaQuery = useMediaQuery === 'true';
-		}
 
-		//Disable Media Query when not supported
-		boolUseMediaQuery = !!window.matchMedia && boolUseMediaQuery;
+		var matchesMediaQuery = function () {
+			return platformsVal &&
+				boolUseMediaQuery &&
+				(mediaQuery.length === 0 || window.matchMedia(mediaQuery).matches);
+		};
 
-		//test platforms
-		if (platformsVal &&
-			!boolUseMediaQuery &&
-			winWidth > minWidth &&
-			(maxWidth === 0 || winWidth < maxWidth)) {
-
+		if (isBetweenMinMax()) {
 			t.css(fx, newHeight);
-		} else if (platformsVal &&
-			boolUseMediaQuery &&
-			(mediaQuery.length === 0 || window.matchMedia(mediaQuery).matches)) {
-
+		} else if (matchesMediaQuery()) {
 			t.css(fx, newHeight);
 		} else {
 			t.css(fx, '');

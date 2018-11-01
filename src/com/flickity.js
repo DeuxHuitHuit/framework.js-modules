@@ -32,7 +32,7 @@
 
 			dataAttrPrefix: 'flickity',
 			
-			aborted: null   //Aborted callback
+			aborted: null //Aborted callback
 		};
 
 		var o = $.extend({}, defaultOptions, options);
