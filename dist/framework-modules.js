@@ -1,4 +1,4 @@
-/*! framework.js-modules - v1.10.2 - build 361 - 2018-10-02
+/*! framework.js-modules - v1.11.0 - build 362 - 2018-11-01
  * https://github.com/DeuxHuitHuit/framework.js-modules
  * Copyright (c) 2018 Deux Huit Huit (https://deuxhuithuit.com/);
  * MIT *//**
@@ -15,7 +15,7 @@
 		var aClient;
 		var input;
 		var resultsCtn;
-		var rootUrl = document.location.protocol + '//' + document.location.host;
+		var rootUrl = window.location.protocol + '//' + window.location.host;
 		var lg = $('html').attr('lang');
 		var searchBarInput;
 		var searchTaggingTimer = 0;
@@ -162,34 +162,6 @@
 			});
 		};
 
-		var searchByContainer = function (pageToRetrieve, query, appendNewResults, ctn) {
-			var queries = [];
-			var val = !!query ? query : input.val();
-			var p = parseInt(pageToRetrieve, 10) || 0;
-			
-			App.callback(o.beforeSearchCallback, [{
-				resultsCtn: resultsCtn
-			}]);
-
-			ctn.each(function () {
-				var t = $(this);
-				queries.push(extractSingleQueryParams(p, val, t));
-			});
-
-			// Search all queries
-			aClient.search(getQueriesOnly(queries), function (err, content) {
-				if (!!err) {
-					_.each(queries, function (query) {
-						errorCallback(query.scope, content, val, err);
-					});
-					return;
-				}
-				_.each(content.results, function (results, i) {
-					searchCallback(queries[i].scope, results, val, appendNewResults);
-				});
-			});
-		};
-
 		var extractSingleQueryParams = function (page, val, ctn) {
 			var facets = o.facets || (!!ctn.attr(o.facetsAttr) ?
 				ctn.attr(o.facetsAttr).split(',') :
@@ -225,6 +197,34 @@
 					params: queryParams
 				}
 			};
+		};
+
+		var searchByContainer = function (pageToRetrieve, query, appendNewResults, ctn) {
+			var queries = [];
+			var val = !!query ? query : input.val();
+			var p = parseInt(pageToRetrieve, 10) || 0;
+			
+			App.callback(o.beforeSearchCallback, [{
+				resultsCtn: resultsCtn
+			}]);
+
+			ctn.each(function () {
+				var t = $(this);
+				queries.push(extractSingleQueryParams(p, val, t));
+			});
+
+			// Search all queries
+			aClient.search(getQueriesOnly(queries), function (err, content) {
+				if (!!err) {
+					_.each(queries, function (query) {
+						errorCallback(query.scope, content, val, err);
+					});
+					return;
+				}
+				_.each(content.results, function (results, i) {
+					searchCallback(queries[i].scope, results, val, appendNewResults);
+				});
+			});
 		};
 
 		var search = function (pageToRetrieve, query, appendNewResults) {
@@ -363,7 +363,7 @@
 					// Group records by url
 					var merged = _.reduce(filtered, function (memo, hit, i) {
 						// Remove the current page
-						if (document.location.toString().indexOf(hit.url) !== -1) {
+						if (window.location.toString().indexOf(hit.url) !== -1) {
 							return memo;
 						}
 						if (!memo[hit.url]) {
@@ -576,7 +576,7 @@
 
 		var navigateTo = function (newPageHandle, url) {
 			var currentPage = o.findArticle(articleCtn, currentPageHandle, o);
-			loadUrl = url || document.location.href;
+			loadUrl = url || window.location.href;
 
 			/* jshint latedef:false */
 			var loadSuccess = function (dataLoaded, textStatus, jqXHR) {
@@ -584,7 +584,7 @@
 				isLoading = false;
 				if (loadUrl === loadingUrl) {
 					var nextPage = o.appendArticle(articleCtn, dataLoaded, newPageHandle, o);
-					var loc = document.location;
+					var loc = window.location;
 					var cleanUrl = loc.href.substring(
 						loc.hostname.length +
 						loc.protocol.length + 2
@@ -783,11 +783,11 @@
 		
 		var navigateTo = function (newPageHandle, url) {
 			var currentPage = o.findArticle(articleCtn, currentPageHandle, o);
-			var loadUrl = url || document.location.href;
+			var loadUrl = url || window.location.href;
 			var loadSucess = function (dataLoaded, textStatus, jqXHR) {
 				//Append New article
 				var nextPage = o.appendArticle(articleCtn, dataLoaded, newPageHandle, o);
-				var loc = document.location;
+				var loc = window.location;
 				var cleanUrl = loc.href.substring(loc.hostname.length + loc.protocol.length + 2);
 				
 				App.mediator.notify('pageLoad.end');
@@ -948,7 +948,9 @@
 			selectedClass: 'is-selected',
 			seenClass: 'is-seen',
 
-			dataAttrPrefix: 'flickity'
+			dataAttrPrefix: 'flickity',
+			
+			aborted: null //Aborted callback
 		};
 
 		var o = $.extend({}, defaultOptions, options);
@@ -985,15 +987,13 @@
 			if (!d) {
 				return $();
 			}
-			var currentSlide = d.selectedIndex;
-			return slider.find(o.cellSelector + ':eq(' + currentSlide + ')');
+			return slider.find(o.cellSelector).eq(d.selectedIndex);
 		};
 
 		var setActiveSlideSeen = function () {
 			getCurrentSlide().addClass(o.seenClass);
 			slider.find(o.cellSelector + '.' + o.seenClass).each(function () {
-				slider.find('.flickity-page-dots li:eq(' + $(this).index() + ')')
-					.addClass(o.seenClass);
+				slider.find('.flickity-page-dots li').eq($(this).index()).addClass(o.seenClass);
 			});
 		};
 		
@@ -1029,9 +1029,7 @@
 				//set slide aria-label on corresponding page dot
 				slider.find('.flickity-page-dots li').each(function (i) {
 					var t = $(this);
-					var ariaLabel = slider.find(o.cellSelector + ':eq(' + i + ')')
-						.attr('aria-label');
-					
+					var ariaLabel = slider.find(o.cellSelector).eq(i).attr('aria-label');
 					if (!!ariaLabel) {
 						t.attr('aria-label', ariaLabel);
 					}
@@ -2956,7 +2954,7 @@
 			var t = $(this);
 			data[t.attr('hreflang')] = t.attr('href');
 		});
-		linkList[document.location.pathname] = data;
+		linkList[window.location.pathname] = data;
 	};
 	
 	var onPageLoaded = function (key, data, e) {
@@ -2985,11 +2983,11 @@
 	};
 	
 	var onEnter = function (key, data, e) {
-		if (linkList[document.location.pathname]) {
+		if (linkList[window.location.pathname]) {
 			//Update links
 			$(linkSelector).each(function () {
 				var t = $(this);
-				var value = linkList[document.location.pathname][t.data('lg')];
+				var value = linkList[window.location.pathname][t.data('lg')];
 				
 				if (value) {
 					t.attr('href', value);
@@ -3423,6 +3421,73 @@
 /**
  *  @author Deux Huit Huit
  *
+ *  Click on copyBtn to copy what's inside the input toCopy.
+ *  Put data-message-delay on copyBtn
+ */
+(function ($, undefined) {
+	
+	'use strict';
+
+	var site = $('#site');
+	var sels = {
+		toCopy: '.js-text-to-copy',
+		copyBtn: '.js-copy-on-click-btn',
+		message: '.js-confirm-message'
+	};
+	var timer = null;
+
+	var onClick = function () {
+		var t = $(this);
+		var closest = t.closest('.js-copy-ctn');
+		var message = closest.find(sels.message);
+		var delay = parseInt(t.attr('data-message-delay'), 10) || 0;
+		var toCopy = closest.find(sels.toCopy);
+		var copyCount = toCopy.length;
+
+		var copy = function (textToCopy) {
+			textToCopy.select();
+			document.execCommand('copy');
+
+			App.modules.notify('changeState.update', {
+				item: message,
+				state: 'visible',
+				action: 'on'
+			});
+
+			clearTimeout(timer);
+			timer = setTimeout(function () {
+				App.modules.notify('changeState.update', {
+					item: message,
+					state: 'visible',
+					action: 'off'
+				});
+			}, delay);
+		};
+
+		if (copyCount === 0) {
+			App.log('No item found to copy text from');
+			return;
+		} else if (copyCount === 1) {
+			copy(toCopy);
+		} else {
+			App.log('Multiple items found for copy, using the first one');
+			copy(toCopy.eq(0));
+		}
+	};
+
+	var init = function () {
+		site.on(App.device.events.click, sels.copyBtn, onClick);
+	};
+	
+	App.modules.exports('auto-copy-on-click', {
+		init: init
+	});
+	
+})(jQuery);
+
+/**
+ *  @author Deux Huit Huit
+ *
  *  Auto cycle
  */
 (function ($, undefined) {
@@ -3707,49 +3772,66 @@
  *    On the button
  *    <add class="js-recaptcha" />
  *    <set data-sitekey="{/data/params/recaptcha-sitekey}" />
+ *    Optional
+ *    <set data-size="invisible" />
+ *    <set data-badge="inline" />
  */
 (function ($, undefined) {
 	'use strict';
 
+	var html = $('html');
 	var site = $('#site');
 	var options = {
 		target: '.js-recaptcha-response',
 		trigger: '.js-recaptcha',
-		prefix: 'g-recaptcha-'
+		prefix: 'g-recaptcha-',
+		container: 'form'
 	};
 	var page = null;
 	var loaded = false;
 	var ids = 0;
 
-	var load = function (ctn) {
-		if (!loaded || !ctn) {
+	var load = function (ctx) {
+		ctx = ctx || page;
+		if (!loaded || !ctx) {
 			return;
 		}
-		ctn.find(options.trigger).each(function () {
+		ctx.find(options.trigger).each(function () {
 			var t = $(this);
 			if (t.attr('id')) {
 				return;
 			}
 			var id = options.prefix + (++ids);
 			t.attr('id', id);
-			var recaptchaId = window.grecaptcha.render(id, {
+			var wid = window.grecaptcha.render(id, {
 				sitekey: t.attr('data-sitekey'),
+				badge: t.attr('data-badge') || 'bottomright',
+				hl: html.attr('lang'),
 				callback: function (result) {
-					ctn.find(options.target).val(result);
+					t.closest(options.container).find(options.target).val(result);
 					App.mediator.notify('recaptcha.updated', {
 						result: result,
 						lastTarget: t
 					});
 				}
 			});
-			t.data('recaptcha-id', recaptchaId);
+			t.data(options.prefix, wid);
 		});
 	};
 
-	var onForceUpdate = function () {
+	var resolveCaptchaId = function (data) {
+		var id = (!!data && data.id) || undefined;
+		if (!id && !!data && data.ctn) {
+			id = data.ctn.find(options.trigger).data(options.prefix);
+		}
+		return id;
+	};
+
+	var onForceUpdate = function (key, data) {
 		try {
+			var id = resolveCaptchaId(data);
 			if (!!window.grecaptcha) {
-				window.grecaptcha.reset();
+				window.grecaptcha.reset(id);
 			} else {
 				App.log('Recaptcha Lib not found');
 			}
@@ -3758,19 +3840,52 @@
 		}
 	};
 
+	var onExecute = function (key, data) {
+		try {
+			var id = resolveCaptchaId(data);
+			if (!!window.grecaptcha) {
+				if (!window.grecaptcha.getResponse(id)) {
+					window.grecaptcha.execute(id);
+					return true;
+				} else {
+					App.log('Recaptcha already executed');
+				}
+			} else {
+				App.log('Recaptcha Lib not found');
+			}
+		} catch (e) {
+			App.log('Recaptcha executed with error');
+		}
+		return false;
+	};
+
 	var pageEnter = function (key, data) {
 		if (!!data.page) {
 			page = $(data.page.key());
 		} else if (!!data.article) {
 			page = $(data.article);
 		}
-		load(page);
+		load();
+	};
+
+	var resolveTriggersNotInPage = function () {
+		return site.find(options.trigger).filter(function (i, t) {
+			// Keep only those who are not in a .page element
+			return !$(t).closest('.page').length;
+		}).map(function (i, t) {
+			// Return the parent of the container of each object
+			// The values NEEDS to be a DOM Element, not a jQuery object, for some reasons
+			return $(t).closest(options.container).get(0);
+		});
 	};
 
 	var init = function () {
 		window.GoogleReCaptchaCallback = function () {
 			loaded = true;
-			load(site);
+			// Trigger at page level
+			load();
+			// Trigger for not in page
+			load(resolveTriggersNotInPage());
 		};
 	};
 
@@ -3783,7 +3898,8 @@
 				enter: pageEnter
 			},
 			recaptcha: {
-				forceUpdate: onForceUpdate
+				forceUpdate: onForceUpdate,
+				execute: onExecute
 			}
 		};
 	};
@@ -3968,7 +4084,7 @@
 		var key = t.attr(KEY_ATTR);
 		var removeKeys = t.attr(REMOVE_KEYS_ATTR);
 		var value = t.attr(VALUE_ATTR) || null;
-		var qs = App.routing.querystring.parse(document.location.search);
+		var qs = App.routing.querystring.parse(window.location.search);
 		
 		// Minimal attribute needed for proceeding
 		if (!!key) {
@@ -4401,15 +4517,12 @@
 (function ($, undefined) {
 
 	'use strict';
-	
+
 	var win = $(window);
-	
+	var site = $('#site');
+
 	var mobileHeight = 0;
-	
-	var getPage = function () {
-		return $('.page:visible');
-	};
-	
+
 	var platforms = {
 		all: true,
 		desktop: !App.device.mobile,
@@ -4417,10 +4530,10 @@
 		mobile: App.device.mobile,
 		phone: $.phone
 	};
-	
+
 	var getOffsetTotal = function (itemsArray) {
 		var total = 0;
-		
+
 		if (itemsArray) {
 			var its = itemsArray.split(',');
 			$.each(its, function (i, value) {
@@ -4429,12 +4542,12 @@
 		}
 		return total;
 	};
-	
+
 	var processPlatforms = function (itemsArray) {
 		var result = false;
-		
+
 		if (itemsArray) {
-		
+
 			var its = itemsArray.split(',');
 			$.each(its, function (i, value) {
 				if (platforms[value]) {
@@ -4444,65 +4557,102 @@
 		}
 		return result;
 	};
-	
+
+	var makeMediaQuery = function (minWidth, maxWidth) {
+		var result = '';
+
+		var hasMinWidth = minWidth !== 0;
+		var hasMaxWidth = maxWidth !== 0;
+
+		if (hasMinWidth) {
+			result = '(min-width: ' + minWidth + 'px)';
+		}
+		if (hasMinWidth && hasMaxWidth) {
+			result += ' and ';
+		}
+		if (hasMaxWidth) {
+			result += '(max-width: ' + maxWidth + 'px)';
+		}
+		return result;
+	};
+
+	var canUseMediaQuery = function (useMediaQuery) {
+		var boolUseMediaQuery = true;
+		if (useMediaQuery && useMediaQuery.length) {
+			boolUseMediaQuery = useMediaQuery === 'true';
+		}
+
+		//Disable Media Query when not supported
+		return !!window.matchMedia && boolUseMediaQuery;
+	};
+
 	var resizeItem = function () {
 		var t = $(this);
+		var winWidth = win.width();
 		var ratio = t.attr('data-height-ratio') || 1;
 		var fx = t.attr('data-height-property') || 'minHeight';
 		var offset = getOffsetTotal(t.attr('data-height-offset'));
 		var newHeight = (win.height() - offset) * ratio;
 		var platformsVal = processPlatforms(t.attr('data-screen-height-platform') || 'all');
-		var minWidth = t.attr('data-screen-height-min-width') || 0;
-		var useMediaQuery = t.data('data-screen-height-use-media-query') || true;
+		var minWidth = parseInt(t.attr('data-screen-height-min-width'), 10) || 0;
+		var maxWidth = parseInt(t.attr('data-screen-height-max-width'), 10) || 0;
+		var useMediaQuery = t.attr('data-screen-height-use-media-query');
 		var useJitImage = t.attr('data-screen-height-jitimage') || true;
-		
-		//test platforms
-		if (platformsVal &&
-			!useMediaQuery &&
-			win.width() > minWidth) {
-				
+		var mediaQuery = makeMediaQuery(minWidth, maxWidth);
+		var boolUseMediaQuery = canUseMediaQuery(useMediaQuery);
+
+		var isBetweenMinMax = function () {
+			return platformsVal &&
+				!boolUseMediaQuery &&
+				winWidth > minWidth &&
+				(maxWidth === 0 || winWidth < maxWidth);
+		};
+
+		var matchesMediaQuery = function () {
+			return platformsVal &&
+				boolUseMediaQuery &&
+				(mediaQuery.length === 0 || window.matchMedia(mediaQuery).matches);
+		};
+
+		if (isBetweenMinMax()) {
 			t.css(fx, newHeight);
-			
-		} else if (platformsVal &&
-			useMediaQuery &&
-			window.matchMedia('(min-width: ' + minWidth + 'px)').matches) {
+		} else if (matchesMediaQuery()) {
 			t.css(fx, newHeight);
 		} else {
 			t.css(fx, '');
 		}
+
 		if (useJitImage) {
 			$('img[data-src-format]', t).jitImage();
 		}
 	};
-	
+
 	var onResize = function (e) {
-		var p = getPage();
 		if ((App.device.mobile && Math.abs(mobileHeight - win.height()) > 120) ||
 			!App.device.mobile) {
-			p.filter('.js-auto-screen-height')
-				.add($('.js-auto-screen-height', p))
+			site.filter('.js-auto-screen-height')
+				.add($('.js-auto-screen-height', site))
 				.each(resizeItem);
 			mobileHeight = win.height();
 		}
 	};
-	
+
 	var onEnter = function () {
 		mobileHeight = 0;
 		onResize();
 		if (App.device.mobile) {
 			mobileHeight = win.height();
 		}
-		
 		setTimeout(onResize, 100);
 	};
-	
+
 	var init = function () {
 		onResize();
 		if (App.device.mobile) {
 			mobileHeight = win.height();
 		}
 	};
-	
+
 	var actions = function () {
 		return {
 			site: {
@@ -4524,7 +4674,7 @@
 		init: init,
 		actions: actions
 	});
-	
+
 })(jQuery);
 
 /**
@@ -4544,8 +4694,8 @@
 	var isFirstload = true;
 	
 	var scrollToIdFromUrl = function (key, data) {
-		var h = document.location.href.split('#').length > 1 ?
-			document.location.href.split('#')[1] : '';
+		var h = window.location.href.split('#').length > 1 ?
+			window.location.href.split('#')[1] : '';
 		var target = !!h ? site.find('#' + h) : $();
 		var duration = !!data.noDuration ? 0 : 500;
 		
@@ -4587,7 +4737,6 @@
 	});
 	
 })(jQuery);
-
 
 /**
  *  @author Deux Huit Huit
@@ -4663,7 +4812,7 @@
 	var site = $('#site');
 	
 	var getCurrentUrl = function () {
-		var docLoc = document.location;
+		var docLoc = window.location;
 		return docLoc.protocol + '//' + docLoc.host + docLoc.pathname;
 	};
 	
@@ -5033,7 +5182,7 @@
 
 	var processItemState = function (item, state, conditions) {
 		var isOn = false;
-		var qs = App.routing.querystring.parse(document.location.search);
+		var qs = App.routing.querystring.parse(window.location.search);
 
 		$.each(conditions.split(','), function (i, e) {
 			var splitedCondition = e.split('=');
@@ -5609,7 +5758,7 @@
 		});
 
 		//Store initial data
-		canonicalList[document.location.pathname] = data;
+		canonicalList[window.location.pathname] = data;
 	};
 	
 	var onPageLoaded = function (key, data, e) {
@@ -5629,7 +5778,7 @@
 			});
 
 			if (!!!data.url) {
-				data.url = document.location.pathname;
+				data.url = window.location.pathname;
 			}
 
 			canonicalList[data.url] = canonicalUrl;
@@ -5637,9 +5786,9 @@
 	};
 	
 	var onEnter = function (key, data, e) {
-		if (canonicalList[document.location.pathname]) {
+		if (canonicalList[window.location.pathname]) {
 			//Update meta in dom
-			metaElemDom.attr('href', canonicalList[document.location.pathname]);
+			metaElemDom.attr('href', canonicalList[window.location.pathname]);
 		}
 	};
 	
@@ -6104,6 +6253,536 @@
 	});
 	
 })(jQuery);
+
+(function ($) {
+
+	'use strict';
+	
+	var checkActiveAndErrorState = function (data) {
+		var field = data.field;
+		var fieldCtn = field.getCtn();
+		
+		if (fieldCtn.hasClass('js-input-radio')) {
+			fieldCtn = fieldCtn.add(fieldCtn.closest('.js-radio-list'));
+		}
+
+		window.updateState(fieldCtn, !!field.value(), 'active');
+		window.updateState(fieldCtn, !field.isValid(), 'error');
+	};
+
+	var onInputFocus = function (key, data) {
+		var field = data.field;
+		var fieldCtn = field.getCtn();
+
+		window.updateState(fieldCtn, true, 'active');
+	};
+
+	var onInputBlur = function (key, data) {
+		checkActiveAndErrorState(data);
+	};
+
+	var onInputChange = function (key, data) {
+		checkActiveAndErrorState(data);
+		
+		if (!!data.form.isValid()) {
+			App.mediator.notify('formDyn.isValid', {
+				form: data.form,
+				ctn: data.ctn
+			});
+		}
+	};
+
+	var onReset = function (key, data) {
+		var form = data.form;
+
+		form.eachFields(function (field) {
+			window.updateState(field.getCtn(), false, 'active');
+			window.updateState(field.getCtn(), false, 'error');
+		});
+	};
+
+	var onValidationError = function (key, data) {
+		var form = data.form;
+
+		form.eachFields(function (field) {
+			window.updateState(field.getCtn(), false, 'error');
+		});
+
+		$.each(data.results, function (index, element) {
+			if (!!element && !!element.field) {
+				window.updateState(element.field.getCtn(), true, 'active');
+			}
+		});
+	};
+
+	var actions = function () {
+		return {
+			formDyn: {
+				inputFocus: onInputFocus,
+				inputBlur: onInputBlur,
+				inputChange: onInputChange,
+				reset: onReset,
+				validationError: onValidationError
+			}
+		};
+	};
+
+	App.modules.exports('form-dyn-input-states', {
+		actions: actions
+	});
+
+})(jQuery);
+
+(function ($) {
+
+	'use strict';
+
+	var onSubmitting = function (key, data) {
+		window.updateState(data.ctn, true, 'loading');
+	};
+
+	var onComplete = function (key, data) {
+		window.updateState(data.ctn, false, 'loading');
+		window.updateState(data.ctn, true, 'completed');
+	};
+	
+	var onReset = function (ket, data) {
+		window.updateState(data.ctn, false, 'loading');
+		window.updateState(data.ctn, false, 'completed');
+	};
+
+	var actions = function () {
+		return {
+			formDyn: {
+				submitting: onSubmitting,
+				complete: onComplete,
+				reset: onReset
+			}
+		};
+	};
+
+	App.modules.exports('form-dyn-loading', {
+		actions: actions
+	});
+
+})(jQuery);
+
+(function ($) {
+
+	'use strict';
+
+	var html = $('html');
+
+	var sels = {
+		ctn: '.js-form-dyn-messages-ctn',
+		message: '.js-form-dyn-message',
+		template: '.js-form-dyn-message-template'
+	};
+
+	var resetMessage = function (msg) {
+		if (!!msg.length) {
+			App.modules.notify('changeState.update', {
+				item: msg,
+				state: 'visible',
+				action: 'off'
+			});
+			msg.empty();
+		}
+	};
+
+	var showMessage = function (form, fx) {
+		var ctn = form.find(sels.ctn);
+		var template = ctn.find(sels.template).filter('[data-fx="' + fx + '"]');
+		var msg = ctn.find(sels.message);
+
+		if (!!msg.length) {
+			resetMessage(msg);
+			msg.append($(template.html()));
+			msg.outerHeight();
+			App.modules.notify('changeState.update', {
+				item: msg,
+				state: 'visible',
+				action: 'on'
+			});
+			html.velocity('scroll', {
+				offset: msg.offset().top + 'px',
+				mobileHA: false
+			});
+		}
+	};
+
+	var onSuccess = function (key, data) {
+		showMessage(data.ctn, 'success');
+	};
+
+	var onError = function (key, data) {
+		showMessage(data.ctn, 'error');
+	};
+
+	var onHandleError = function (key, data) {
+		showMessage(data.ctn, 'error');
+	};
+
+	var onReset = function (key, data) {
+		data.ctn.find(sels.ctn).each(function () {
+			resetMessage($(this).find(sels.message));
+		});
+	};
+
+	var actions = function () {
+		return {
+			formDyn: {
+				success: onSuccess,
+				error: onError,
+				handleError: onHandleError,
+				reset: onReset
+			}
+		};
+	};
+
+	App.modules.exports('form-dyn-messages', {
+		actions: actions
+	});
+
+})(jQuery);
+
+(function ($) {
+
+	'use strict';
+
+	var opts = {
+		delay: 5000
+	};
+
+	var reset = function (key, data) {
+		setTimeout(function () {
+			data.form.reset();
+			App.mediator.notify('formDyn.reset', {
+				form: data.form,
+				ctn: data.ctn,
+				data: data.data
+			});
+		}, opts.delay);
+	};
+
+	var actions = function () {
+		return {
+			formDyn: {
+				error: reset,
+				success: reset
+			}
+		};
+	};
+
+	App.modules.exports('form-dyn-reset', {
+		actions: actions
+	});
+
+})(jQuery);
+
+/**
+ * @author Deux Huit Huit
+ *
+ * Dynamic Forms CTRL
+ */
+(function ($, global, undefined) {
+
+	'use strict';
+	var forms = [];
+	var page = $('.page');
+	var btnSubmit = $();
+	var preFooter = $('.js-site-prefooter');
+
+	var sels = {
+		form: '.js-form-dyn',
+		formElem: '.js-form',
+		formSubmit: '.js-form-btn-submit',
+		formRecaptcha: '.js-recaptcha'
+	};
+
+	var opts = {
+		handlers: {
+			ignoreErrors: [
+				'mailchimp',
+				'pingback',
+				'email'
+			]
+		}
+	};
+
+	var onRecaptchaUpdated = function (key, data) {
+		$('[name="g-recaptcha-response"]').disable();
+		if (!data.lastTarget.attr('data-prevent-submit')) {
+			data.lastTarget.closest(sels.formElem).submit();
+		}
+	};
+	
+	var resetRecaptcha = function (recaptchaId) {
+		try {
+			if (!!window.grecaptcha) {
+				window.grecaptcha.reset(recaptchaId);
+			}
+		} catch (e) {
+			App.log(e);
+		}
+	};
+	
+	var resetSingleForm = function (elem) {
+		var recaptchaId = parseInt(elem.find(sels.formRecaptcha).data('recaptcha-id'));
+		var comForm = elem.data('component');
+		
+		if (!!comForm) {
+			App.mediator.notify('formDyn.reset', {
+				ctn: elem,
+				form: comForm
+			});
+			App.modules.notify('autoChangeStateInputs.reset', {
+				scope: elem
+			});
+
+			comForm.enable(true);
+			comForm.reset();
+			btnSubmit.removeAttr('disabled');
+			resetRecaptcha(recaptchaId);
+		}
+	};
+	
+	var resetForms = function (scope) {
+		scope.find(sels.form).each(function () {
+			resetSingleForm($(this));
+		});
+	};
+	
+	var onFormSubmitClick = function (e) {
+		window.pd(e);
+		var t = $(this);
+		var elemFormDyn = t.closest(sels.form);
+		var recaptchaId = parseInt(elemFormDyn.find(sels.formRecaptcha).data('recaptcha-id'));
+		var com = elemFormDyn.data('component');
+		
+		//validate all fields
+		com.validate();
+		
+		if (com.isValid() && recaptchaId >= 0) {
+			window.grecaptcha.execute(recaptchaId);
+		}
+	};
+
+	var initForms = function (scope) {
+		scope.find(sels.form).each(function (index, elem) {
+			elem = $(elem);
+			var formElem = elem.find(sels.formElem);
+			var form = App.components.create('form', {
+				root: elem
+			});
+
+			form.init({
+				enableOnComplete: false,
+				post: {
+					submitting: function () {
+						App.mediator.notify('formDyn.submitting', {
+							ctn: elem,
+							form: form
+						});
+						btnSubmit.attr('disabled', '');
+					},
+					complete: function () {
+						App.mediator.notify('formDyn.complete', {
+							ctn: elem,
+							form: form
+						});
+						App.mediator.notify('recaptcha.forceUpdate');
+					},
+					error: function (result) {
+						App.mediator.notify('formDyn.error', {
+							ctn: elem,
+							form: form,
+							data: $()
+						});
+						App.mediator.notify('recaptcha.forceUpdate', {
+							ctn: elem,
+							form: form
+						});
+					},
+					success: function (data) {
+						data = $(data);
+
+						if (data.find('form-dyn result').attr('success') === 'yes') {
+							var handlersErrors = false;
+							data.find('form-dyn handlers > *').each(function () {
+								var t = $(this);
+								var name = t.get(0).nodeName.toLowerCase();
+								var isIgnored = _.indexOf(opts.handlers.ignoreErrors, name) >= 0;
+								if (t.attr('success') && t.attr('success') === 'no' && !isIgnored) {
+									handlersErrors = true;
+									return false;
+								}
+							});
+
+							if (!handlersErrors) {
+								App.mediator.notify('formDyn.success', {
+									ctn: elem,
+									form: form,
+									data: data
+								});
+							} else {
+								App.mediator.notify('formDyn.handleError', {
+									ctn: elem,
+									form: form,
+									data: data
+								});
+							}
+
+						} else {
+							App.mediator.notify('formDyn.error', {
+								ctn: elem,
+								form: form,
+								data: data
+							});
+						}
+						App.mediator.notify('recaptcha.forceUpdate', {
+							ctn: elem,
+							form: form
+						});
+					}
+				},
+				fieldsOptions: {
+					rules: {
+						date: {
+							datetime: {
+								dateOnly: true,
+								message: formElem.attr('data-msg-date-invalid'),
+								notValid: formElem.attr('data-msg-date-invalid')
+							}
+						},
+						document: {
+							format: {
+								message: formElem.attr('data-msg-doc-invalid')
+							}
+						},
+						image: {
+							format: {
+								message: formElem.attr('data-msg-img-invalid')
+							}
+						}
+					},
+					emptinessEvents: null,
+					previewEvents: null,
+					onFocus: function (data) {
+						App.mediator.notify('formDyn.inputFocus', _.assign({
+							ctn: elem,
+							form: form
+						}, data));
+					},
+					onBlur: function (data) {
+						App.mediator.notify('formDyn.inputBlur', _.assign({
+							ctn: elem,
+							form: form
+						}, data));
+					},
+					onKeyup: function (data) {
+						App.mediator.notify('formDyn.keyup', _.assign({
+							ctn: elem,
+							form: form
+						}, data));
+					},
+					onChangeOrInput: function (data) {
+						App.mediator.notify('formDyn.inputChange', _.assign({
+							ctn: elem,
+							form: form
+						}, data));
+					},
+					onInited: function (data) {
+						//Attach Date picker if class is present
+						if (data.field.find('.js-date-picker').length) {
+							var it = data.field.find('.js-date-picker');
+							var dateFormat = $('html').attr('lang') == 'fr' ?
+								'dd-mm-yy' :
+								'mm-dd-yy';
+							it.datepicker();
+							it.datepicker('option', 'dateFormat', dateFormat);
+						}
+					}
+				},
+				onError: function (data) {
+					App.mediator.notify('formDyn.validationError', {
+						results: data.results,
+						ctn: elem,
+						form: form
+					});
+				},
+				onBeforePost: function (e) {
+					var cancel = false;
+					App.mediator.notify('recaptcha.execute', {
+						ctn: elem,
+						form: form
+					}, function (key, ret) {
+						cancel = ret;
+					});
+					return cancel;
+				}
+			});
+			elem.data('component', form);
+			App.mediator.notify('formDyn.init', {
+				form: form,
+				ctn: elem
+			});
+			elem.data('component', form);
+			
+			btnSubmit = elem.find(sels.formSubmit);
+			btnSubmit.on($.click, onFormSubmitClick);
+			forms.push(form);
+		});
+	};
+
+	var onPageEnter = function (key, data) {
+		page = $(data.page.key());
+		initForms(page);
+	};
+
+	var onArticleEnter = function (key, data) {
+		var article = $(data.article);
+		initForms(article);
+	};
+	
+	var onPageLeave = function (key, data) {
+		page = $(data.page.key());
+		resetForms(page);
+		resetForms(preFooter);
+	};
+
+	var onArticleLeave = function (key, data) {
+		var article = $(data.article);
+		resetForms(article);
+		resetForms(preFooter);
+	};
+	
+	var init = function () {
+		initForms(preFooter);
+	};
+
+	var actions = function () {
+		return {
+			page: {
+				enter: onPageEnter,
+				leave: onPageLeave
+			},
+			articleChanger: {
+				enter: onArticleEnter,
+				leave: onArticleLeave
+			},
+			recaptcha: {
+				updated: onRecaptchaUpdated
+			}
+		};
+	};
+
+	App.modules.exports('form-dyn', {
+		init: init,
+		actions: actions
+	});
+
+})(jQuery, window);
 
 /**
  *  @author Deux Huit Huit
@@ -6898,10 +7577,10 @@
 	var defaultLoadFatalError = function (key, data) {
 		if (data && data.url) {
 			//Full reload url
-			document.location = data.url;
+			window.location = data.url;
 		} else {
 			//Should never append from the framework event
-			document.location = document.location;
+			window.location = window.location;
 		}
 	};
 	
@@ -7078,8 +7757,8 @@
 		return {
 			pages: {
 				notfound: function (key, data) {
-					if (!!data && !!data.url && data.url !== document.location.pathname) {
-						document.location = data.url;
+					if (!!data && !!data.url && data.url !== window.location.pathname) {
+						window.location = data.url;
 					}
 				}
 			}
@@ -7297,11 +7976,11 @@
 		if (!url) {
 			return;
 		}
-		var path = document.location.pathname;
+		var path = window.location.pathname;
 		if (!!rateList[path]) {
 			return;
 		}
-		var key = document.location.protocol + '//' + document.location.hostname + path;
+		var key = window.location.protocol + '//' + window.location.hostname + path;
 		var data = {
 			'fields[0][key]': key,
 			'fields[0][tag]': '',
@@ -7380,7 +8059,7 @@
 	var DELAY = App.debug() ? 1000 : 3000;
 	var scope = $();
 	var pageEnterTimeout = 0;
-	var rootUrl = document.location.protocol + '//' + document.location.host;
+	var rootUrl = window.location.protocol + '//' + window.location.host;
 	
 	var insureArray = function (a) {
 		return $.isArray(a) ? a : [a];
@@ -7487,8 +8166,8 @@
 		return {
 			pages: {
 				routeNotFound: function (key, data) {
-					if (!!data && !!data.url && data.url !== document.location.pathname) {
-						document.location = data.url;
+					if (!!data && !!data.url && data.url !== window.location.pathname) {
+						window.location = data.url;
 					}
 				}
 			}
@@ -7579,7 +8258,7 @@
 	var site = $('#site');
 	
 	var onApplyButton = function (key, options, e) {
-		var docLoc = document.location;
+		var docLoc = window.location;
 		var url = docLoc.protocol + '//' + docLoc.host + docLoc.pathname;
 		var defaultShareThisOption = {
 			service: 'sharethis',
@@ -7836,7 +8515,7 @@
 		}
 
 		site.on($.click, 'a[href^=\'#\']', function (e) {
-			var newUrl = document.location.pathname + document.location.search;
+			var newUrl = window.location.pathname + window.location.search;
 			newUrl += $(this).attr('href');
 			App.mediator.goto(newUrl);
 			return window.pd(e);
@@ -7899,42 +8578,12 @@
 		scrollingZoneContent: '.js-scrolling-zone-content'
 	};
 
-	var strategies = {
-		preventEvent: {
-			add: function () {
-				if (window.removeEventListener) {
-					window.removeEventListener('DOMMouseScroll', preventDefault, false);
-				}
-				window.onmousewheel = document.onmousewheel = null;
-				window.onwheel = null;
-				window.ontouchmove = null;
-				document.onkeydown = null;
-			},
-			remove: function () {
-				if (window.addEventListener) {// older FF
-					window.addEventListener('DOMMouseScroll', preventDefault, false);
-				}
-				window.onwheel = preventDefault; // modern standard
-				window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
-				window.ontouchmove = preventDefault; // mobile
-				document.onkeydown = preventDefaultForScrollKeys;
-			}
-		},
-		hideOverflow: {
-			add: function () {
-				html.removeClass('no-scroll');
-				fixScroll(0);
-			},
-			remove: function () {
-				if (!html.hasClass('no-scroll')) {
-					var x = win.width();
-					html.addClass('no-scroll');
-					fixScroll(win.width() - x);
-				}
-			}
-		}
+	var fixScroll = function (value) {
+		$('.js-fix-scroll-pad').css({paddingRight: value || ''});
+		$('.js-fix-scroll-right').css({right: value || ''});
+		$('.js-fix-scroll-margin').css({marginRight: value || ''});
 	};
-	
+
 	var keys = {
 		ArrowDown: true,
 		ArrowUp: true,
@@ -7942,12 +8591,6 @@
 		Home: true,
 		PageDown: true,
 		PageUp: true
-	};
-
-	var fixScroll = function (value) {
-		$('.js-fix-scroll-pad').css({paddingRight: value || ''});
-		$('.js-fix-scroll-right').css({right: value || ''});
-		$('.js-fix-scroll-margin').css({marginRight: value || ''});
 	};
 
 	var getWheelDirection = function (e) {
@@ -8000,6 +8643,42 @@
 		if (keys[e.key]) {
 			preventDefault(e);
 			return false;
+		}
+	};
+
+	var strategies = {
+		preventEvent: {
+			add: function () {
+				if (window.removeEventListener) {
+					window.removeEventListener('DOMMouseScroll', preventDefault, false);
+				}
+				window.onmousewheel = document.onmousewheel = null;
+				window.onwheel = null;
+				window.ontouchmove = null;
+				document.onkeydown = null;
+			},
+			remove: function () {
+				if (window.addEventListener) {// older FF
+					window.addEventListener('DOMMouseScroll', preventDefault, false);
+				}
+				window.onwheel = preventDefault; // modern standard
+				window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
+				window.ontouchmove = preventDefault; // mobile
+				document.onkeydown = preventDefaultForScrollKeys;
+			}
+		},
+		hideOverflow: {
+			add: function () {
+				html.removeClass('no-scroll');
+				fixScroll(0);
+			},
+			remove: function () {
+				if (!html.hasClass('no-scroll')) {
+					var x = win.width();
+					html.addClass('no-scroll');
+					fixScroll(win.width() - x);
+				}
+			}
 		}
 	};
 
@@ -8236,7 +8915,7 @@
 	var titleList = {};
 	
 	var init = function () {
-		titleList[document.location.pathname] = $('title').text();
+		titleList[window.location.pathname] = $('title').text();
 	};
 	
 	var onPageLoaded = function (key, data, e) {
@@ -8249,15 +8928,15 @@
 				}
 			});
 			if (!!!data.url) {
-				data.url = document.location.pathname;
+				data.url = window.location.pathname;
 			}
 			titleList[data.url] = title;
 		}
 	};
 	
 	var onEnter = function (key, data, e) {
-		if (titleList[document.location.pathname]) {
-			document.title = titleList[document.location.pathname];
+		if (titleList[window.location.pathname]) {
+			document.title = titleList[window.location.pathname];
 		}
 	};
 	
@@ -8811,7 +9490,7 @@
 	var throttledScroll = _.throttle(function () {
 		onReplaceState(null, {
 			title: document.title,
-			url: document.location.pathname + document.location.search + document.location.hash
+			url: window.location.pathname + window.location.search + window.location.hash
 		});
 	}, 500, {});
 	
@@ -9376,7 +10055,7 @@
 		var onFragmentChanged = function (key, data) {
 			var frag = !!data ? data : '';
 
-			changer.navigateTo(frag.split('/')[0]);
+			changer.navigateTo(frag.split('?')[0].split('/')[0]);
 		};
 		
 		var init = function () {
