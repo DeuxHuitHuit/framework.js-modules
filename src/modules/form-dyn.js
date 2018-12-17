@@ -123,7 +123,12 @@
 						});
 					},
 					success: function (data) {
-						data = $(data);
+						try {
+							data = $(data);
+						} catch (e) {
+							App.log({fx: 'error', args: e})
+							data = $();
+						}
 
 						if (data.find('form-dyn result').attr('success') === 'yes') {
 							var handlersErrors = false;
