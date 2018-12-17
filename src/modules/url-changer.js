@@ -133,8 +133,8 @@
 	var onPageEntering = function (key, data, e) {
 		var nextRoute = extractFragmentFromRoute(getNextRouteFromData(data), data.route);
 		
-		//Update browser url if we change page route
-		if (currentPageRoute != nextRoute) {
+		// Update browser url if we change page route or page key
+		if (currentPageRoute != nextRoute || currentPageKey != data.page.key()) {
 			//Keep a copy of the currentPage url
 			pageEntering(nextRoute);
 
