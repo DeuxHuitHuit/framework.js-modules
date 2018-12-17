@@ -9,7 +9,7 @@
 
 	'use strict';
 	
-	App.pages.exports('defaultPage', function () {
+	App.pages.exports('default-page', function () {
 		var page;
 		
 		var onEnter = function (next) {
