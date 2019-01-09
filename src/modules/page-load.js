@@ -52,6 +52,7 @@
 			}
 		}
 		App.log({
+			fx: 'info',
 			args: ['Progress %s %s', percent || 'timer', currentValue],
 			me: 'page-load'
 		});
@@ -78,7 +79,7 @@
 		
 		isStarted = true;
 		
-		App.log({args: 'Start', me: 'page-load'});
+		App.log({fx: 'info', args: 'Start', me: 'page-load'});
 		
 		setTimeout(progress, START_DELAY);
 	};
@@ -95,7 +96,7 @@
 			html.removeClass(LOADING);
 		}, CLOSE_DELAY);
 		
-		App.log({args: 'End', me: 'page-load'});
+		App.log({fx: 'info', args: 'End', me: 'page-load'});
 	};
 	
 	var loadprogress = function (key, data) {
