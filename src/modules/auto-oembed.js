@@ -36,7 +36,7 @@
 			t.data(DATA_KEY, null);
 		});
 	};
-	
+
 	var embedOne = function (ctx, force) {
 		var vPlayer = ctx.find(PLAYER_SEL);
 		var autoLoad = vPlayer.attr('data-autoload');
@@ -96,13 +96,12 @@
 			pauseAll(data.item);
 		}
 	};
-	
+
 	var onPlayBtnClick = function (e) {
 		var t = $(this);
 		var pauseAllOther = t.attr('data-auto-oembed-pause-other-on-play') === 'true';
 		var vCtn = t.closest(CTN_SEL);
 		var oembed = vCtn.data(DATA_KEY);
-		
 
 		if (pauseAllOther) {
 			pauseAll($('#site'));
@@ -110,7 +109,9 @@
 
 		if (!oembed) {
 			oembed = embedOne(vCtn, true);
-		} else {
+		}
+
+		if (!!oembed) {
 			App.modules.notify('changeState.update', {
 				item: vCtn,
 				state: 'playing',
@@ -118,34 +119,34 @@
 			});
 			oembed.play();
 		}
-		
+
 		return global.pd(e);
 	};
-	
+
 	var onPageEnter = function (key, data) {
 		page = $(data.page.key());
 		if (!isFirstTime) {
 			embedAll(page);
 		}
 	};
-	
+
 	var onPageLeave = function () {
 		destroyOembed(page);
 		page = $();
 		components = [];
 	};
-	
+
 	var onSiteLoaded = function () {
 		isFirstTime = false;
 		embedAll(site);
 	};
-	
+
 	var onInfiniteScrollLoaded = function (key, data) {
 		if (!!data.ctn) {
 			embedAll(data.ctn);
 		}
 	};
-	
+
 	var onArticleChangerEnter = function (key, data) {
 		destroyOembed(page);
 		
@@ -153,11 +154,11 @@
 			embedAll(data.article);
 		}
 	};
-	
+
 	var init = function () {
 		site.on(App.device.events.click, BTN_PLAY_SEL, onPlayBtnClick);
 	};
-	
+
 	var actions = function () {
 		return {
 			page: {
@@ -178,7 +179,7 @@
 			}
 		};
 	};
-	
+
 	App.modules.exports('auto-oembed', {
 		init: init,
 		actions: actions
