@@ -1,14 +1,14 @@
 /**
  * Auto animation
- * 
+ *
  * Simple module to init the animation and pause them when they are not in the viewport.
- * 
+ *
  * @author Deux Huit Huit
  * @uses animation.js (framework.js's component)
- * 
+ *
  * Basic usage:
- * 
- * <div class="js-auto-aniamtion" 
+ *
+ * <div class="js-auto-aniamtion"
  * 		data-animation-path="/my-beautiful-path/sick-animation.json"></div>
  */
 (function ($) {

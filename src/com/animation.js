@@ -1,12 +1,12 @@
 /**
  * Animation component
- * 
+ *
  * @author Deux Huit Huit
- * 
+ *
  * @uses lottie
  * @uses jQuery
  * @uses underscore.js
- * 
+ *
  * REQUIRE: https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.4.2/lottie.min.js
  * DOCS: https://github.com/airbnb/lottie-web
  */
@@ -36,7 +36,7 @@
 		/**
 		 * Go to a specific moment in the animation and pause.
 		 * @param {Number} value The wanted position in the timeline
-		 * @param {Boolean} isFrame if the value is a specific time on the 
+		 * @param {Boolean} isFrame if the value is a specific time on the
 		 *                          timeline or a specific frame
 		 */
 		var goToAndStop = function (value, isFrame) {
@@ -46,7 +46,7 @@
 		/**
 		 * Go to a specific moment in the animation and continue from there.
 		 * @param {Number} value The wanted position in the timeline
-		 * @param {Boolean} isFrame if the value is a specific time on the 
+		 * @param {Boolean} isFrame if the value is a specific time on the
 		 *                          timeline or a specific frame
 		 */
 		var goToAndPlay = function (value, isFrame) {

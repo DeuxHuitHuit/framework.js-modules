@@ -126,7 +126,7 @@
 						try {
 							data = $(data);
 						} catch (e) {
-							App.log({fx: 'error', args: e})
+							App.log({fx: 'error', args: e});
 							data = $();
 						}
 
