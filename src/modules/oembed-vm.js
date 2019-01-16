@@ -85,6 +85,10 @@
 					var player = global.$f($('iframe', container).get(0));
 					player.api('setVolume', value);
 				});
+			},
+
+			requiresVideo: function () {
+				return true;
 			}
 		});
 		App.modules.notify('oembed.providers.register', {

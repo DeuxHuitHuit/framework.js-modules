@@ -104,6 +104,10 @@
 						youtubeProvider.ytplayer.addEventListener('onStateChange', onStateChange);
 					});
 				});
+			},
+
+			requiresVideo: function () {
+				return true;
 			}
 		});
 		App.modules.notify('oembed.providers.register', {

@@ -47,6 +47,9 @@
 		finish: $.noop,
 		destroy: function (element) {
 			element.remove();
+		},
+		requiresVideo: function () {
+			return false;
 		}
 	};
 	

@@ -40,8 +40,12 @@
 	var embedOne = function (ctx, force) {
 		var vPlayer = ctx.find(PLAYER_SEL);
 		var autoLoad = vPlayer.attr('data-autoload');
-		
-		if (!force) {
+		var oembed = ctx.data(DATA_KEY) || App.components.create('oembed', {
+			container: ctx,
+			player: vPlayer
+		});
+
+		if (!force && oembed.requiresVideo()) {
 			if (App.device.mobile && autoLoad !== 'mobile' && autoLoad !== 'all') {
 				return;
 			}
@@ -49,11 +53,6 @@
 				return;
 			}
 		}
-		
-		var oembed = ctx.data(DATA_KEY) || App.components.create('oembed', {
-			container: ctx,
-			player: vPlayer
-		});
 
 		ctx.data(DATA_KEY, oembed);
 		components.push(oembed);
