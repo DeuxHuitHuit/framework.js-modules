@@ -10,10 +10,7 @@
 	
 	var win = $(window);
 	var body = $('body');
-	var sitePages = $('#site-pages');
-	
 	var DEFAULT_DELAY = 90;
-			
 	var beginCompleted = false;
 	var loadCompleted = false;
 
@@ -59,13 +56,9 @@
 		});
 	};
 	
-	var defaultBeginTransition = function (data, callback) {
+	var defaultBeginTransition = function (data) {
 		var bgTransition = $('#bg-transition', body);
 		var leavingPage = data.currentPage;
-		var enteringPage = data.nextPage;
-		
-		var domEnteringPage = $(enteringPage.key());
-		var domLeavingPage = $(leavingPage.key());
 		
 		beginCompleted = false;
 		loadCompleted = false;

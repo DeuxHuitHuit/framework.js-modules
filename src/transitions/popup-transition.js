@@ -79,7 +79,7 @@
 		});
 	};
 	
-	var defaultBeginTransition = function (data, callback) {
+	var defaultBeginTransition = function (data) {
 		var leavingPage = data.currentPage;
 		var domLeavingPage = $(leavingPage.key());
 		
