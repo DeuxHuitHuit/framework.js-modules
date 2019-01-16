@@ -3,12 +3,12 @@
  * 
  * @author Deux Huit Huit
  * 
- * @uses bodymovin
+ * @uses lottie
  * @uses jQuery
  * @uses underscore.js
  * 
- * REQUIRE: https://cdnjs.cloudflare.com/ajax/libs/bodymovin/4.13.0/bodymovin.min.js
- * DOCS: https://github.com/chenqingspring/bodymovin
+ * REQUIRE: https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.4.2/lottie.min.js
+ * DOCS: https://github.com/airbnb/lottie-web
  */
 (function ($) {
 
@@ -141,7 +141,7 @@
 		 * Render the animation
 		 */
 		var render = function () {
-			renderer = window.bodymovin.loadAnimation(computeOptions());
+			renderer = window.lottie.loadAnimation(computeOptions());
 			isPlaying = true;
 		};
 
@@ -149,7 +149,7 @@
 		 * Just to be sure the library is loaded before making any calls.
 		 */
 		var bm = function () {
-			return !!window.bodymovin;
+			return !!window.lottie;
 		};
 
 		/**

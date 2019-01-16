@@ -66,12 +66,20 @@
 		onPostScroll();
 	};
 
+	var destroyAll = function () {
+		$.each(animations, function (index, comp) {
+			comp.destroy();
+		});
+	};
+
 	var onPageLeave = function (key, data) {
 		if (!!data.canRemove) {
-			$.each(animations, function (index, comp) {
-				comp.destroy();
-			});
+			destroyAll();
 		}
+	};
+
+	var onArticleLeave = function () {
+		destroyAll();
 	};
 
 	var onPageEnter = function (key, data) {
@@ -91,7 +99,8 @@
 				leave: onPageLeave
 			},
 			articleChanger: {
-				enter: onArticleEnter
+				enter: onArticleEnter,
+				leaving: onArticleLeave
 			},
 			site: {
 				scroll: onScroll,
