@@ -61,7 +61,7 @@
 		startAnimToArticle: startAnimToArticleDefault,
 		endAnimToArticle: endAnimToArticleDefault,
 		trackHandle: true,
-		twoStepAnim: false,
+		twoStepAnim: true,
 		scrollToTop: false,
 		articleEnter: function (oldItem, newItem, o) {
 			if (!o.trackHandle) {
