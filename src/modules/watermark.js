@@ -16,8 +16,13 @@
 		site.find(sels.ctn).each(function () {
 			var t = $(this);
 			if (!!t.attr('data-href') && !t.html()) {
-				$.get(t.attr('data-href'), function (data) {
-					t.append($(data).find('watermark').html());
+				$.ajax({
+					method: 'GET',
+					crossDomain: true,
+					url: t.attr('data-href'),
+					success: function (data) {
+						t.append($(data).find('watermark').html());
+					}
 				});
 			}
 		});
