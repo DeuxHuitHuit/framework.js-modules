@@ -17,6 +17,7 @@
 	var body = $('body');
 	var bodyH = body.height();
 	var scrollH = bodyH - winH;
+	var DISABLED_CLASS = 'js-tracked-scroll-disabled';
 	
 	var onResize = function () {
 		winH = win.height();
@@ -24,15 +25,20 @@
 		scrollH = bodyH - winH;
 	};
 	
-	var onEnter = function (next, data) {
+	var onEnter = function (key, data) {
+		var root = !!data.page ? $(data.page.key()) : data.article ? $(data.article) : $();
 		tracker.init();
-		App.callback(next);
 		setTimeout(onResize, 100);
+		if (root.hasClass(DISABLED_CLASS)) {
+			tracker.disable();
+		} else {
+			tracker.enable();
+		}
 	};
 	
-	var onLeave = function (next, data) {
+	var onLeave = function () {
+		tracker.disable();
 		tracker.reset();
-		App.callback(next);
 	};
 	
 	var onScroll = function () {

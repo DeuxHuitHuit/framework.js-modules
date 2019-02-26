@@ -19,8 +19,12 @@
 	App.components.exports('checkpoint-event', function (options) {
 		var o = $.extend({}, defaults, options);
 		var gate = 0;
+		var enabled = true;
 
 		var track = function (perc) {
+			if (!enabled) {
+				return;
+			}
 			if ($.isNumeric(o.checkPoints[gate]) &&
 				$.isNumeric(perc) && o.checkPoints[gate] <= perc) {
 				var action = o.action + ' ' + o.checkPoints[gate] + '%';
@@ -37,6 +41,14 @@
 			gate = 0;
 		};
 		
+		var enable = function () {
+			enabled = true;
+		};
+		
+		var disable = function () {
+			enabled = false;
+		};
+		
 		var init = function (options) {
 			o = $.extend(o, options);
 			reset();
@@ -45,7 +57,9 @@
 		return {
 			init: init,
 			track: track,
-			reset: reset
+			reset: reset,
+			enable: enable,
+			disable: disable
 		};
 	});
 
