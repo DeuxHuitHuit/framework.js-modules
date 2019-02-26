@@ -48,12 +48,18 @@
 				format: {
 					pattern: '^.+\\.(?:docx?|pdf)$',
 					flags: 'i'
+				},
+				presence: {
+					allowEmpty: true
 				}
 			},
 			image: {
 				format: {
 					pattern: '^.+\\.(?:jpe?g|png)$',
 					flags: 'i'
+				},
+				presence: {
+					allowEmpty: true
 				}
 			},
 			phoneUs: {
@@ -69,6 +75,11 @@
 				format: {
 					pattern: '^http(.+)(youtube\\.com|youtu\\.be|vimeo\\.com|facebook\\.com)(.+)$',
 					flags: 'i'
+				}
+			},
+			confirmEmail: {
+				sameAs: {
+					target: 'input[name="form[email]"]'
 				}
 			}
 		},

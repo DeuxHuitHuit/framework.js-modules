@@ -226,6 +226,9 @@
 			w.validate.validators.url.options = {
 				message: ctn.attr('data-msg-invalid')
 			};
+			w.validate.validators.sameAs.options = {
+				message: ctn.attr('data-msg-confirm-email')
+			};
 			var dateFormat = 'DD-MM-YYYY';
 
 			if (!!window.moment) {
