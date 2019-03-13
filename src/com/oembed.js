@@ -117,12 +117,17 @@
 			oembedProvider.destroy(embededElement);
 		};
 		
+		var requiresVideo = function () {
+			return oembedProvider.requiresVideo();
+		};
+		
 		return {
 			load: load,
 			play: play,
 			pause: pause,
 			volume: setVolume,
-			destroy: destroy
+			destroy: destroy,
+			requiresVideo: requiresVideo
 		};
 	});
 	
