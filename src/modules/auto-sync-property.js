@@ -75,7 +75,7 @@
 			var sourceSelector = t.attr(SOURCE_ATTR);
 			var commonAncestorSelector = t.attr(COMMON_ANCESTOR_ATTR);
 			var withProperty = t.attr(WITH_PROPERTY_ATTR);
-			var scope = t;
+			var scope = site;
 			var source = null;
 			var aggregate = t.attr(AGGREGATE_ATTR);
 
