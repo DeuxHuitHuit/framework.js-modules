@@ -7,7 +7,7 @@
  * @uses jQuery
  * @uses underscore.js
  *
- * REQUIRE: https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.4.2/lottie.min.js
+ * REQUIRE: https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.5.0/lottie.min.js
  * DOCS: https://github.com/airbnb/lottie-web
  */
 (function ($) {
