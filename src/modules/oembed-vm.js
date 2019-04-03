@@ -28,6 +28,7 @@
 				return abstractProvider.getIframe()
 					.attr('src', '//player.vimeo.com/video/' + id +
 							'?autoplay=' + autoplay + '&loop=' + loop +
+							'&muted=' + autoplay +
 							'&api=1&html5=1&rel=' + rel + (extra || ''));
 			},
 			

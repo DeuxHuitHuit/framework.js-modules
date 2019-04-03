@@ -23,16 +23,21 @@
 		var youtubeProvider = $.extend({}, abstractProvider, {
 			getIframe: function (url, autoplay, loop, rel, extra) {
 				var id = url.indexOf('v=') > 0 ?
-					url.match(/v=([^\&]+)/mi)[1] : url.substring(url.lastIndexOf('/'));
+					url.match(/v=([^\&]+)/mi)[1] :
+					url.substring(url.lastIndexOf('/') + 1);
 				var autoPlay = autoplay !== undefined ? autoplay : 1;
 				var iframe = abstractProvider.getIframe()
 					.attr('id', 'youtube-player-' + id)
 					.attr('src', '//www.youtube.com/embed/' + id +
 						'?feature=oembed&autoplay=' + autoPlay +
+						'&mute=' + autoPlay +
+						'&origin=' + document.location.origin +
 						'&enablejsapi=1&version=3&html5=1&rel=' + rel + (extra || ''));
 				
 				App.loaded(YT, function (Player) {
-					youtubeProvider.ytplayer = new Player(iframe.get(0));
+					youtubeProvider.ytplayer = new Player(iframe.get(0), {
+						host: document.location.origin
+					});
 				});
 				
 				return iframe;
