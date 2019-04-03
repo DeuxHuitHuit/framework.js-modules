@@ -92,7 +92,7 @@
 			slider = item;
 			scope = s;
 
-			if (slider.find(o.cellSelector).length === 1) {
+			if (slider.find(o.cellSelector).length > 1) {
 
 				var flickOptions = flickityOptions();
 
