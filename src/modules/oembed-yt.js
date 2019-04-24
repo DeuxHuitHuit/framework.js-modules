@@ -35,9 +35,7 @@
 						'&enablejsapi=1&version=3&html5=1&rel=' + rel + (extra || ''));
 				
 				App.loaded(YT, function (Player) {
-					youtubeProvider.ytplayer = new Player(iframe.get(0), {
-						host: document.location.origin
-					});
+					youtubeProvider.ytplayer = new Player(iframe.get(0));
 				});
 				
 				return iframe;
