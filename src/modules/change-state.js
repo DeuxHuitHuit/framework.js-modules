@@ -35,24 +35,18 @@
 	var win = $(window);
 
 	var isSvgElement = function (item) {
-		return !!item && !!item.length &&
+		return !!item && !!item.length && (
 			item[0].nodeName == 'polygon' ||
 			item[0].nodeName == 'polyline' ||
 			item[0].nodeName == 'path' ||
 			item[0].nodeName == 'g' ||
 			item[0].nodeName == 'circle' ||
 			item[0].nodeName == 'rect' ||
-			item[0].nodeName == 'text';
+			item[0].nodeName == 'text'
+		);
 	};
 
-	var doSetItemState = function (item, state, flag) {
-		var flagClass = 'is-' + state;
-		var addClass = item.attr('data-' + state + '-state-add-class');
-		var remClass = item.attr('data-' + state + '-state-rem-class');
-		var notifyOn = item.attr('data-' + state + '-state-notify-on') || '';
-		var notifyOff = item.attr('data-' + state + '-state-notify-off') || '';
-
-		//Manage notify
+	var notifyChanges = function (notifyOn, notifyOff, item, state, flag) {
 		if (flag && notifyOn.length) {
 			$.each(notifyOn.split(','), function (i, e) {
 				App.mediator.notify(e, {item: item, state: state, flag: flag});
@@ -62,6 +56,23 @@
 				App.mediator.notify(e, {item: item, state: state, flag: flag});
 			});
 		}
+	};
+
+	var doSetItemState = function (item, state, flag) {
+		if (!item || !item.length || !item[0]) {
+			App.log('Called `doSetItemState` on an empty element collection, aborting.');
+			return;
+		}
+
+		var flagClass = 'is-' + state;
+		var addClass = item.attr('data-' + state + '-state-add-class');
+		var remClass = item.attr('data-' + state + '-state-rem-class');
+		var notifyOn = item.attr('data-' + state + '-state-notify-on') || '';
+		var notifyOff = item.attr('data-' + state + '-state-notify-off') || '';
+		var notifyOnAfter = item.attr('data-' + state + '-state-notify-on-after') || '';
+		var notifyOffAfter = item.attr('data-' + state + '-state-notify-off-after') || '';
+
+		notifyChanges(notifyOn, notifyOff, item, state, flag);
 
 		var ieBehavior = function () {
 			//IE BEHAVIOR
@@ -135,7 +146,7 @@
 		};
 
 		var setSvgItemState = function () {
-			if (item[0].classList) {
+			if (!!item[0] && item[0].classList) {
 				if (flag) {
 					item[0].classList.add(addClass);
 					item[0].classList.remove(remClass);
@@ -165,6 +176,8 @@
 				item.removeClass(flagClass);
 			}
 		}
+		
+		notifyChanges(notifyOnAfter, notifyOffAfter, item, state, flag);
 	};
 
 	var setItemState = function (item, state, flag) {
