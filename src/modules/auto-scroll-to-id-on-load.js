@@ -18,7 +18,7 @@
 		var h = window.location.href.split('#').length > 1 ?
 			window.location.href.split('#')[1] : '';
 		var target = !!h ? site.find('#' + h) : $();
-		var duration = !!data.noDuration ? 0 : 500;
+		var duration = !!data && !!data.noDuration ? 0 : 500;
 		
 		if (!!target.length) {
 			html.velocity('scroll', {
