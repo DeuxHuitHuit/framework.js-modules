@@ -9,6 +9,8 @@
 
 	'use strict';
 
+	/* jshint maxstatements:80 */
+
 	var defaults = {
 		container: '.js-form-field',
 		input: '.js-form-input',
@@ -168,15 +170,15 @@
 		var previewFile = function (ctn, file) {
 			ctn.empty();
 			//Change label caption
-			if (options.changeLabelTextToFilename) {
-				if (!!file && file.name) {
-					label.text(file.name);
-				} else {
-					label.text(label.attr('data-text'));
-				}
-			}
-
 			if (!!file && !!w.FileReader) {
+				if (options.changeLabelTextToFilename) {
+					if (!!file && file.name) {
+						label.text(file.name);
+					} else {
+						label.text(label.attr('data-text'));
+					}
+				}
+
 				var reader = new w.FileReader();
 				reader.onload = function readerLoaded (event) {
 					var r = event.target.result;
@@ -312,6 +314,17 @@
 			}
 		};
 
+		var isValidDocumentSize = function (value) {
+			//Validate max size
+			//2Mo -> Bytes
+			if (!!value) {
+				return parseInt(value) < 2 * 1024 * 1024;
+			}
+			
+			//No document ?
+			return true;
+		};
+
 		var tryValidate = function (value) {
 			try {
 				var constraints = {};
@@ -325,7 +338,26 @@
 					}
 				});
 
-				return w.validate.single(value, constraints, rulesOptions);
+				var validationResult = w.validate.single(value, constraints, rulesOptions);
+
+				//Validate file size for input file type
+				if (ctn.hasClass('js-input-file')) {
+					//Validate size
+					//Get file data if available.
+					var size = ctn.attr('data-form-file-size');
+					//Check if valide
+					if (!isValidDocumentSize(size)) {
+						//Add new Result with fail result
+						App.log('error-size');
+						if (!validationResult) {
+							validationResult = [];
+						}
+						var msg = ctn.closest('form').attr('data-msg-file-exceed-size');
+						validationResult.push(msg);
+					}
+				}
+
+				return validationResult;
 			}
 			catch (ex) {
 				App.log({fx: 'error', args: [ex]});
@@ -394,6 +426,18 @@
 			input[submittingFx](inputClasses.submitting);
 		};
 
+		var onInputFileChange = function (e) {
+			var file = !!e && !!e.target.files && e.target.files[0];
+			file = file || (input[0].files && input[0].files[0]);
+			
+			if (!!file) {
+				//Store data
+				ctn.attr('data-form-file-size', file.size);
+			} else {
+				ctn.removeAttr('data-form-file-size');
+			}
+		};
+
 		var attachEvents = function () {
 			var i;
 			if (!!options.formatEvents) {
@@ -454,6 +498,13 @@
 						e: e
 					});
 				});
+			}
+			if (!!ctn.find('[selected]').length) {
+				checkEmptiness();
+			}
+
+			if (ctn.hasClass('js-input-file')) {
+				input.on('change input', onInputFileChange);
 			}
 		};
 
@@ -521,5 +572,7 @@
 		};
 		return self;
 	});
+
+	/* jshint maxstatements:30 */
 
 })(jQuery, window, document, window.moment);
