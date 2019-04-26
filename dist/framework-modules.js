@@ -1,6 +1,6 @@
-/*! framework.js-modules - v1.11.0 - build 362 - 2018-11-01
+/*! framework.js-modules - v1.14.0 - build 363 - 2019-04-26
  * https://github.com/DeuxHuitHuit/framework.js-modules
- * Copyright (c) 2018 Deux Huit Huit (https://deuxhuithuit.com/);
+ * Copyright (c) 2019 Deux Huit Huit (https://deuxhuithuit.com/);
  * MIT *//**
  * @author Deux Huit Huit
  *
@@ -473,6 +473,209 @@
 })(jQuery, jQuery(window));
 
 /**
+ * Animation component
+ *
+ * @author Deux Huit Huit
+ *
+ * @uses lottie
+ * @uses jQuery
+ * @uses underscore.js
+ *
+ * REQUIRE: https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.5.0/lottie.min.js
+ * DOCS: https://github.com/airbnb/lottie-web
+ */
+(function ($) {
+
+	'use strict';
+
+	App.components.exports('animation', function (options) {
+
+		var animation = $();
+		var renderer = null;
+		var isPlaying = false;
+
+		var defaults = {
+			renderer: 'svg',
+			loop: false
+		};
+
+		/**
+		 * Modify the speed of the animation
+		 * @param {Number} speed The speed of the animation
+		 */
+		var setSpeed = function (speed) {
+			renderer.setSpeed(speed);
+		};
+
+		/**
+		 * Go to a specific moment in the animation and pause.
+		 * @param {Number} value The wanted position in the timeline
+		 * @param {Boolean} isFrame if the value is a specific time on the
+		 *                          timeline or a specific frame
+		 */
+		var goToAndStop = function (value, isFrame) {
+			renderer.goToAndStop(value, isFrame);
+		};
+
+		/**
+		 * Go to a specific moment in the animation and continue from there.
+		 * @param {Number} value The wanted position in the timeline
+		 * @param {Boolean} isFrame if the value is a specific time on the
+		 *                          timeline or a specific frame
+		 */
+		var goToAndPlay = function (value, isFrame) {
+			renderer.goToAndPlay(value, isFrame);
+		};
+
+		/**
+		 * Set the direction of the animation (-1 to play in reverse)
+		 * @param {Integer} direction the wanted direction of the animation
+		 */
+		var setDirection = function (direction) {
+			renderer.setDirection(direction);
+		};
+
+		/**
+		 * Play only parts of an animation
+		 * @param {Array} segments range of frame to play [fromFrame, toFrame]
+		 * @param {*} force Force the segment to play now
+		 */
+		var playSegments = function (segments, force) {
+			renderer.playSegments(segments, force);
+		};
+
+		/**
+		 * Plays the animation.
+		 * Please refer to the documentation if this method is not clear enough :)
+		 */
+		var play = function () {
+			if (!isPlaying) {
+				renderer.play();
+				isPlaying = true;
+			}
+		};
+
+		/**
+		 * Pause the animation
+		 */
+		var pause = function () {
+			if (!!isPlaying) {
+				renderer.pause();
+				isPlaying = false;
+			}
+		};
+
+		/**
+		 * Stop the animation
+		 */
+		var stop = function () {
+			renderer.stop();
+			isPlaying = false;
+		};
+
+		/**
+		 * Destroy the world, and yeah, the animation.
+		 */
+		var destroy = function () {
+			renderer.destroy();
+			renderer = null;
+			isPlaying = false;
+		};
+
+		/**
+		 * Compute the wanted option for a specific animation with the default values
+		 * and the given config in the data-attr.
+		 */
+		var computeOptions = function () {
+			var opts = {};
+			var dataAttrPattern = new RegExp('^animation');
+			opts = _.reduce(animation.data(), function (memo, value, key) {
+				if (dataAttrPattern.test(key)) {
+					if (_.isObject(value)) {
+						return memo;
+					}
+					var parsedKey = key.replace(dataAttrPattern, '');
+					var validKey = '';
+					if (!!parsedKey && !!parsedKey[0]) {
+						validKey = parsedKey[0].toLowerCase();
+						if (parsedKey.length >= 2) {
+							validKey += parsedKey.substr(1);
+						}
+						memo[validKey] = value;
+					}
+				}
+				return memo;
+			}, {});
+			return _.assign({
+				wrapper: animation.get(0)
+			}, defaults, opts);
+		};
+
+		/**
+		 * Render the animation
+		 */
+		var render = function () {
+			renderer = window.lottie.loadAnimation(computeOptions());
+			isPlaying = true;
+		};
+
+		/**
+		 * Just to be sure the library is loaded before making any calls.
+		 */
+		var bm = function () {
+			return !!window.lottie;
+		};
+
+		/**
+		 * Check if the animation is inited (It may not play but can be inited).
+		 */
+		var inited = function () {
+			return !!renderer;
+		};
+
+		/**
+		 * Check if the animation is playing
+		 */
+		var playing = function () {
+			return inited() && isPlaying;
+		};
+
+		/**
+		 * Get the jQuery element that contains the animation.
+		 */
+		var get = function () {
+			return animation;
+		};
+
+		/**
+		 * Set the ctn of the animation and call render if everything is ready
+		 * @param {jQuery Element} scope the container of the animation
+		 */
+		var init = function (scope) {
+			animation = scope;
+			App.loaded(bm, render);
+		};
+
+		return {
+			init: init,
+			inited: inited,
+			play: play,
+			playing: playing,
+			pause: pause,
+			stop: stop,
+			setSpeed: setSpeed,
+			seekAndStop: goToAndStop,
+			seek: goToAndPlay,
+			setDirection: setDirection,
+			playSegments: playSegments,
+			destroy: destroy,
+			get: get
+		};
+	});
+
+})(jQuery);
+
+/**
  * @author Deux Huit Huit
  *
  * Article Changer
@@ -535,7 +738,7 @@
 		startAnimToArticle: startAnimToArticleDefault,
 		endAnimToArticle: endAnimToArticleDefault,
 		trackHandle: true,
-		twoStepAnim: false,
+		twoStepAnim: true,
 		scrollToTop: false,
 		articleEnter: function (oldItem, newItem, o) {
 			if (!o.trackHandle) {
@@ -884,8 +1087,12 @@
 	App.components.exports('checkpoint-event', function (options) {
 		var o = $.extend({}, defaults, options);
 		var gate = 0;
+		var enabled = true;
 
 		var track = function (perc) {
+			if (!enabled) {
+				return;
+			}
 			if ($.isNumeric(o.checkPoints[gate]) &&
 				$.isNumeric(perc) && o.checkPoints[gate] <= perc) {
 				var action = o.action + ' ' + o.checkPoints[gate] + '%';
@@ -902,6 +1109,14 @@
 			gate = 0;
 		};
 		
+		var enable = function () {
+			enabled = true;
+		};
+		
+		var disable = function () {
+			enabled = false;
+		};
+		
 		var init = function (options) {
 			o = $.extend(o, options);
 			reset();
@@ -910,7 +1125,9 @@
 		return {
 			init: init,
 			track: track,
-			reset: reset
+			reset: reset,
+			enable: enable,
+			disable: disable
 		};
 	});
 
@@ -1010,7 +1227,7 @@
 			slider = item;
 			scope = s;
 
-			if (slider.find(o.cellSelector).length === 1) {
+			if (slider.find(o.cellSelector).length > 1) {
 
 				var flickOptions = flickityOptions();
 
@@ -1134,6 +1351,8 @@
 
 	'use strict';
 
+	/* jshint maxstatements:80 */
+
 	var defaults = {
 		container: '.js-form-field',
 		input: '.js-form-input',
@@ -1173,17 +1392,23 @@
 				format: {
 					pattern: '^.+\\.(?:docx?|pdf)$',
 					flags: 'i'
+				},
+				presence: {
+					allowEmpty: true
 				}
 			},
 			image: {
 				format: {
 					pattern: '^.+\\.(?:jpe?g|png)$',
 					flags: 'i'
+				},
+				presence: {
+					allowEmpty: true
 				}
 			},
 			phoneUs: {
 				format: {
-					pattern: '\\(?[0-9]{3}\\)?[- ]?([0-9]{3})[- ]?([0-9]{4})',
+					pattern: '\\+?1?[- ]?\\(?[0-9]{3}\\)?[- ]?[0-9]{3}[- ]?[0-9]{4}',
 					flags: 'i'
 				}
 			},
@@ -1194,6 +1419,11 @@
 				format: {
 					pattern: '^http(.+)(youtube\\.com|youtu\\.be|vimeo\\.com|facebook\\.com)(.+)$',
 					flags: 'i'
+				}
+			},
+			confirmEmail: {
+				sameAs: {
+					target: 'input[name="form[email]"]'
 				}
 			}
 		},
@@ -1282,15 +1512,15 @@
 		var previewFile = function (ctn, file) {
 			ctn.empty();
 			//Change label caption
-			if (options.changeLabelTextToFilename) {
-				if (!!file && file.name) {
-					label.text(file.name);
-				} else {
-					label.text(label.attr('data-text'));
-				}
-			}
-
 			if (!!file && !!w.FileReader) {
+				if (options.changeLabelTextToFilename) {
+					if (!!file && file.name) {
+						label.text(file.name);
+					} else {
+						label.text(label.attr('data-text'));
+					}
+				}
+
 				var reader = new w.FileReader();
 				reader.onload = function readerLoaded (event) {
 					var r = event.target.result;
@@ -1426,6 +1656,17 @@
 			}
 		};
 
+		var isValidDocumentSize = function (value) {
+			//Validate max size
+			//2Mo -> Bytes
+			if (!!value) {
+				return parseInt(value) < 2 * 1024 * 1024;
+			}
+			
+			//No document ?
+			return true;
+		};
+
 		var tryValidate = function (value) {
 			try {
 				var constraints = {};
@@ -1439,7 +1680,26 @@
 					}
 				});
 
-				return w.validate.single(value, constraints, rulesOptions);
+				var validationResult = w.validate.single(value, constraints, rulesOptions);
+
+				//Validate file size for input file type
+				if (ctn.hasClass('js-input-file')) {
+					//Validate size
+					//Get file data if available.
+					var size = ctn.attr('data-form-file-size');
+					//Check if valide
+					if (!isValidDocumentSize(size)) {
+						//Add new Result with fail result
+						App.log('error-size');
+						if (!validationResult) {
+							validationResult = [];
+						}
+						var msg = ctn.closest('form').attr('data-msg-file-exceed-size');
+						validationResult.push(msg);
+					}
+				}
+
+				return validationResult;
 			}
 			catch (ex) {
 				App.log({fx: 'error', args: [ex]});
@@ -1508,6 +1768,18 @@
 			input[submittingFx](inputClasses.submitting);
 		};
 
+		var onInputFileChange = function (e) {
+			var file = !!e && !!e.target.files && e.target.files[0];
+			file = file || (input[0].files && input[0].files[0]);
+			
+			if (!!file) {
+				//Store data
+				ctn.attr('data-form-file-size', file.size);
+			} else {
+				ctn.removeAttr('data-form-file-size');
+			}
+		};
+
 		var attachEvents = function () {
 			var i;
 			if (!!options.formatEvents) {
@@ -1568,6 +1840,13 @@
 						e: e
 					});
 				});
+			}
+			if (!!ctn.find('[selected]').length) {
+				checkEmptiness();
+			}
+
+			if (ctn.hasClass('js-input-file')) {
+				input.on('change input', onInputFileChange);
 			}
 		};
 
@@ -1635,6 +1914,8 @@
 		};
 		return self;
 	});
+
+	/* jshint maxstatements:30 */
 
 })(jQuery, window, document, window.moment);
 
@@ -1866,6 +2147,9 @@
 			w.validate.validators.url.options = {
 				message: ctn.attr('data-msg-invalid')
 			};
+			w.validate.validators.sameAs.options = {
+				message: ctn.attr('data-msg-confirm-email')
+			};
 			var dateFormat = 'DD-MM-YYYY';
 
 			if (!!window.moment) {
@@ -1936,17 +2220,26 @@
  * @author Deux Huit Huit
  *
  * Google maps component
+ *
+ * It needs to have the API key in the DOM as
+ * <script data-gmap-key="<YOUR KEY>"></script>
  */
 (function ($, win, global, undefined) {
 
 	'use strict';
 	
 	App.components.exports('googleMap', function (o) {
-		
+		var MAX_RETRIES = 40;
+		var scope;
 		var container;
 		var markers = [];
 		var map;
+		var mapIsReady = false;
 		var openedMarker;
+		var urlGoogleMaps = 'https://maps.googleapis.com/maps/api/js?key=' +
+			$('[data-gmap-key]').attr('data-gmap-key');
+		var urlInfobox = 'https://cdn.jsdelivr.net/gh/googlemaps/v3-utility-library@' +
+			'4cd67683a905265bfe5108205d8fff676eced4d8/infobox/src/infobox_packed.js';
 		
 		var closeAllPopup = function () {
 			if (!!openedMarker) {
@@ -1955,8 +2248,10 @@
 		};
 		
 		var defaultMapOptions = {
+			selectorCtn: '',
 			defaultMarkerOptions: {},
 			mapTypeId: null,
+			zoom: 10,
 			markerAction: function () {
 				var reelPosition = new google.maps.LatLng(
 					this.getPosition().lat() + 0.005,
@@ -1968,10 +2263,35 @@
 				openedMarker = this;
 			},
 			beforeCreate: null,
-			afterCreate: null
+			afterCreate: null,
+			boundsChanged: null,
+			dragBoundsChanged: null,
+			dragBoundsChangedDelay: 250,
+			drag: null,
+			styles: []
 		};
 		
 		var mapOptions = $.extend({}, defaultMapOptions, o);
+		
+		var googleGeocoder = function () {
+			return !!global.google && !!google.maps && !!google.maps.Geocoder;
+		};
+		
+		// GEO LOCALISATION
+		var geolocAddress = function (data, callback) {
+			App.loaded(googleGeocoder, function () {
+				var geo = new google.maps.Geocoder();
+				var res;
+
+				geo.geocode(data, function (results, status) {
+					if (status == google.maps.GeocoderStatus.OK) {
+						res = results[0].geometry.location;
+					}
+					
+					App.callback(callback, [res, results]);
+				});
+			}, MAX_RETRIES);
+		};
 		
 		var addMarker = function (o) {
 			
@@ -2000,13 +2320,15 @@
 					markerOption.position.longitude
 				);
 			}
-			
+
 			var marker = new google.maps.Marker({
 				position: markerOption.LatLng,
 				map: map,
 				icon: markerOption.iconImage,
 				shadow: markerOption.iconShadow,
-				zIndex: markerOption.zIndex
+				zIndex: markerOption.zIndex,
+				animation: markerOption.animation,
+				optimized: false
 			});
 			
 			markers.push(marker);
@@ -2018,9 +2340,17 @@
 				});
 				
 				google.maps.event.addListener(marker, 'click', mapOptions.markerAction);
+			} else if (markerOption.markerCustomAction) {
+				google.maps.event.addListener(marker, 'click', function () {
+					App.callback(markerOption.markerCustomAction, [map, marker]);
+				});
 			} else if (mapOptions.markerCustomAction) {
-				google.maps.event.addListener(marker, 'click', mapOptions.markerCustomAction);
+				google.maps.event.addListener(marker, 'click', function () {
+					App.callback(mapOptions.markerCustomAction, [map, marker]);
+				});
 			}
+			
+			return marker;
 		};
 		
 		var createMap = function () {
@@ -2040,9 +2370,28 @@
 			}
 			map = new google.maps.Map(container.get(0), mapOptions);
 			
-			google.maps.event.addListener(map, 'bounds_changed', function () {
-				//notify page that bounds changed
-				App.mediator.notifyCurrentPage('map.boundsChanged', map.getBounds());
+			if (!!mapOptions.boundsChanged) {
+				google.maps.event.addListener(map, 'bounds_changed', function () {
+					var bounds = map.getBounds();
+					App.callback(mapOptions.boundsChanged, [bounds]);
+				});
+			}
+			if (!!mapOptions.dragBoundsChanged) {
+				var debouncedDragEnd = _.debounce(function () {
+					var bounds = map.getBounds();
+					App.callback(mapOptions.dragBoundsChanged, [bounds]);
+				}, mapOptions.dragBoundsChangedDelay);
+				google.maps.event.addListener(map, 'dragend', debouncedDragEnd);
+			}
+			if (!!mapOptions.drag) {
+				google.maps.event.addListener(map, 'drag', function () {
+					var bounds = map.getBounds();
+					App.callback(mapOptions.drag, [bounds]);
+				});
+			}
+			google.maps.event.addListenerOnce(map, 'idle', function () {
+				mapIsReady = true;
+				App.callback(mapOptions.ready, [google.maps]);
 			});
 			
 			App.callback(mapOptions.afterCreate, [google.maps]);
@@ -2059,28 +2408,82 @@
 			}
 		};
 		
-		var init = function (p, selector) {
-			container = $(selector, p);
-			App.loaded(googleMap, function () {
-				initMap();
-			});
+		var loadDeps = function (ready) {
+			ready = ready || $.noop;
+			if (!window.isMapApiLoaded) {
+				$.getScript(urlGoogleMaps).then(function () {
+					$.getScript(urlInfobox).then(ready);
+				});
+				window.isMapApiLoaded = true;
+			} else {
+				ready();
+			}
+		};
+		
+		var init = function (s, options, initCompleteCallback) {
+			mapOptions = $.extend(mapOptions, options);
+			scope = s;
+			container = scope.find(mapOptions.selectorCtn);
+			var ready = function () {
+				App.loaded(googleMap, function () {
+					initMap();
+					App.callback(initCompleteCallback);
+				}, MAX_RETRIES);
+			};
+			
+			loadDeps(ready);
 		};
 		
 		return {
 			init: init,
+			loadDeps: loadDeps,
 			addMarker: addMarker,
 			center: function (lat, lng) {
 				map.panTo(new google.maps.LatLng(lat, lng));
+				App.log('[map] center ' + lat + ', ' + lng);
 			},
 			zoom: function (value) {
 				map.setZoom(value);
+				App.log('[map] zoom ' + value);
 			},
-			fitBounds: function (viewport) {
+			fitBounds: function (viewport, padding) {
 				map.fitBounds(new google.maps.LatLngBounds(
 					viewport.southwest, viewport.northeast
-				));
+				), padding);
+				App.log('[map] fitBound ' +
+					viewport.southwest.lng() + ', ' +
+					viewport.southwest.lat() + ' - ' +
+					viewport.northeast.lng() + ', ' +
+					viewport.northeast.lat()
+				);
 			},
-			closeAllPopup: closeAllPopup
+			bounds: function () {
+				return map.getBounds();
+			},
+			decZoom: function () {
+				map.setZoom(Math.min(1, map.getZoom() - 1));
+				App.log('[map] decZoom');
+			},
+			closeAllPopup: closeAllPopup,
+			setMarkerVisibility: function (marker, isVisible) {
+				marker.setVisible(isVisible);
+			},
+			getMarkers: function () {
+				return markers;
+			},
+			geolocAddress: geolocAddress,
+			googleMap: function () {
+				return googleMap();
+			},
+			mapIsReady: function () {
+				return googleMap() && !!map && !!mapIsReady;
+			},
+			addListenerOnce: function (event, fn) {
+				return google.maps.event.addListenerOnce(map, event, fn);
+			},
+			getZoom: function () {
+				return map.getZoom();
+			}
 		};
 	});
 	
@@ -2452,6 +2855,9 @@
 		finish: $.noop,
 		destroy: function (element) {
 			element.remove();
+		},
+		requiresVideo: function () {
+			return false;
 		}
 	};
 	
@@ -2519,12 +2925,17 @@
 			oembedProvider.destroy(embededElement);
 		};
 		
+		var requiresVideo = function () {
+			return oembedProvider.requiresVideo();
+		};
+		
 		return {
 			load: load,
 			play: play,
 			pause: pause,
 			volume: setVolume,
-			destroy: destroy
+			destroy: destroy,
+			requiresVideo: requiresVideo
 		};
 	});
 	
@@ -3273,6 +3684,124 @@
 		actions: actions
 	});
 	
+})(jQuery);
+
+/**
+ * Auto animation
+ *
+ * Simple module to init the animation and pause them when they are not in the viewport.
+ *
+ * @author Deux Huit Huit
+ * @uses animation.js (framework.js's component)
+ *
+ * Basic usage:
+ *
+ * <div class="js-auto-aniamtion"
+ * 		data-animation-path="/my-beautiful-path/sick-animation.json"></div>
+ */
+(function ($) {
+
+	'use strict';
+
+	var win = $(window);
+	var scope = $();
+
+	var CAN_PLAY_KEY = 'auto-animation-can-play';
+
+	var sels = {
+		item: '.js-auto-animation'
+	};
+
+	var animations = [];
+
+	var initAll = function () {
+		scope.find(sels.item).each(function () {
+			var t = $(this);
+			var comp = App.components.create('animation');
+			comp.init(t);
+			animations.push(comp);
+		});
+	};
+
+	var onScroll = function () {
+		var currentScroll = win.scrollTop();
+		var winHeight = win.height();
+		$.each(animations, function (index, comp) {
+			var t = comp.get();
+
+			if (!!t.length) {
+				var offset = t.offset().top;
+				var height = t.outerHeight();
+				var notHigherThanViewport = currentScroll < offset + height;
+				var notLowerThanViewport = currentScroll + winHeight > offset;
+
+				t.data(CAN_PLAY_KEY, notHigherThanViewport && notLowerThanViewport);
+			}
+		});
+	};
+
+	var onPostScroll = function () {
+		$.each(animations, function (index, comp) {
+			var t = comp.get();
+			if (!!t.length) {
+				(!!t.data(CAN_PLAY_KEY) ? comp.play : comp.pause)();
+			}
+		});
+	};
+
+	var onResize = function () {
+		onScroll();
+		onPostScroll();
+	};
+
+	var destroyAll = function () {
+		$.each(animations, function (index, comp) {
+			comp.destroy();
+		});
+	};
+
+	var onPageLeave = function (key, data) {
+		if (!!data.canRemove) {
+			destroyAll();
+		}
+	};
+
+	var onArticleLeave = function () {
+		destroyAll();
+	};
+
+	var onPageEnter = function (key, data) {
+		scope = $(data.page.key());
+		initAll();
+	};
+
+	var onArticleEnter = function (key, data) {
+		scope = $(data.article);
+		initAll();
+	};
+
+	var actions = function () {
+		return {
+			page: {
+				enter: onPageEnter,
+				leave: onPageLeave
+			},
+			articleChanger: {
+				enter: onArticleEnter,
+				leaving: onArticleLeave
+			},
+			site: {
+				scroll: onScroll,
+				postscroll: onPostScroll,
+				resize: onResize
+			}
+		};
+	};
+
+	App.modules.exports('auto-animation', {
+		actions: actions
+	});
+
 })(jQuery);
 
 /**
@@ -4189,6 +4718,69 @@
 })(jQuery);
 
 /**
+ * @author Deux Huit Huit
+ *
+ * Auto native share form
+ * Uses https://github.com/WICG/web-share
+ */
+(function ($, global, undefined) {
+
+	'use strict';
+
+	var site = $('#site');
+	var sels = {
+		item: '.js-native-share'
+	};
+	var SUPPORTED = !!window.navigator.share;
+	var scope = $();
+
+	var onClick = function (e) {
+		window.navigator.share({
+			title: document.title,
+			url: document.location.href || ('' + document.location)
+		});
+		return global.pd(e);
+	};
+
+	var init = function () {
+		if (SUPPORTED) {
+			site.on(App.device.events.click, sels.item, onClick);
+		}
+	};
+
+	var removeAll = !SUPPORTED && function () {
+		scope.find(sels.item).remove();
+	};
+
+	var onPageEnter = !SUPPORTED && function (key, data) {
+		scope = $(data.page.key());
+		removeAll();
+	};
+
+	var onArticleEnter = !SUPPORTED && function (key, data) {
+		scope = $(data.article);
+		removeAll();
+	};
+
+	var actions = SUPPORTED ? undefined : function () {
+		return {
+			page: {
+				enter: onPageEnter
+			},
+			articleChanger: {
+				enter: onArticleEnter
+			}
+		};
+	};
+
+	App.modules.exports('auto-native-share', {
+		init: init,
+		actions: actions
+	});
+
+})(jQuery, window);
+
+/**
  *  @author Deux Huit Huit
  *
  *  Auto oembed
@@ -4226,12 +4818,16 @@
 			t.data(DATA_KEY, null);
 		});
 	};
-	
+
 	var embedOne = function (ctx, force) {
 		var vPlayer = ctx.find(PLAYER_SEL);
 		var autoLoad = vPlayer.attr('data-autoload');
-		
-		if (!force) {
+		var oembed = ctx.data(DATA_KEY) || App.components.create('oembed', {
+			container: ctx,
+			player: vPlayer
+		});
+
+		if (!force && oembed.requiresVideo()) {
 			if (App.device.mobile && autoLoad !== 'mobile' && autoLoad !== 'all') {
 				return;
 			}
@@ -4239,11 +4835,6 @@
 				return;
 			}
 		}
-		
-		var oembed = ctx.data(DATA_KEY) || App.components.create('oembed', {
-			container: ctx,
-			player: vPlayer
-		});
 
 		ctx.data(DATA_KEY, oembed);
 		components.push(oembed);
@@ -4286,13 +4877,12 @@
 			pauseAll(data.item);
 		}
 	};
-	
+
 	var onPlayBtnClick = function (e) {
 		var t = $(this);
 		var pauseAllOther = t.attr('data-auto-oembed-pause-other-on-play') === 'true';
 		var vCtn = t.closest(CTN_SEL);
 		var oembed = vCtn.data(DATA_KEY);
-		
 
 		if (pauseAllOther) {
 			pauseAll($('#site'));
@@ -4300,7 +4890,9 @@
 
 		if (!oembed) {
 			oembed = embedOne(vCtn, true);
-		} else {
+		}
+
+		if (!!oembed) {
 			App.modules.notify('changeState.update', {
 				item: vCtn,
 				state: 'playing',
@@ -4308,34 +4900,34 @@
 			});
 			oembed.play();
 		}
-		
+
 		return global.pd(e);
 	};
-	
+
 	var onPageEnter = function (key, data) {
 		page = $(data.page.key());
 		if (!isFirstTime) {
 			embedAll(page);
 		}
 	};
-	
+
 	var onPageLeave = function () {
 		destroyOembed(page);
 		page = $();
 		components = [];
 	};
-	
+
 	var onSiteLoaded = function () {
 		isFirstTime = false;
 		embedAll(site);
 	};
-	
+
 	var onInfiniteScrollLoaded = function (key, data) {
 		if (!!data.ctn) {
 			embedAll(data.ctn);
 		}
 	};
-	
+
 	var onArticleChangerEnter = function (key, data) {
 		destroyOembed(page);
 		
@@ -4343,11 +4935,11 @@
 			embedAll(data.article);
 		}
 	};
-	
+
 	var init = function () {
 		site.on(App.device.events.click, BTN_PLAY_SEL, onPlayBtnClick);
 	};
-	
+
 	var actions = function () {
 		return {
 			page: {
@@ -4368,7 +4960,7 @@
 			}
 		};
 	};
-	
+
 	App.modules.exports('auto-oembed', {
 		init: init,
 		actions: actions
@@ -4697,7 +5289,7 @@
 		var h = window.location.href.split('#').length > 1 ?
 			window.location.href.split('#')[1] : '';
 		var target = !!h ? site.find('#' + h) : $();
-		var duration = !!data.noDuration ? 0 : 500;
+		var duration = !!data && !!data.noDuration ? 0 : 500;
 		
 		if (!!target.length) {
 			html.velocity('scroll', {
@@ -5059,7 +5651,7 @@
 			var sourceSelector = t.attr(SOURCE_ATTR);
 			var commonAncestorSelector = t.attr(COMMON_ANCESTOR_ATTR);
 			var withProperty = t.attr(WITH_PROPERTY_ATTR);
-			var scope = t;
+			var scope = site;
 			var source = null;
 			var aggregate = t.attr(AGGREGATE_ATTR);
 
@@ -5432,6 +6024,326 @@
 })(jQuery, window);
 
 /**
+ * @author Deux Huit Huit
+ *
+ * Auto tooltips module
+ *
+ * Scan certain places for words and inject a tooltip in place of the text word
+ *
+ */
+/* jshint maxstatements:38 */
+(function ($, undefined) {
+
+	'use strict';
+
+	var win = $(window);
+	var site = $('#site');
+	var page = $('.page');
+	var ajaxTooltipsUrl = '/' + $('html').attr('lang') + '/ajax-tooltips/';
+	
+	var INITED_CLASS = 'is-tooltips-inited';
+	var TOOLTIPS_TRIGGER_SELECTOR = '.js-tooltips-trigger';
+	var TOOLTIPS_BUBBLE_SELECTOR = '.js-tooltips-bubble';
+	var TOOLTIPS_TARGET_SELECTOR = '.js-tooltips-target';
+	var TOOLTIPS_TARGET_ELEMENT_SELECTOR = 'p, li';
+	var TOOLTIPS_EXCLUDED_ELEMENTS_SELECTOR = 'a, button, img, h1, h2, h3, h4, h5, h6';
+	var WORD_ATTR = 'data-word';
+	
+	var NODE_TYPE_TEXT = 3;
+	var NODE_TYPE_ELEMENT = 1;
+	
+	var tooltips = $();
+	var ctn = $();
+	var bubbles = [];
+	
+	var resizeTimer = 0;
+	
+	var track = function (action, label, value) {
+		$.sendEvent('glossary', action, label, value);
+	};
+	
+	var closeAll = function () {
+		$.each(bubbles, function () {
+			window.updateState($(this), false, 'tooltip');
+		});
+	};
+	
+	var calcTooltipsPosition = function (b) {
+		var word = b.attr(WORD_ATTR).toLowerCase();
+		var trigger = ctn.find(
+			TOOLTIPS_TRIGGER_SELECTOR + '[' + WORD_ATTR + '="' + word + '"]'
+		);
+		var left = '';
+		var top = '';
+		
+		if (!!trigger.length) {
+			var width = b.outerWidth();
+			var height = b.outerHeight();
+			var offsetParent = b.offsetParent();
+			
+			//left position to already center the tooltip without a translate
+			left = trigger.offset().left - ((width - trigger.outerWidth()) / 2);
+			//on top of the word (minus arrow height)
+			top = trigger.offset().top - height - 9 - offsetParent.offset().top;
+			
+			//check if tooltip is out of bounds
+			var isOutTop = top < 0;
+			var isOutLeft = left < 0;
+			var isOutRight = (left + width) > win.width();
+			var underTop = trigger.offset().top + trigger.outerHeight() + height;
+			
+			// if top is out of bounds and bottom will not be out of bounds
+			// if moved, place tooltip under word
+			if (isOutTop && underTop < win.height()) {
+				top = underTop;
+			}
+			
+			if (isOutLeft) {
+				left = trigger.closest('div').offset().left;
+			}
+			
+			if (isOutRight) {
+				left = trigger.closest('div').offset().left - (
+					width - trigger.closest('div').width()
+				);
+			}
+			
+			top = top + 'px';
+			left = left + 'px';
+		}
+		
+		b.data('fx', function () {
+			b.css({
+				top: top,
+				left: left
+			});
+		});
+	};
+	
+	var setTooltipsPosition = function (b) {
+		App.callback(b.data('fx'));
+		b.removeData('fx');
+	};
+	
+	var findWordInTarget = function (word, target, tooltip) {
+		var matchingPattern = new RegExp('\\b' + word + '\\b', 'ig');
+		var replacePattern = new RegExp('\\b(' + word + ')\\b', 'ig');
+		var nodes = target.contents();
+		var wordFound = false;
+		
+		$.each(nodes, function () {
+			var t = this;
+			var nodeType = t.nodeType;
+			var text = $(t).text();
+			
+			matchingPattern.lastIndex = 0;
+			replacePattern.lastIndex = 0;
+			
+			if (nodeType === NODE_TYPE_TEXT && matchingPattern.test(text)) {
+				var tooltipTriggerText = $('<div/>').append(
+					tooltip.find(TOOLTIPS_TRIGGER_SELECTOR).clone()
+				).html().replace(matchingPattern, '$1');
+				var tooltipBubble = tooltip.find(TOOLTIPS_BUBBLE_SELECTOR).clone();
+				var parent = $(t).parent();
+				
+				ctn.append(tooltipBubble);
+				$(t).replaceWith(text.replace(replacePattern, tooltipTriggerText));
+				parent.find('[' + WORD_ATTR + ']').attr(WORD_ATTR, word.toLowerCase());
+				
+				if (!!tooltipBubble.length) {
+					bubbles.push(tooltipBubble);
+				}
+				wordFound = true;
+				return false;
+			} else if (nodeType === NODE_TYPE_ELEMENT &&
+				!$(t).is(TOOLTIPS_EXCLUDED_ELEMENTS_SELECTOR)) {
+				findWordInTarget(word, $(t), tooltip);
+			}
+		});
+		
+		return wordFound;
+	};
+	
+	//MOUSE HOVER EVENTS
+	var toggleHover = function (t, isOn) {
+		var word = t.attr(WORD_ATTR).toLowerCase();
+		var bubble = t.is(TOOLTIPS_BUBBLE_SELECTOR) ?
+			t :
+			ctn.find(TOOLTIPS_BUBBLE_SELECTOR + '[' + WORD_ATTR + '="' + word + '"]');
+			
+		calcTooltipsPosition(bubble);
+		setTooltipsPosition(bubble);
+		window.updateState(bubble, isOn, 'tooltip');
+	};
+	
+	var onMouseenter = function () {
+		var t = $(this);
+		toggleHover(t, true);
+		track('over', t.text());
+	};
+	
+	var onMouseleave = function () {
+		var t = $(this);
+		toggleHover(t, false);
+	};
+	
+	
+	// CLICK EVENTS
+	var onTriggerClick = function (e) {
+		var t = $(this);
+		var word = t.attr(WORD_ATTR).toLowerCase();
+		var bubble = ctn.find(
+			TOOLTIPS_BUBBLE_SELECTOR + '[' + WORD_ATTR + '="' + word + '"]'
+		);
+		
+		closeAll();
+		if (bubble.hasClass('is-tooltip')) {
+			site.off($.click, closeAll);
+		} else {
+			calcTooltipsPosition(bubble);
+			setTooltipsPosition(bubble);
+			window.updateState(bubble, true, 'tooltip');
+			site.on($.click, closeAll);
+			track('click', t.text());
+		}
+		
+		return window.pd(e);
+	};
+	
+	var onCloseClick = function () {
+		var t = $(this);
+		var bubble = t.closest(TOOLTIPS_BUBBLE_SELECTOR);
+
+		window.updateState(bubble, false, 'tooltip');
+	};
+	
+	var initTooltips = function () {
+		if (!!tooltips.length) {
+			if (!ctn.hasClass(INITED_CLASS)) {
+				ctn.addClass(INITED_CLASS);
+				
+				var targets = ctn.find(TOOLTIPS_TARGET_SELECTOR)
+					.find(TOOLTIPS_TARGET_ELEMENT_SELECTOR);
+					
+				tooltips.each(function () {
+					var tt = $(this);
+					var word = tt.attr(WORD_ATTR);
+					
+					targets.each(function () {
+						return !findWordInTarget(word, $(this), tt);
+					});
+				});
+			}
+			
+			// Tooltip visible on click on touch device. otherwise, it is visible on hover
+			if (!!$.touch) {
+				ctn.on(
+					App.device.events.click, 'button' + TOOLTIPS_TRIGGER_SELECTOR, onTriggerClick
+				);
+			} else {
+				ctn.on(
+					'mouseenter',
+					'button' + TOOLTIPS_TRIGGER_SELECTOR + ', ' + TOOLTIPS_BUBBLE_SELECTOR,
+					onMouseenter
+				);
+				ctn.on(
+					'mouseleave',
+					'button' + TOOLTIPS_TRIGGER_SELECTOR + ', ' + TOOLTIPS_BUBBLE_SELECTOR,
+					onMouseleave
+				);
+			}
+		}
+	};
+
+	var pageEnter = function (key, data) {
+		page = $(data.page.key());
+		ctn = !!page.find('.js-article').length ? page.find('.js-article') : page;
+		initTooltips();
+	};
+
+	var onArticleEntering = function (key, data) {
+		ctn = $(data.article);
+		initTooltips();
+	};
+	
+	var onResize = function () {
+		window.craf(resizeTimer);
+
+		resizeTimer = window.raf(closeAll);
+	};
+	
+	var destroy = function () {
+		if (!!$.touch) {
+			ctn.off(App.device.events.click, 'button' + TOOLTIPS_TRIGGER_SELECTOR, onTriggerClick);
+			site.off($.click, closeAll);
+		} else {
+			ctn.off(
+				'mouseenter',
+				'button' + TOOLTIPS_TRIGGER_SELECTOR + ', ' + TOOLTIPS_BUBBLE_SELECTOR,
+				onMouseenter
+			);
+			ctn.off(
+				'mouseleave',
+				'button' + TOOLTIPS_TRIGGER_SELECTOR + ', ' + TOOLTIPS_BUBBLE_SELECTOR,
+				onMouseleave
+			);
+		}
+		closeAll();
+		ctn = $();
+		$.each(bubbles, function () {
+			$(this).remove();
+		});
+		bubbles = [];
+	};
+	
+	var loadTooltips = function () {
+		window.Loader.load({
+			url: ajaxTooltipsUrl,
+			success: function (data) {
+				tooltips = $($(data).find('result').html());
+				initTooltips();
+			},
+			error: function () {
+				App.log('Failed loading tooltips');
+			}
+		});
+	};
+	
+	var init = function () {
+		setTimeout(loadTooltips, 3000);
+	};
+
+	var actions = function () {
+		return {
+			site: {
+				resize: onResize
+			},
+			page: {
+				enter: pageEnter,
+				leaving: destroy
+			},
+			articleChanger: {
+				entering: onArticleEntering,
+				leaving: destroy
+			},
+			decisionTree: {
+				nodeLoaded: function (key, data) {
+					destroy();
+					ctn = $(data.item);
+					initTooltips();
+				}
+			}
+		};
+	};
+
+	var autoTooltips = App.modules.exports('auto-tooltips', {
+		init: init,
+		actions: actions
+	});
+
+})(jQuery);
+
+/**
  *  @author Deux Huit Huit
  *
  *  Auto Tracked Page module
@@ -5450,6 +6362,7 @@
 	var body = $('body');
 	var bodyH = body.height();
 	var scrollH = bodyH - winH;
+	var DISABLED_CLASS = 'js-tracked-scroll-disabled';
 	
 	var onResize = function () {
 		winH = win.height();
@@ -5457,15 +6370,20 @@
 		scrollH = bodyH - winH;
 	};
 	
-	var onEnter = function (next, data) {
+	var onEnter = function (key, data) {
+		var root = !!data.page ? $(data.page.key()) : data.article ? $(data.article) : $();
 		tracker.init();
-		App.callback(next);
 		setTimeout(onResize, 100);
+		if (root.hasClass(DISABLED_CLASS)) {
+			tracker.disable();
+		} else {
+			tracker.enable();
+		}
 	};
 	
-	var onLeave = function (next, data) {
+	var onLeave = function () {
+		tracker.disable();
 		tracker.reset();
-		App.callback(next);
 	};
 	
 	var onScroll = function () {
@@ -5851,24 +6769,18 @@
 	var win = $(window);
 
 	var isSvgElement = function (item) {
-		return !!item && !!item.length &&
+		return !!item && !!item.length && (
 			item[0].nodeName == 'polygon' ||
 			item[0].nodeName == 'polyline' ||
 			item[0].nodeName == 'path' ||
 			item[0].nodeName == 'g' ||
 			item[0].nodeName == 'circle' ||
 			item[0].nodeName == 'rect' ||
-			item[0].nodeName == 'text';
+			item[0].nodeName == 'text'
+		);
 	};
 
-	var doSetItemState = function (item, state, flag) {
-		var flagClass = 'is-' + state;
-		var addClass = item.attr('data-' + state + '-state-add-class');
-		var remClass = item.attr('data-' + state + '-state-rem-class');
-		var notifyOn = item.attr('data-' + state + '-state-notify-on') || '';
-		var notifyOff = item.attr('data-' + state + '-state-notify-off') || '';
-
-		//Manage notify
+	var notifyChanges = function (notifyOn, notifyOff, item, state, flag) {
 		if (flag && notifyOn.length) {
 			$.each(notifyOn.split(','), function (i, e) {
 				App.mediator.notify(e, {item: item, state: state, flag: flag});
@@ -5878,6 +6790,23 @@
 				App.mediator.notify(e, {item: item, state: state, flag: flag});
 			});
 		}
+	};
+
+	var doSetItemState = function (item, state, flag) {
+		if (!item || !item.length || !item[0]) {
+			App.log('Called `doSetItemState` on an empty element collection, aborting.');
+			return;
+		}
+
+		var flagClass = 'is-' + state;
+		var addClass = item.attr('data-' + state + '-state-add-class');
+		var remClass = item.attr('data-' + state + '-state-rem-class');
+		var notifyOn = item.attr('data-' + state + '-state-notify-on') || '';
+		var notifyOff = item.attr('data-' + state + '-state-notify-off') || '';
+		var notifyOnAfter = item.attr('data-' + state + '-state-notify-on-after') || '';
+		var notifyOffAfter = item.attr('data-' + state + '-state-notify-off-after') || '';
+
+		notifyChanges(notifyOn, notifyOff, item, state, flag);
 
 		var ieBehavior = function () {
 			//IE BEHAVIOR
@@ -5951,7 +6880,7 @@
 		};
 
 		var setSvgItemState = function () {
-			if (item[0].classList) {
+			if (!!item[0] && item[0].classList) {
 				if (flag) {
 					item[0].classList.add(addClass);
 					item[0].classList.remove(remClass);
@@ -5981,6 +6910,8 @@
 				item.removeClass(flagClass);
 			}
 		}
+		
+		notifyChanges(notifyOnAfter, notifyOffAfter, item, state, flag);
 	};
 
 	var setItemState = function (item, state, flag) {
@@ -6605,7 +7536,12 @@
 						});
 					},
 					success: function (data) {
-						data = $(data);
+						try {
+							data = $(data);
+						} catch (e) {
+							App.log({fx: 'error', args: e});
+							data = $();
+						}
 
 						if (data.find('form-dyn result').attr('success') === 'yes') {
 							var handlersErrors = false;
@@ -6906,6 +7842,86 @@
 		actions: actions
 	});
 	
+})(jQuery);
+
+/**
+ * Link selector
+ * @author Deux Huit Huit
+ */
+(function ($, undefined) {
+
+	'use strict';
+
+	var isMultilingual = ($('html').attr('data-all-langs') || '').split(',').length > 1 || true;
+	var scope = $('body');
+	var fakeAnchor = $('<a />');
+
+	var MINIMUM_FOR_PARTIAL = 2;
+
+	var update = function () {
+		var currentPath = window.location.pathname;
+		scope.find('a[href]').each(function () {
+			var t = $(this);
+			var pathname = '';
+			var matches = [];
+
+			fakeAnchor.prop('href', t.attr('href'));
+			pathname = fakeAnchor.prop('pathname');
+
+			$.each(pathname.split('/'), function (index, element) {
+				if (!!element && element === currentPath.split('/')[index]) {
+					matches.push(element);
+				}
+			});
+
+			if (!!isMultilingual && matches.length < MINIMUM_FOR_PARTIAL) {
+				matches = [];
+			}
+
+			// Partial match
+			App.modules.notify('changeState.update', {
+				item: t,
+				state: 'current-link-partial',
+				action: (!!matches.length && pathname !== currentPath) ? 'on' : 'off'
+			});
+
+			// Exact match
+			App.modules.notify('changeState.update', {
+				item: t,
+				state: 'current-link',
+				action: pathname === currentPath ? 'on' : 'off'
+			});
+		});
+	};
+
+	var onPageEnter = function (key, data) {
+		update();
+	};
+
+	var onArticleEnter = function (key, data) {
+		update();
+	};
+
+	var init = function () {
+		update();
+	};
+
+	var actions = function () {
+		return {
+			page: {
+				enter: onPageEnter
+			},
+			articleChanger: {
+				enter: onArticleEnter
+			}
+		};
+	};
+
+	App.modules.exports('link-selector', {
+		init: init,
+		actions: actions
+	});
+
 })(jQuery);
 
 /**
@@ -7374,6 +8390,7 @@
 				return abstractProvider.getIframe()
 					.attr('src', '//player.vimeo.com/video/' + id +
 							'?autoplay=' + autoplay + '&loop=' + loop +
+							'&muted=' + autoplay +
 							'&api=1&html5=1&rel=' + rel + (extra || ''));
 			},
 			
@@ -7431,6 +8448,10 @@
 					var player = global.$f($('iframe', container).get(0));
 					player.api('setVolume', value);
 				});
+			},
+
+			requiresVideo: function () {
+				return true;
 			}
 		});
 		App.modules.notify('oembed.providers.register', {
@@ -7470,12 +8491,15 @@
 		var youtubeProvider = $.extend({}, abstractProvider, {
 			getIframe: function (url, autoplay, loop, rel, extra) {
 				var id = url.indexOf('v=') > 0 ?
-					url.match(/v=([^\&]+)/mi)[1] : url.substring(url.lastIndexOf('/'));
+					url.match(/v=([^\&]+)/mi)[1] :
+					url.substring(url.lastIndexOf('/') + 1);
 				var autoPlay = autoplay !== undefined ? autoplay : 1;
 				var iframe = abstractProvider.getIframe()
 					.attr('id', 'youtube-player-' + id)
 					.attr('src', '//www.youtube.com/embed/' + id +
 						'?feature=oembed&autoplay=' + autoPlay +
+						'&mute=' + autoPlay +
+						'&origin=' + document.location.origin +
 						'&enablejsapi=1&version=3&html5=1&rel=' + rel + (extra || ''));
 				
 				App.loaded(YT, function (Player) {
@@ -7551,6 +8575,10 @@
 						youtubeProvider.ytplayer.addEventListener('onStateChange', onStateChange);
 					});
 				});
+			},
+
+			requiresVideo: function () {
+				return true;
 			}
 		});
 		App.modules.notify('oembed.providers.register', {
@@ -7665,6 +8693,7 @@
 			}
 		}
 		App.log({
+			fx: 'info',
 			args: ['Progress %s %s', percent || 'timer', currentValue],
 			me: 'page-load'
 		});
@@ -7691,7 +8720,7 @@
 		
 		isStarted = true;
 		
-		App.log({args: 'Start', me: 'page-load'});
+		App.log({fx: 'info', args: 'Start', me: 'page-load'});
 		
 		setTimeout(progress, START_DELAY);
 	};
@@ -7708,7 +8737,7 @@
 			html.removeClass(LOADING);
 		}, CLOSE_DELAY);
 		
-		App.log({args: 'End', me: 'page-load'});
+		App.log({fx: 'info', args: 'End', me: 'page-load'});
 	};
 	
 	var loadprogress = function (key, data) {
@@ -8412,68 +9441,6 @@
 		actions: actions
 	});
 
-})(jQuery);
-
-/**
- *  @author Deux Huit Huit
- *
- *  Site nav link selector
- */
-(function ($, undefined) {
-	
-	'use strict';
-
-	var BTN_SELECTOR = '.js-site-nav-link';
-	var SELECTED_CLASS = 'is-selected';
-	var site = $('#site');
-	
-	var updateSelectedLink = function (newKey) {
-		var newBtn = site.find(BTN_SELECTOR + '.btn-' + newKey);
-
-		//Remove Selected state on all node
-		site.find(BTN_SELECTOR + '.' + SELECTED_CLASS)
-			.not(newBtn)
-			.each(function () {
-
-				//Remove is selected state
-				var t = $(this);
-				App.modules.notify('changeState.update', {
-					item: t,
-					state: 'selected',
-					action: 'off'
-				});
-			});
-
-		//Add class
-		newBtn.each(function () {
-			var t = $(this);
-
-			App.modules.notify('changeState.update', {
-				item: t,
-				state: 'selected',
-				action: 'on'
-			});
-		});
-	};
-	
-	var onEntering = function (key, data) {
-		//check page
-		var newPage = $(data.page.key());
-		updateSelectedLink(data.page.key().substring(1));
-	};
-	
-	var actions = function () {
-		return {
-			page: {
-				entering: onEntering
-			}
-		};
-	};
-	
-	App.modules.exports('site-nav-link-selector', {
-		actions: actions
-	});
-	
 })(jQuery);
 
 /**
@@ -9336,8 +10303,8 @@
 	var onPageEntering = function (key, data, e) {
 		var nextRoute = extractFragmentFromRoute(getNextRouteFromData(data), data.route);
 		
-		//Update browser url if we change page route
-		if (currentPageRoute != nextRoute) {
+		// Update browser url if we change page route or page key
+		if (currentPageRoute != nextRoute || currentPageKey != data.page.key()) {
 			//Keep a copy of the currentPage url
 			pageEntering(nextRoute);
 
@@ -9628,6 +10595,42 @@
 })(jQuery);
 
 /**
+ * Watermark
+ * @author Deux Huit Huit
+ */
+(function ($, undefined) {
+
+	'use strict';
+
+	var site = $('#site');
+
+	var sels = {
+		ctn: '.js-watermark-ctn'
+	};
+
+	var init = function () {
+		site.find(sels.ctn).each(function () {
+			var t = $(this);
+			if (!!t.attr('data-href') && !t.html()) {
+				$.ajax({
+					method: 'GET',
+					crossDomain: true,
+					url: t.attr('data-href'),
+					success: function (data) {
+						t.append($(data).find('watermark').html());
+					}
+				});
+			}
+		});
+	};
+
+	App.modules.exports('watermark', {
+		init: init
+	});
+
+})(jQuery);
+
+/**
  *  @author Deux Huit Huit
  *
  *  Window Notifier
@@ -9716,10 +10719,7 @@
 	
 	var win = $(window);
 	var body = $('body');
-	var sitePages = $('#site-pages');
-	
 	var DEFAULT_DELAY = 90;
-			
 	var beginCompleted = false;
 	var loadCompleted = false;
 
@@ -9765,13 +10765,9 @@
 		});
 	};
 	
-	var defaultBeginTransition = function (data, callback) {
+	var defaultBeginTransition = function (data) {
 		var bgTransition = $('#bg-transition', body);
 		var leavingPage = data.currentPage;
-		var enteringPage = data.nextPage;
-		
-		var domEnteringPage = $(enteringPage.key());
-		var domLeavingPage = $(leavingPage.key());
 		
 		beginCompleted = false;
 		loadCompleted = false;
@@ -9891,7 +10887,7 @@
 		});
 	};
 	
-	var defaultBeginTransition = function (data, callback) {
+	var defaultBeginTransition = function (data) {
 		var leavingPage = data.currentPage;
 		var domLeavingPage = $(leavingPage.key());
 		
@@ -10055,7 +11051,12 @@
 		var onFragmentChanged = function (key, data) {
 			var frag = !!data ? data : '';
 
-			changer.navigateTo(frag.split('?')[0].split('/')[0]);
+			if (!isFirstFragment) {
+				changer.navigateTo(frag.split('?')[0].split('/')[0]);
+			} else {
+				isFirstFragment = false;
+			}
+
 		};
 		
 		var init = function () {
@@ -10097,7 +11098,7 @@
 
 	'use strict';
 	
-	App.pages.exports('defaultPage', function () {
+	App.pages.exports('default-page', function () {
 		var page;
 		
 		var onEnter = function (next) {
