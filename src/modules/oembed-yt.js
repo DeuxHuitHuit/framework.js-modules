@@ -11,8 +11,14 @@
 
 	'use strict';
 	
+	var youtubeIsReady = false;
+
+	window.onYouTubeIframeAPIReady = function () {
+		youtubeIsReady = true;
+	};
+
 	var YT = function () {
-		return !!global.YT ? global.YT.Player : false;
+		return youtubeIsReady && !!global.YT ? global.YT.Player : false;
 	};
 	
 	var init = function () {
@@ -28,7 +34,7 @@
 				var autoPlay = autoplay !== undefined ? autoplay : 1;
 				var iframe = abstractProvider.getIframe()
 					.attr('id', 'youtube-player-' + id)
-					.attr('src', '//www.youtube.com/embed/' + id +
+					.attr('src', 'https://www.youtube.com/embed/' + id +
 						'?feature=oembed&autoplay=' + autoPlay +
 						'&mute=' + autoPlay +
 						'&origin=' + document.location.origin +
