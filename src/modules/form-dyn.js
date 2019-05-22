@@ -250,8 +250,6 @@
 				form: form,
 				ctn: elem
 			});
-			elem.data('component', form);
-			
 			btnSubmit = elem.find(sels.formSubmit);
 			btnSubmit.on($.click, onFormSubmitClick);
 			forms.push(form);
