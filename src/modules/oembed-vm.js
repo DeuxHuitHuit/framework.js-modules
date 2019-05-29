@@ -29,12 +29,15 @@
 					.attr('src', '//player.vimeo.com/video/' + id +
 							'?autoplay=' + autoplay + '&loop=' + loop +
 							'&muted=' + autoplay +
+							'&player_id=' + 'vimeoPlayer' + id +
 							'&api=1&html5=1&rel=' + rel + (extra || ''));
 			},
 			
 			ready: function (container, callback) {
 				App.loaded($f, function ($f) {
 					var player = $f($('iframe', container).get(0));
+					
+					player.element.id = 'vimeoPlayer' + container.attr('data-oembed-id');
 					
 					player.addEvent('ready', function () {
 						if (container.attr('data-volume')) {
