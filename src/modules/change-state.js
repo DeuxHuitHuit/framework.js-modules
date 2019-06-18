@@ -254,14 +254,17 @@
 
 	var onUpdateState = function (key, data) {
 		if (data && data.item && data.state && data.action) {
-			var minWidth = data.item.attr('data-' + data.state + '-state-min-width');
-			var maxWidth = data.item.attr('data-' + data.state + '-state-max-width');
-			var isMinWidthValid = (!!minWidth && window.mediaQueryMinWidth(minWidth)) || !minWidth;
-			var isMaxWidthValid = (!!maxWidth && window.mediaQueryMaxWidth(maxWidth)) || !maxWidth;
-			
-			if (isMinWidthValid && isMaxWidthValid) {
-				processItem(data.item, data.state, data.action, data.callbacks);
-			}
+			data.item.each(function () {
+				var t = $(this);
+				var minWidth = t.attr('data-' + data.state + '-state-min-width');
+				var maxWidth = t.attr('data-' + data.state + '-state-max-width');
+				var isMinWidthValid = (!!minWidth && window.mediaQueryMinWidth(minWidth)) || !minWidth;
+				var isMaxWidthValid = (!!maxWidth && window.mediaQueryMaxWidth(maxWidth)) || !maxWidth;
+
+				if (isMinWidthValid && isMaxWidthValid) {
+					processItem(t, data.state, data.action, data.callbacks);
+				}
+			});
 		}
 	};
 	
