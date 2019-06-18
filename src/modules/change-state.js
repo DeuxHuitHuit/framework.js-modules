@@ -258,10 +258,10 @@
 				var t = $(this);
 				var minWidth = t.attr('data-' + data.state + '-state-min-width');
 				var maxWidth = t.attr('data-' + data.state + '-state-max-width');
-				var isMinWidthValid = (!!minWidth && window.mediaQueryMinWidth(minWidth)) || !minWidth;
-				var isMaxWidthValid = (!!maxWidth && window.mediaQueryMaxWidth(maxWidth)) || !maxWidth;
+				var isMinWidth = (!!minWidth && window.mediaQueryMinWidth(minWidth)) || !minWidth;
+				var isMaxWidth = (!!maxWidth && window.mediaQueryMaxWidth(maxWidth)) || !maxWidth;
 
-				if (isMinWidthValid && isMaxWidthValid) {
+				if (isMinWidth && isMaxWidth) {
 					processItem(t, data.state, data.action, data.callbacks);
 				}
 			});
