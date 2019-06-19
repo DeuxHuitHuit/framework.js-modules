@@ -67,6 +67,7 @@
 			gaCat: 'Search',
 			gaAction: 'search',
 			gaTimer: 1000,
+			gaIncludePageView: false,
 			templateSettings: {
 				interpolate: /__(.+?)__/g,
 				evaluate: /_%([\s\S]+?)%_/g,
@@ -89,6 +90,11 @@
 				return;
 			}
 			$.sendEvent(o.gaCat, o.gaAction, val, nb);
+			if (!!o.gaIncludePageView) {
+				$.sendPageView({
+					page: window.location.pathname + '?q=' + val
+				});
+			}
 		};
 
 		var appendNoResults = function (rCtn) {
