@@ -39,6 +39,8 @@
 			algoliaAttributesToRetrieve: 'title,url,image',
 			algoliaAttributesToHighlight: 'title',
 			algoliaSearchableAttributes: [],
+			highlightPreTag: '<em>',
+			highlightPostTag: '</em>',
 			resultsTemplateStringSelector: '.js-algolia-results-template-string',
 			facets: null,
 			facetsAttr: 'data-algolia-facets',
@@ -176,7 +178,9 @@
 				hitsPerPage: parseInt(ctn.attr(o.hitsPerPageAttr), 10) || o.hitsPerPage,
 				attributesToRetrieve: o.algoliaAttributesToRetrieve,
 				attributesToHighlight: o.algoliaAttributesToHighlight,
-				restrictSearchableAttributes: o.algoliaSearchableAttributes
+				restrictSearchableAttributes: o.algoliaSearchableAttributes,
+				highlightPreTag: o.highlightPreTag,
+				highlightPostTag: o.highlightPostTag
 			};
 
 			if (ctn.filter('[data-algolia-filters-mode=filters]').length) {
