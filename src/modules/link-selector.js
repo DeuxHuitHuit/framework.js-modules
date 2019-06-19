@@ -14,7 +14,25 @@
 
 	var update = function () {
 		var currentPath = window.location.pathname;
-		scope.find('a[href]').each(function () {
+		var links = scope.find('a[href]');
+
+		links.each(function () {
+			var t = $(this);
+
+			App.modules.notify('changeState.update', {
+				item: t,
+				state: 'current-link-partial',
+				action: 'off'
+			});
+	
+			App.modules.notify('changeState.update', {
+				item: t,
+				state: 'current-link',
+				action: 'off'
+			});
+		});
+
+		links.each(function () {
 			var t = $(this);
 			var pathname = '';
 			var matches = [];
