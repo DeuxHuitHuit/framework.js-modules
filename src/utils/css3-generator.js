@@ -47,16 +47,41 @@
 		return 'rotate' + prefix + theta + suffix;
 	};
 	
+	var getSkew = function (x, y, unit) {
+		if (!unit) {
+			unit = 'deg';
+		}
+
+		if (unit !== 'deg' && unit !== 'rad' && unit !== 'turn') {
+			App.log('css3-generator.getSkew allow only deg, rad and turn unit');
+			return null;
+		} else {
+			x = parseFloat(x);
+			y = parseFloat(y);
+		}
+		
+		if (x !== 0 && y !== 0) {
+			return 'skew(' + x + unit + ',' + y + unit + ')';
+		} else if (y !== 0) {
+			return 'skewY(' + y + unit + ')';
+		} else {
+			return 'skewX(' + x + unit + ')';
+		}
+	};
+
 	global.CSS3 = {
 		translate: getTranslation,
 		rotate: getRotation,
+		skew: getSkew,
 		prefix: function (key, value) {
 			var c = {};
-			c[key] = value;
-			c['-webkit-' + key] = value;
-			c['-moz-' + key] = value;
-			c['-ms-' + key] = value;
-			c['-o-' + key] = value;
+			if (value !== null) {
+				c[key] = value;
+				c['-webkit-' + key] = value;
+				c['-moz-' + key] = value;
+				c['-ms-' + key] = value;
+				c['-o-' + key] = value;
+			}
 			return c;
 		}
 	};
