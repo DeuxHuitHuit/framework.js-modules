@@ -29,7 +29,11 @@
 				return memo;
 			}, {});
 		};
-		
+
+		var filterHits = function (rCtn, resultContent, content, val) {
+			return content.hits;
+		};
+
 		var defaultOptions = {
 			inputSelector: '.js-algolia-input',
 			resultsCtnSelector: '.js-algolia-results-ctn',
@@ -47,6 +51,7 @@
 			facetFilters: null,
 			facetFiltersAttr: 'data-algolia-facet-filters',
 			onCreateResultsTemplatingObject: createResultsTemplatingObject,
+			filterHits: filterHits,
 			defaultResultsTemplateString: '<div><a href="__url__">__title__</a></div>',
 			defaultFacets: 'lang',
 			defaultFacetFilters: 'lang:' + lg,
@@ -105,7 +110,9 @@
 		};
 		
 		var applyTemplate = function (rCtn, resultContent, content, val) {
-			if (!!content.nbHits) {
+			var hits = o.filterHits(rCtn, resultContent, content, val);
+
+			if (!!hits.length) {
 				var tmplString = !!rCtn.find(o.resultsItemTemplateSelector).length ?
 					rCtn.find(o.resultsItemTemplateSelector).text() :
 					o.defaultResultsTemplateString;
@@ -117,8 +124,8 @@
 				tmplString = tmplString.replace(/%5B/g, '[').replace(/%5D/g, ']');
 				
 				var tplt = _.template(tmplString);
-				
-				_.each(content.hits, function (t) {
+
+				_.each(hits, function (t) {
 					var cleanData = o.onCreateResultsTemplatingObject(t, o);
 					var newItem = tplt(cleanData);
 					App.callback(o.beforeAppendNewItem, [
