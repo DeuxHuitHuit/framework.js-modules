@@ -279,9 +279,11 @@
 		updateUrlFragment();
 		
 		//Set back old fragment to trigger fragment changed
-		currentPageFragment = oldFragment;
+		if (currentPageFragment !== oldFragment) {
+			currentPageFragment = oldFragment;
+			$.sendPageView({page: data.route});
+		}
 		urlChanged();
-		$.sendPageView({page: data.route});
 	};
 	
 	var throttledScroll = _.throttle(function () {
