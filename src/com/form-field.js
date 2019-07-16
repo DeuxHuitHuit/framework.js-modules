@@ -1,11 +1,9 @@
 /**
+ * Form Field
  * @author Deux Huit Huit
- *
- *  Form Field
- *
- *  Moment file : https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.0/moment.min.js
+ * @requires https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.0/moment.min.js
  */
-(function ($, w, doc, moment, undefined) {
+(function ($, global, undefined) {
 
 	'use strict';
 
@@ -13,19 +11,16 @@
 
 	var defaults = {
 		container: '.js-form-field',
-		input: '.js-form-input',
-		error: '.js-form-error',
-		label: '.js-form-label',
-		states: '.js-form-state',
-		clear: '.js-form-clear',
-		preview: '.js-form-preview',
-		progress: '.js-form-progress',
+		input: '.js-form-field-input',
+		hint: '.js-form-field-hint',
+		label: '.js-form-field-label',
+		preview: '.js-form-field-preview',
 		validationEvents: 'blur change',
 		emptinessEvents: 'blur keyup change',
 		previewEvents: 'change input',
 		formatEvents: 'blur',
 		changeLabelTextToFilename: true,
-		onlyShowFirstError: false,
+		onlyShowFirstHint: false,
 		group: null,
 		rules: {
 			required: {
@@ -83,6 +78,11 @@
 				sameAs: {
 					target: 'input[name="form[email]"]'
 				}
+			},
+			date: {
+				datetime: {
+					dateOnly: true
+				}
 			}
 		},
 		rulesOptions: {
@@ -120,41 +120,18 @@
 	App.components.exports('form-field', function formField (options) {
 		var ctn;
 		var input;
-		var error;
+		var hint;
 		var label;
-		var states;
-		var clear;
-		var progress;
 		var rules = [];
 		var self;
 		var isList = false;
 
 		options = $.extend(true, {}, defaults, extendedDateRules, options);
 
-		var getStateClasses = function (t) {
-			return {
-				error: t.attr('data-error-class'),
-				valid: t.attr('data-valid-class'),
-				empty: t.attr('data-empty-class'),
-				notEmpty: t.attr('data-not-empty-class'),
-				submitting: t.attr('data-submitting-class')
-			};
-		};
-
-		var getStateClass = function (state) {
-			return state.attr('data-state-class');
-		};
-
-		var setStateClass = function (fx, s) {
-			var state = states.filter('[data-state="' + s + '"]');
-			state[fx](getStateClass(state));
-		};
-
 		var enable = function (enable) {
 			if (enable) {
 				input.enable();
-			}
-			else {
+			} else {
 				input.disable();
 			}
 		};
@@ -170,7 +147,7 @@
 		var previewFile = function (ctn, file) {
 			ctn.empty();
 			//Change label caption
-			if (!!file && !!w.FileReader) {
+			if (!!file && !!global.FileReader) {
 				if (options.changeLabelTextToFilename) {
 					if (!!file && file.name) {
 						label.text(file.name);
@@ -179,42 +156,55 @@
 					}
 				}
 
-				var reader = new w.FileReader();
-				reader.onload = function readerLoaded (event) {
-					var r = event.target.result;
-					if (!!r) {
-						var img = $('<img />')
-							.attr('class', ctn.attr('data-preview-class'))
-							.attr('src', r)
-							.on('error', function () {
-								img.remove();
-							});
-						ctn.append(img);
-					}
-				};
-				reader.readAsDataURL(file);
+				if (!!_.contains(file.type.split('/'), 'image')) {
+					var reader = new global.FileReader();
+					reader.onload = function readerLoaded (event) {
+						var r = event.target.result;
+						if (!!r) {
+							var img = $('<img />')
+								.attr('class', ctn.attr('data-preview-class'))
+								.attr('src', r)
+								.on('error', function () {
+									img.remove();
+								});
+							ctn.append(img);
+						}
+					};
+					reader.readAsDataURL(file);
+				}
 			}
 		};
 
 		var reset = function () {
-			var inputClasses = getStateClasses(input);
-			var ctnClasses = getStateClasses(ctn);
-			var labelClasses = getStateClasses(label);
-			input.removeClass(inputClasses.error);
-			input.removeClass(inputClasses.valid);
-			input.addClass(inputClasses.empty);
-			input.removeClass(inputClasses.notEmpty);
-			ctn.removeClass(ctnClasses.error);
-			ctn.removeClass(ctnClasses.valid);
-			ctn.addClass(ctnClasses.empty);
-			ctn.removeClass(ctnClasses.notEmpty);
-			label.removeClass(labelClasses.error);
-			label.removeClass(labelClasses.valid);
-			label.addClass(labelClasses.empty);
-			label.removeClass(labelClasses.notEmpty);
-			error.empty().removeClass(getStateClass(error));
-			setStateClass('removeClass', 'error');
-			setStateClass('removeClass', 'valid');
+			App.modules.notify('changeState.update', {
+				item: ctn,
+				state: 'valid',
+				action: 'off'
+			});
+
+			App.modules.notify('changeState.update', {
+				item: ctn,
+				state: 'invalid',
+				action: 'off'
+			});
+
+			App.modules.notify('changeState.update', {
+				item: ctn,
+				state: 'filled',
+				action: 'off'
+			});
+
+			App.modules.notify('changeState.update', {
+				item: ctn,
+				state: 'focused',
+				action: 'off'
+			});
+
+			App.modules.notify('changeState.update', {
+				item: ctn,
+				state: 'empty',
+				action: 'on'
+			});
 
 			if (input.attr('type') == 'file') {
 				if (options.changeLabelTextToFilename) {
@@ -287,25 +277,26 @@
 			return value;
 		};
 
-		var checkEmptiness = function () {
-			var valueIsEmpty = w.validate.isEmpty(value());
-			var emptyFx = valueIsEmpty ? 'addClass' : 'removeClass';
-			var notEmptyFx = valueIsEmpty ? 'removeClass' : 'addClass';
-			var inputClasses = getStateClasses(input);
-			var ctnClasses = getStateClasses(ctn);
-			var labelClasses = getStateClasses(label);
-			input[emptyFx](inputClasses.empty);
-			input[notEmptyFx](inputClasses.notEmpty);
-			ctn[emptyFx](ctnClasses.empty);
-			ctn[notEmptyFx](ctnClasses.notEmpty);
-			label[emptyFx](labelClasses.empty);
-			label[notEmptyFx](labelClasses.notEmpty);
+		var setValueState = function () {
+			var val = value();
+
+			App.modules.notify('changeState.update', {
+				item: ctn,
+				state: 'filled',
+				action: !!val ? 'on' : 'off'
+			});
+
+			App.modules.notify('changeState.update', {
+				item: ctn,
+				state: 'empty',
+				action: !val ? 'on' : 'off'
+			});
 		};
 
 		var preview = function (e) {
 			var p = ctn.find(options.preview);
 			if (input.attr('type') == 'file') {
-				checkEmptiness();
+				setValueState();
 				if (!!p.length) {
 					var file = !!e && !!e.target.files && e.target.files[0];
 					file = file || (input[0].files && input[0].files[0]);
@@ -338,7 +329,7 @@
 					}
 				});
 
-				var validationResult = w.validate.single(value, constraints, rulesOptions);
+				var validationResult = global.validate.single(value, constraints, rulesOptions);
 
 				//Validate file size for input file type
 				if (ctn.hasClass('js-input-file')) {
@@ -380,50 +371,32 @@
 		var validate = function () {
 			var result = tryValidate(value());
 
-			var errorFx = !result ? 'removeClass' : 'addClass';
-			var validFx = !result ? 'addClass' : 'removeClass';
-			var errorMessages = !result ? '' :
-				(options.onlyShowFirstError ? result[0] : result.join('. '));
-			var inputClasses = getStateClasses(input);
-			var ctnClasses = getStateClasses(ctn);
-			var labelClasses = getStateClasses(label);
-			var inputFollowers = $(ctn.attr('data-input-error-followers'));
-			
+			App.modules.notify('changeState.update', {
+				item: ctn,
+				state: 'invalid',
+				action: !!result ? 'on' : 'off'
+			});
 
-			input[errorFx](inputClasses.error);
-			input[validFx](inputClasses.valid);
-			inputFollowers[errorFx](inputClasses.error);
-			inputFollowers[validFx](inputClasses.valid);
+			App.modules.notify('changeState.update', {
+				item: ctn,
+				state: 'valid',
+				action: !result ? 'on' : 'off'
+			});
 
-			ctn[errorFx](ctnClasses.error);
-			ctn[validFx](ctnClasses.valid);
+			var hintMessages = !result ? '' :
+				(options.onlyShowFirstHint ? result[0] : result.join('. '));
 
-			label[errorFx](labelClasses.error);
-			label[validFx](labelClasses.valid);
-
-			error.html(errorMessages);
+			hint.html(hintMessages);
 
 			if (!result) {
-				// valid!
-				error.removeClass(getStateClass(error));
-				setStateClass('addClass', 'valid');
-				setStateClass('removeClass', 'error');
-				return result;
+				return;
 			}
-			error.addClass(getStateClass(error));
-			setStateClass('addClass', 'error');
-			setStateClass('removeClass', 'valid');
+
 			return {
 				result: result,
 				field: self,
-				errorMessages: errorMessages
+				hintMessages: hintMessages
 			};
-		};
-
-		var submitting = function (submitting) {
-			var submittingFx = submitting ? 'addClass' : 'removeClass';
-			var inputClasses = getStateClasses(input);
-			input[submittingFx](inputClasses.submitting);
 		};
 
 		var onInputFileChange = function (e) {
@@ -447,39 +420,16 @@
 				input.on(options.validationEvents, validate);
 			}
 			if (!!options.emptinessEvents) {
-				input.on(options.emptinessEvents, checkEmptiness);
+				input.on(options.emptinessEvents, setValueState);
 			}
 			if (!!options.previewEvents) {
 				input.on(options.previewEvents, preview);
 			}
-			if (!!$.isFunction(options.onFocus)) {
-				i = input;
-				if (isList) {
-					i = input.find('input[type="radio"],input[type="checkbox"]');
-				} else if (ctn.hasClass('js-form-field-file')) {
-					i = ctn.find('.js-form-field-label-ctn');
-				}
-				i.on('focus', function () {
-					options.onFocus({
-						field: self
-					});
-				});
-			}
-			if (!!$.isFunction(options.onBlur)) {
-				i = input;
-				if (isList) {
-					i = input.find('input[type="radio"],input[type="checkbox"]');
-				}
-				i.on('blur', function () {
-					options.onBlur({
-						field: self
-					});
-				});
-			}
 			if (!!$.isFunction(options.onKeyup)) {
-				input.on('keyup', function () {
+				input.on('keyup', function (e) {
 					options.onKeyup({
-						field: self
+						field: self,
+						e: e
 					});
 				});
 			}
@@ -500,12 +450,71 @@
 				});
 			}
 			if (!!ctn.find('[selected]').length) {
-				checkEmptiness();
+				setValueState();
 			}
 
 			if (ctn.hasClass('js-input-file')) {
 				input.on('change input', onInputFileChange);
 			}
+
+			i = input;
+
+			if (!!isList) {
+				i = input.find('input[type="radio"],input[type="checkbox"]');
+			} else if (ctn.hasClass('js-form-field-file')) {
+				i = ctn.find('.js-form-field-label-ctn');
+			}
+
+			i.on('focus', function () {
+				App.modules.notify('changeState.update', {
+					item: ctn,
+					state: 'focused',
+					action: 'on'
+				});
+
+				if (!!$.isFunction(options.onFocus)) {
+					options.onFocus({
+						field: self
+					});
+				}
+			});
+
+			i.on('blur', function () {
+				App.modules.notify('changeState.update', {
+					item: ctn,
+					state: 'focused',
+					action: 'off'
+				});
+
+				if (!!$.isFunction(options.onBlur)) {
+					options.onBlur({
+						field: self
+					});
+				}
+			});
+		};
+
+		var fieldOptions = function (ctn) {
+			var opts = {};
+			var dataAttrPattern = new RegExp('^formField');
+			opts = _.reduce(ctn.data(), function (memo, value, key) {
+				if (dataAttrPattern.test(key)) {
+					if (_.isObject(value)) {
+						return memo;
+					}
+					var parsedKey = key.replace(dataAttrPattern, '');
+					var validKey = '';
+					if (!!parsedKey && !!parsedKey[0]) {
+						validKey = parsedKey[0].toLowerCase();
+						if (parsedKey.length >= 2) {
+							validKey += parsedKey.substr(1);
+						}
+						memo[validKey] = value;
+					}
+				}
+				return memo;
+			}, {});
+			return opts;
 		};
 
 		/* jshint maxstatements:38 */
@@ -513,17 +522,18 @@
 			options = $.extend(true, options, o);
 			ctn = $(options.container);
 			input = ctn.find(options.input);
-			error = ctn.find(options.error);
+			hint = ctn.find(options.hint);
 			label = ctn.find(options.label);
-			states = ctn.find(options.states);
-			clear = ctn.find(options.clear);
-			progress = ctn.find(options.progress);
 			rules = _.filter((ctn.attr('data-rules') || '').split(/[|,\s]/g));
 			isList = input.hasClass('js-form-field-checkbox-list') ||
 				input.hasClass('js-form-field-radio-list');
 
+			options = _.assign(options, fieldOptions(ctn));
+
 			attachEvents();
-			checkEmptiness();
+			setValueState();
+
+			ctn.data('form-field-component', self);
 		};
 
 		self = {
@@ -535,44 +545,31 @@
 			reset: reset,
 			preview: preview,
 			scrollTo: scrollTo,
-			checkEmptiness: checkEmptiness,
+			updateOptions: function (o) {
+				options = _.assign({}, options, o);
+			},
 			group: function () {
 				return options.group;
 			},
-			submitting: submitting,
-			value: value,
-			name: function () {
-				return input.attr('name');
-			},
-			label: function () {
-				return label.text();
-			},
-			find: function (sel) {
-				if (ctn.is(sel)) {
-					return ctn;
-				}
-				return ctn.find(sel);
-			},
-			hasClass: function (cla) {
-				return ctn.hasClass(cla);
-			},
-			required: function () {
+			isValid: isValid,
+			isRequired: function () {
 				return !!~rules.indexOf('required');
 			},
 			isEmpty: function () {
-				return w.validate.isEmpty(value());
+				return global.validate.isEmpty(value());
 			},
-			isValid: isValid,
 			getCtn: function () {
 				return ctn;
 			},
 			getInput: function () {
 				return input;
-			}
+			},
+			getName: function () {
+				return input.attr('name');
+			},
+			getValue: value
 		};
 		return self;
 	});
 
-	/* jshint maxstatements:30 */
-
-})(jQuery, window, document, window.moment);
+})(jQuery, window);
