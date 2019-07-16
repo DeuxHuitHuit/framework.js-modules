@@ -36,7 +36,7 @@
 	
 	var mustIgnore = function (t, e) {
 		// ignore click since there are no current page
-		if (!App.mediator._currentPage()) {
+		if (!App.mediator.getCurrentPage()) {
 			return true;
 		}
 
