@@ -15,7 +15,7 @@
 	var root = $('html');
 
 	var keydown = function (e) {
-		if (e.which === window.keys.tab) {
+		if (e.which === App.device.keys.tab) {
 			root.addClass(CLASS);
 			// This ignore is needed beacause of the module method structure. We should fix this.
 			/* jshint ignore:start */
