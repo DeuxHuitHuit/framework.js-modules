@@ -32,5 +32,10 @@
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect"
   },
-  "snyk": true
+  "snyk": true,
+  "greenkeeper": {
+    "ignore": [
+      "snyk"
+    ]
+  }
 }
