@@ -41,7 +41,7 @@
 				container: scrollCtn
 			});
 			t.sendClickEvent({
-				cat: t.attr('data-ga-cat') || 'Scroll to top',
+				cat: t.attr('data-ga-cat') || 'Scroll to ' + h,
 				event: e
 			});
 			return window.pd(e);
