@@ -5,6 +5,9 @@
 [![David DM](https://david-dm.org/DeuxHuitHuit/framework.js-modules/dev-status.svg?style=flat)](https://david-dm.org/DeuxHuitHuit/framework.js-modules?type=dev)
 [![Greenkeeper badge](https://badges.greenkeeper.io/DeuxHuitHuit/framework.js-modules.svg)](https://greenkeeper.io/)
 [![Maintainability](https://api.codeclimate.com/v1/badges/34fe964de3b2cbfb1d83/maintainability)](https://codeclimate.com/github/DeuxHuitHuit/framework.js-modules/maintainability)
+[![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/DeuxHuitHuit/framework.js-modules.svg)](https://isitmaintained.com/project/DeuxHuitHuit/framework.js-modules "Average time to resolve an issue")
+[![Percentage of issues still open](https://isitmaintained.com/badge/open/DeuxHuitHuit/framework.js-modules.svg)](https://isitmaintained.com/project/DeuxHuitHuit/framework.js-modules "Percentage of issues still open")
+[![Known Vulnerabilities](https://snyk.io/test/github/DeuxHuitHuit/framework.js-modules/badge.svg)](https://snyk.io/test/github/DeuxHuitHuit/framework.js-modules)
 
 ##### Works with the latest version of [Deux Huit Huit's framework](https://github.com/DeuxHuitHuit/framework.js).
 
