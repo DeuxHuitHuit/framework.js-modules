@@ -31,6 +31,10 @@ Pages represent a page model associated with one or more routes.
 
 Transitions represent the way things are animated when changing from a page to another.
 
+### Functions
+
+Functions (fx) are globally accessible and throw an error when called but not registered.
+
 ### Utils
 
 Utils are some jQuery plugins/facilitator that won't fit elsewhere.
