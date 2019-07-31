@@ -26,7 +26,7 @@
     "grunt-jscs": "3.0.1",
     "grunt-complexity": "1.1.0",
     "matchdep": "2.0.0",
-    "snyk": "1.193.2"
+    "snyk": "1.207.2"
   },
   "scripts": {
     "snyk-protect": "snyk protect",
