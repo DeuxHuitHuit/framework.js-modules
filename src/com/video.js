@@ -223,7 +223,8 @@
 			play: playVideo,
 			togglePlay: togglePlayVideo,
 			pause: pauseVideo,
-			seek: seekVideo
+			seek: seekVideo,
+			toggleMute: toggleMute
 		};
 	});
 	
