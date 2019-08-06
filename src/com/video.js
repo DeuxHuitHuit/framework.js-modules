@@ -105,13 +105,13 @@
 		};
 
 		var onPlaying = function (e) {
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: o.ctn,
 				state: 'paused',
 				action: 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: o.ctn,
 				state: 'playing',
 				action: 'on'
@@ -123,13 +123,13 @@
 		var onCanPlay = function (e) {
 			resizeVideo();
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: o.ctn,
 				state: 'paused',
 				action: 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: o.ctn,
 				state: 'video-loaded',
 				action: 'on'
@@ -145,7 +145,7 @@
 
 		var onEnded = function () {
 			if (o.video.filter('[' + RESET_ON_END_ATTR + ']').length) {
-				App.modules.notify('changeState.update', {
+				App.fx.notify('changeState.update', {
 					item: o.ctn,
 					state: 'playing',
 					action: 'off'
@@ -164,7 +164,7 @@
 		};
 
 		var pauseVideo = function () {
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: o.ctn,
 				state: 'paused',
 				action: 'on'
