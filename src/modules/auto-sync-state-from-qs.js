@@ -13,7 +13,7 @@
 	var ATTR_STATES = 'data-sync-state-from-qs';
 
 	var setItemState = function (item, state, flag) {
-		App.modules.notify('changeState.update', {
+		App.fx.notify('changeState.update', {
 			item: item,
 			state: state,
 			action: flag ? 'on' : 'off'
