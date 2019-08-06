@@ -1,4 +1,4 @@
-/*! framework.js-modules - v1.16.0 - build 364 - 2019-07-31
+/*! framework.js-modules - v2.0.0 - build 366 - 2019-08-06
  * https://github.com/DeuxHuitHuit/framework.js-modules
  * Copyright (c) 2019 Deux Huit Huit (https://deuxhuithuit.com/);
  * MIT *//**
@@ -97,9 +97,14 @@
 			if (!o.gaCat) {
 				return;
 			}
-			$.sendEvent(o.gaCat, o.gaAction, val, nb);
+			App.fx.notify('tracking.sendEvent', {
+				cat: o.gaCat,
+				action: o.gaAction,
+				label: val,
+				value: nb
+			});
 			if (!!o.gaIncludePageView) {
-				$.sendPageView({
+				App.fx.notify('tracking.sendPageView', {
 					page: window.location.pathname + '?q=' + val
 				});
 			}
@@ -843,7 +848,7 @@
 				App.mediator.notify('pageLoad.start', {page: page});
 				loadingUrl = loadUrl;
 
-				Loader.load({
+				App.loader.load({
 					url: loadUrl,
 					priority: 0, // now
 					vip: true, // bypass others
@@ -1047,7 +1052,7 @@
 				// LoadPage
 				if (!nextPage || !nextPage.length) {
 					App.mediator.notify('pageLoad.start', {page: page});
-					Loader.load({
+					App.loader.load({
 						url: loadUrl,
 						priority: 0, // now
 						vip: true, // bypass others
@@ -1125,7 +1130,12 @@
 				var action = o.action + ' ' + o.checkPoints[gate] + '%';
 				var label = o.label || action;
 				if (o.category) {
-					$.sendEvent(o.category, action, label, o.checkPoints[gate]);
+					App.fx.notify('tracking.sendEvent', {
+						cat: o.category,
+						action: action,
+						label: label,
+						value: o.checkPoints[gate]
+					});
 				}
 				App.callback(o.checkPointReached, [gate, o.checkPoints[gate]]);
 				gate++;
@@ -1574,31 +1584,31 @@
 		};
 
 		var reset = function () {
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'valid',
 				action: 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'invalid',
 				action: 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'filled',
 				action: 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'focused',
 				action: 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'empty',
 				action: 'on'
@@ -1678,13 +1688,13 @@
 		var setValueState = function () {
 			var val = value();
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'filled',
 				action: !!val ? 'on' : 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'empty',
 				action: !val ? 'on' : 'off'
@@ -1769,13 +1779,13 @@
 		var validate = function () {
 			var result = tryValidate(value());
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'invalid',
 				action: !!result ? 'on' : 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'valid',
 				action: !result ? 'on' : 'off'
@@ -1864,7 +1874,7 @@
 			}
 
 			i.on('focus', function () {
-				App.modules.notify('changeState.update', {
+				App.fx.notify('changeState.update', {
 					item: ctn,
 					state: 'focused',
 					action: 'on'
@@ -1878,7 +1888,7 @@
 			});
 
 			i.on('blur', function () {
-				App.modules.notify('changeState.update', {
+				App.fx.notify('changeState.update', {
 					item: ctn,
 					state: 'focused',
 					action: 'off'
@@ -2011,7 +2021,12 @@
 		var track = function (action, label, value) {
 			var cat = ctn.attr('data-ga-form-cat') || options.gaCat;
 			label = label || ctn.attr('data-ga-form-label') || options.gaLabel;
-			$.sendEvent(cat, action, label, value);
+			App.fx.notify('tracking.sendEvent', {
+				cat: cat,
+				action: action,
+				label: label,
+				value: value
+			});
 		};
 
 		var reset = function () {
@@ -2019,7 +2034,7 @@
 			_.each(fields, function (f) {
 				f.reset();
 			});
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'submitting',
 				action: 'off'
@@ -2082,8 +2097,8 @@
 			isSubmitting = true;
 
 			App.callback(options.post.submitting);
-
-			window.Loader.load({
+			
+			App.loader.load({
 				url: ctn.attr('action'),
 				type: ctn.attr('method') || 'POST',
 				data: data,
@@ -2095,7 +2110,7 @@
 				complete: function () {
 					App.callback(options.post.complete);
 					isSubmitting = false;
-					App.modules.notify('changeState.update', {
+					App.fx.notify('changeState.update', {
 						item: ctn,
 						state: 'submitting',
 						action: 'off'
@@ -2111,7 +2126,7 @@
 			var results = validate();
 			App.callback(options.onSubmit);
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'submitting',
 				action: 'on'
@@ -2589,7 +2604,7 @@
 					pagerLink.remove();
 					App.mediator.notify('pageLoad.start');
 
-					window.Loader.load({
+					App.loader.load({
 						url: url,
 						success: function (dataLoaded, textStatus, jqXHR) {
 							appendNextPage(dataLoaded, textStatus, jqXHR);
@@ -3091,7 +3106,7 @@
 
 					App.callback(o.change, [cur, n, url]);
 					if (n > seen) {
-						$.sendPageView({page: url});
+						App.fx.notify('tracking.sendPageView', {page: url});
 					}
 				}
 				cur = n;
@@ -3271,13 +3286,13 @@
 		};
 
 		var onPlaying = function (e) {
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: o.ctn,
 				state: 'paused',
 				action: 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: o.ctn,
 				state: 'playing',
 				action: 'on'
@@ -3289,13 +3304,13 @@
 		var onCanPlay = function (e) {
 			resizeVideo();
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: o.ctn,
 				state: 'paused',
 				action: 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: o.ctn,
 				state: 'video-loaded',
 				action: 'on'
@@ -3311,7 +3326,7 @@
 
 		var onEnded = function () {
 			if (o.video.filter('[' + RESET_ON_END_ATTR + ']').length) {
-				App.modules.notify('changeState.update', {
+				App.fx.notify('changeState.update', {
 					item: o.ctn,
 					state: 'playing',
 					action: 'off'
@@ -3330,7 +3345,7 @@
 		};
 
 		var pauseVideo = function () {
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: o.ctn,
 				state: 'paused',
 				action: 'on'
@@ -3352,6 +3367,25 @@
 				pauseVideo();
 			} else {
 				playVideo();
+			}
+		};
+
+		var fullscreen = function (e) {
+			var elem = o.video[0];
+			if (!elem) {
+				return false;
+			}
+
+			if (elem.requestFullscreen) {
+				elem.requestFullscreen();
+			} else if (elem.mozRequestFullScreen) { /* Firefox */
+				elem.mozRequestFullScreen();
+			} else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+				elem.webkitRequestFullscreen();
+			} else if (elem.msRequestFullscreen) { /* IE/Edge */
+				elem.msRequestFullscreen();
+			} else {
+				App.log('full screen not available');
 			}
 		};
 
@@ -3390,7 +3424,8 @@
 			togglePlay: togglePlayVideo,
 			pause: pauseVideo,
 			seek: seekVideo,
-			toggleMute: toggleMute
+			toggleMute: toggleMute,
+			fullscreen: fullscreen
 		};
 	});
 	
@@ -3613,18 +3648,18 @@
 					
 					if (!!isFinal) {
 						fx = function () {
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'initial',
 								action: 'off'
 							});
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'middle',
 								action: 'off'
 							});
 							
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'final',
 								action: 'on'
@@ -3632,18 +3667,18 @@
 						};
 					} else if (!!isMiddle) {
 						fx = function () {
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'initial',
 								action: 'off'
 							});
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'final',
 								action: 'off'
 							});
 							
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'middle',
 								action: 'on'
@@ -3651,18 +3686,18 @@
 						};
 					} else {
 						fx = function () {
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'final',
 								action: 'off'
 							});
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'middle',
 								action: 'off'
 							});
 							
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'initial',
 								action: 'on'
@@ -3908,7 +3943,7 @@
 			item = findTargetItemIfAvailable(item, target);
 
 			//Process item algo
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: item,
 				state: state,
 				action: action
@@ -3975,7 +4010,7 @@
 			item = findTargetItemIfAvailable(item, target);
 
 			//Process item algo
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: item,
 				state: state,
 				action: 'toggle'
@@ -4027,7 +4062,7 @@
 			textToCopy.select();
 			document.execCommand('copy');
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: message,
 				state: 'visible',
 				action: 'on'
@@ -4035,7 +4070,7 @@
 
 			clearTimeout(timer);
 			timer = setTimeout(function () {
-				App.modules.notify('changeState.update', {
+				App.fx.notify('changeState.update', {
 					item: message,
 					state: 'visible',
 					action: 'off'
@@ -4802,7 +4837,7 @@
 			}, item.selector);
 		}
 		
-		App.modules.notify('changeState.update', {
+		App.fx.notify('changeState.update', {
 			item: item,
 			state: 'visible',
 			action: isOn ? 'on' : 'off'
@@ -4820,7 +4855,7 @@
 			var item = $(data.item);
 			
 			item.addClass('noanim');
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: item,
 				state: 'visible',
 				action: 'off'
@@ -4852,7 +4887,7 @@
 				App.callback(callback);
 			}, bgTransitionModal.selector);
 		}
-		App.modules.notify('changeState.update', {
+		App.fx.notify('changeState.update', {
 			item: bgTransitionModal,
 			state: 'visible',
 			action: isVisible ? 'on' : 'off'
@@ -4988,7 +5023,7 @@
 			var vPlayer = t.find(PLAYER_SEL);
 			var oembed = t.data(DATA_KEY);
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: t,
 				state: 'playing',
 				action: 'off'
@@ -5022,7 +5057,7 @@
 		components.push(oembed);
 		oembed.load({
 			finish: function () {
-				App.modules.notify('changeState.update', {
+				App.fx.notify('changeState.update', {
 					item: ctx,
 					state: 'playing',
 					action: 'off'
@@ -5075,7 +5110,7 @@
 		}
 
 		if (!!oembed) {
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: vCtn,
 				state: 'playing',
 				action: 'on'
@@ -5685,7 +5720,7 @@
 			var slide = t.find(SLIDE_SELECTOR);
 			
 			//trigger
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: trigger,
 				state: STATE,
 				action: 'off'
@@ -5717,7 +5752,7 @@
 				action: data.slideAction
 			});
 			
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: data.trigger,
 				state: STATE,
 				action: data.triggerAction
@@ -6131,7 +6166,7 @@
 	var ATTR_STATES = 'data-sync-state-from-qs';
 
 	var setItemState = function (item, state, flag) {
-		App.modules.notify('changeState.update', {
+		App.fx.notify('changeState.update', {
 			item: item,
 			state: state,
 			action: flag ? 'on' : 'off'
@@ -6425,7 +6460,12 @@
 	var resizeTimer = 0;
 	
 	var track = function (action, label, value) {
-		$.sendEvent('glossary', action, label, value);
+		App.fx.notify('tracking.sendEvent', {
+			cat: 'glossary',
+			action: action,
+			label: label,
+			value: value
+		});
 	};
 	
 	var closeAll = function () {
@@ -6663,7 +6703,7 @@
 	};
 	
 	var loadTooltips = function () {
-		window.Loader.load({
+		App.loader.load({
 			url: ajaxTooltipsUrl,
 			success: function (data) {
 				tooltips = $($(data).find('result').html());
@@ -7368,6 +7408,10 @@
 		}
 	};
 	
+	var fxChangeState = function (key, data) {
+		onUpdateState(key, data);
+	};
+
 	var actions = function () {
 		return {
 			changeState: {
@@ -7379,6 +7423,8 @@
 	App.modules.exports('change-state', {
 		actions: actions
 	});
+
+	App.fx.exports('changeState.update', fxChangeState);
 	
 })(jQuery);
 
@@ -8296,13 +8342,13 @@
 		links.each(function () {
 			var t = $(this);
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: t,
 				state: 'current-link-partial',
 				action: 'off'
 			});
 	
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: t,
 				state: 'current-link',
 				action: 'off'
@@ -8328,14 +8374,14 @@
 			}
 
 			// Partial match
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: t,
 				state: 'current-link-partial',
 				action: (!!matches.length && pathname !== currentPath) ? 'on' : 'off'
 			});
 
 			// Exact match
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: t,
 				state: 'current-link',
 				action: pathname === currentPath ? 'on' : 'off'
@@ -8536,7 +8582,7 @@
 		if (!!$(data.item).length && !!data.url && !data.item.hasClass(CLASS_LOADING)) {
 			data.item.addClass(CLASS_LOADING);
 			
-			Loader.load({
+			App.loader.load({
 				url: data.url,
 				success: function () {
 					data.item.removeClass(CLASS_LOADING)
@@ -9301,7 +9347,7 @@
 			data['fields[' + i + '][tag]'] = c;
 		});
 		rateList[path] = true;
-		window.Loader.load({
+		App.loader.load({
 			url: url,
 			type: 'POST',
 			data: data,
@@ -9629,7 +9675,10 @@
 			errorMsg += ' col ' + errorObj.stack;
 		}
 		// Log via Google Analytics
-		$.sendEvent('error', errorMsg);
+		App.fx.notify('tracking.sendEvent', {
+			cat: 'error',
+			action: errorMsg
+		});
 		// Call default
 		return App.callback(oldOnError, errorMsg, url, lineNumber, column, errorObj);
 	};
@@ -9639,7 +9688,12 @@
 	
 	// Trap js errors
 	$(document).ajaxError(function (e, request, settings) {
-		$.sendEvent('error ajax', settings.url, e.result);
+		App.fx.notify('tracking.sendEvent', {
+			cat: 'error ajax',
+			action: settings.url,
+			label: e.result,
+			value: request.status
+		});
 	});
 
 })(jQuery, window);
@@ -9675,7 +9729,7 @@
 
 			$('.js-site-loader-close-ended-anim-ref').transitionEnd(destroyLoader);
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: siteLoaderPanel,
 				state: 'close',
 				action: 'on'
@@ -9998,7 +10052,7 @@
 
 		if (action === 'toggle') {
 			// set flag class
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: item,
 				state: state,
 				action: 'toggle'
@@ -10025,7 +10079,7 @@
 		} else if (action === 'up') {
 			if (!!curBoolState) {
 				// set flag class
-				App.modules.notify('changeState.update', {
+				App.fx.notify('changeState.update', {
 					item: item,
 					state: state,
 					action: 'off'
@@ -10045,7 +10099,7 @@
 		} else if (action === 'down') {
 			if (!curBoolState) {
 				// set flag class
-				App.modules.notify('changeState.update', {
+				App.fx.notify('changeState.update', {
 					item: item,
 					state: state,
 					action: 'on'
@@ -10604,7 +10658,7 @@
 		}
 		
 		if (!handled) {
-			$.sendPageView({page: data.route});
+			App.fx.notify('tracking.sendPageView', {page: data.route});
 		}
 	};
 	
@@ -10625,7 +10679,7 @@
 				extractQS();
 			}
 			updateUrlFragment();
-			$.sendPageView({page: data.route});
+			App.fx.notify('tracking.sendPageView', {page: data.route});
 		}
 	};
 	
@@ -10727,7 +10781,7 @@
 		//Set back old fragment to trigger fragment changed
 		if (currentPageFragment !== oldFragment) {
 			currentPageFragment = oldFragment;
-			$.sendPageView({page: data.route});
+			App.fx.notify('tracking.sendPageView', {page: data.route});
 		}
 		urlChanged();
 	};
@@ -10818,7 +10872,7 @@
 	
 	var LENGTH = 32;
 	var HIDDEN_FIELD_SEL = '.js-user-id';
-	var storage = window.Storage.local;
+	var storage = App.storage.local;
 	var KEY = 'auto-user-id';
 	var uId = '';
 	
@@ -11519,226 +11573,6 @@
 /**
  * @author Deux Huit Huit
  *
- * Google Analytics wrapper
- */
-
-(function ($) {
-	'use strict';
-	
-	var html = $('html');
-	var lang = html.attr('lang');
-	
-	var log = function () {
-		var args = [];
-		$.each(arguments, function (i, a) {
-			if ($.isPlainObject(a)) {
-				a = JSON.stringify(a, null, 2);
-			} else {
-				a = '"' + a + '"';
-			}
-			args.push(a);
-		});
-		App.log({args: ['%cga(' + args.join(',') + ');', 'color:cornflowerblue']});
-	};
-	
-	var getGa = function () {
-		/* jshint ignore:start */
-		if (!!window.dataLayer && !!window.dataLayer.push) {
-			return function ga (gaAction, gaCat, cat, action, label, value, options, category) {
-				if (gaCat === 'pageview') {
-					dataLayer.push($.extend({}, cat, {
-						event: gaCat,
-						page: {
-							requestURI: cat.page || cat.location,
-							page: cat.page,
-							location: cat.location,
-							language: lang,
-							referer: document.referrer,
-							title: document.title
-						}
-					}));
-				} else if (gaCat === 'event') {
-					var args = {
-						event: gaCat,
-						eventCategory: category || cat,
-						eventAction: action,
-						eventLabel: label,
-						eventValue: value,
-						eventOptions: options
-					};
-					if ($.isPlainObject(cat)) {
-						args = $.extend(true, {}, args, cat);
-						args.eventCategory = args.eventCategory || args.event;
-						args.event = gaCat;
-					}
-					dataLayer.push(args);
-				}
-			};
-		}
-		/* jshint ignore:end */
-		return window.ga || log;
-	};
-	
-	// ga facilitators
-	$.sendPageView = function (opts) {
-		var ga = getGa();
-		var defaults = {
-			page: window.location.pathname + window.location.search,
-			location: window.location.href,
-			hostname: window.location.hostname
-		};
-		var args = !opts ? defaults : $.extend(defaults, opts);
-		if ($.isFunction($.formatPage)) {
-			args.page = $.formatPage(args.page);
-		}
-		if ($.isFunction($.formatLocation)) {
-			args.location = $.formatLocation(args.location);
-		}
-		if (!html.filter('[data-no-ga]').length) {
-			ga('send', 'pageview', args);
-		} else {
-			log('sendPageView bypassed by attribute');
-		}
-	};
-	
-	/* jshint maxparams:6 */
-	$.sendEvent = function (cat, action, label, value, options, category) {
-		var ga = getGa();
-		cat = cat || '';
-		options = cat.options || options || {nonInteraction: 1};
-		if (!html.filter('[data-no-ga]').length) {
-			ga('send', 'event', cat, action, label, value, options, category);
-		} else {
-			log('sendEvent bypassed by attribute');
-		}
-	};
-	/* jshint maxparams:5 */
-	
-	var getTextValue = function (t, key) {
-		return t.attr(key) || undefined;
-	};
-
-	$.fn.sendClickEvent = function (options) {
-		options = options || {};
-		var t = $(this).eq(0);
-		var send = true;
-
-		var setMinimalOptions = function () {
-			if (!options.action) {
-				options.action = 'click';
-			}
-
-			if (!options.label) {
-				options.label = $.trim(t.text());
-			}
-
-			if (!!options.event) {
-				if (!options.event.gaHandled) {
-					options.event.gaHandled = true;
-				} else {
-					send = false;
-				}
-			}
-		};
-
-		setMinimalOptions();
-		if (!send) {
-			return;
-		}
-		
-		var o = $.extend({}, options, {
-			cat: getTextValue(t, 'data-ga-cat'),
-			category: getTextValue(t, 'data-ga-category'),
-			action: getTextValue(t, 'data-ga-action'),
-			label: getTextValue(t, 'data-ga-label'),
-			value: parseInt(t.attr('data-ga-value'), 10) || undefined
-		});
-
-		var detectError = function () {
-			if (!o.cat) {
-				App.log({fx: 'err', args: 'No ga-cat found. Cannot continue.'});
-				send = false;
-			}
-			
-			if (!o.label) {
-				App.log({fx: 'warn', args: 'No ga-label found. Reverting to text'});
-			}
-		};
-
-		detectError();
-		
-		if (!!send) {
-			$.sendEvent(o.cat, o.action, o.label, o.value, undefined, o.category);
-		}
-	};
-	
-	// auto-hook
-	$(function () {
-		var loc = window.location;
-		var origin = loc.origin || (loc.protocol + '//' + loc.hostname);
-		var internalLinksExclusion = ':not([href^="' + origin + '"])';
-		var externalLinks = 'a[href^="http://"]' + internalLinksExclusion +
-			', a[href^="https://"]' + internalLinksExclusion;
-		var mailtoLinks = 'a[href^="mailto:"]';
-		var telLinks = 'a[href^="tel:"]';
-		var downloadExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'xsl', 'xslx'];
-		var downloadLinks = _.map(downloadExtensions, function (ext) {
-			return 'a[href$=".' + ext + '"], ';
-		}).join('') + 'a[href$="?dl"], a[download]';
-		var getRefLinkLabel = function (t) {
-			var url = $(t).attr('href');
-			if (!url) {
-				return undefined;
-			}
-			url = url.replace(/^mailto:/, '');
-			url = url.replace(/^tel:/, '');
-			url = url.replace(origin, '');
-			return url;
-		};
-		$('#site')
-		.on(App.device.events.click, externalLinks, function (e) {
-			$(this).sendClickEvent({
-				cat: 'link-external',
-				label: getRefLinkLabel(this),
-				event: e
-			});
-		})
-		.on(App.device.events.click, downloadLinks, function (e) {
-			$(this).sendClickEvent({
-				cat: 'link-download',
-				label: getRefLinkLabel(this),
-				event: e
-			});
-		})
-		.on(App.device.events.click, mailtoLinks, function (e) {
-			$(this).sendClickEvent({
-				cat: 'link-mailto',
-				label: getRefLinkLabel(this),
-				event: e
-			});
-		})
-		.on(App.device.events.click, telLinks, function (e) {
-			$(this).sendClickEvent({
-				cat: 'link-tel',
-				label: getRefLinkLabel(this),
-				event: e
-			});
-		})
-		.on(App.device.events.click, '[data-ga-cat]', function (e) {
-			$(this).sendClickEvent({
-				event: e
-			});
-		});
-		if ($('body').hasClass('page-404')) {
-			$.sendEvent('erreur 404', 'erreur 404', document.referrer);
-		}
-	});
-	
-})(jQuery);
-
-/**
- * @author Deux Huit Huit
- *
  * css3 Transition end
  */
 
@@ -11913,4 +11747,155 @@
 		});
 	};
 	
+})(jQuery);
+
+/**
+ * Friendly maping of "all" the keyboard keys
+ * @author Deux Huit Huit
+ */
+(function ($) {
+
+	'use strict';
+
+	var keys = {};
+	
+	keys.code = {
+		/* jshint ignore:start */
+		'?': 0,
+		backspace: 8,
+		tab: 9,
+		enter: 13,
+		shift: 16,
+		ctrl: 17,
+		alt: 18,
+		pause_break: 19,
+		caps_lock: 20,
+		escape: 27,
+		space_bar: 32,
+		page_up: 33,
+		page_down: 34,
+		end: 35,
+		home: 36,
+		left_arrow: 37,
+		up_arrow: 38,
+		right_arrow: 39,
+		down_arrow: 40,
+		insert: 45,
+		delete: 46,
+		0: 48,
+		1: 49,
+		2: 50,
+		3: 51,
+		4: 52,
+		5: 53,
+		6: 54,
+		7: 55,
+		8: 56,
+		9: 57,
+		a: 65,
+		b: 66,
+		c: 67,
+		d: 68,
+		e: 69,
+		f: 70,
+		g: 71,
+		h: 72,
+		i: 73,
+		j: 74,
+		k: 75,
+		l: 76,
+		m: 77,
+		n: 78,
+		o: 79,
+		p: 80,
+		q: 81,
+		r: 82,
+		s: 83,
+		t: 84,
+		u: 85,
+		v: 86,
+		w: 87,
+		x: 88,
+		y: 89,
+		z: 90,
+		left_window_key: 91,
+		right_window_key: 92,
+		select_key: 93,
+		numpad_0: 96,
+		numpad_1: 97,
+		numpad_2: 98,
+		numpad_3: 99,
+		'numpad 4': 100,
+		numpad_5: 101,
+		numpad_6: 102,
+		numpad_7: 103,
+		numpad_8: 104,
+		numpad_9: 105,
+		multiply: 106,
+		add: 107,
+		subtract: 109,
+		'decimal point': 110,
+		divide: 111,
+		f1: 112,
+		f2: 113,
+		f3: 114,
+		f4: 115,
+		f5: 116,
+		f6: 117,
+		f7: 118,
+		f8: 119,
+		f9: 120,
+		f10: 121,
+		f11: 122,
+		f12: 123,
+		num_lock: 144,
+		scroll_lock: 145,
+		semi_colon: 186,
+		';': 186,
+		'=': 187,
+		equal_sign: 187,
+		comma: 188,
+		', ': 188,
+		dash: 189,
+		'ff-dash': 173,
+		'.': 190,
+		period: 190,
+		forward_slash: 191,
+		'/': 191,
+		grave_accent: 192,
+		open_bracket: 219,
+		back_slash: 220,
+		'\\': 220,
+		close_braket: 221,
+		single_quote: 222
+		/* jshint ignore:end */
+	};
+
+	keys.fromCode = function (code) {
+		var key = '?';
+		if (!code) {
+			return key;
+		}
+		$.each(keys.code, function (index, value) {
+			if (code === value) {
+				key = index;
+				return false;
+			}
+
+			return true;
+		});
+		return key;
+	};
+
+	// Chars
+	keys.isChar = function (c) {
+		return c === keys.code.space_bar || (c > keys.code['0'] && c <= keys.code.z);
+	};
+
+	window.App = $.extend(true, window.App, {
+		device: {
+			keys: keys
+		}
+	});
+
 })(jQuery);
