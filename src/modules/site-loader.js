@@ -29,7 +29,7 @@
 
 			$('.js-site-loader-close-ended-anim-ref').transitionEnd(destroyLoader);
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: siteLoaderPanel,
 				state: 'close',
 				action: 'on'
