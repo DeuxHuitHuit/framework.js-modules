@@ -34,7 +34,12 @@
 	var resizeTimer = 0;
 	
 	var track = function (action, label, value) {
-		$.sendEvent('glossary', action, label, value);
+		App.fx.notify('tracking.sendEvent', {
+			cat: 'glossary',
+			action: action,
+			label: label,
+			value: value
+		});
 	};
 	
 	var closeAll = function () {

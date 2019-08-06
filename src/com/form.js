@@ -37,7 +37,12 @@
 		var track = function (action, label, value) {
 			var cat = ctn.attr('data-ga-form-cat') || options.gaCat;
 			label = label || ctn.attr('data-ga-form-label') || options.gaLabel;
-			$.sendEvent(cat, action, label, value);
+			App.fx.notify('tracking.sendEvent', {
+				cat: cat,
+				action: action,
+				label: label,
+				value: value
+			});
 		};
 
 		var reset = function () {

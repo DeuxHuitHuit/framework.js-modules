@@ -1,9 +1,8 @@
 /**
  * @author Deux Huit Huit
  *
- * Google Analytics wrapper
+ * Tracking functions: Google Analytics/Tag Manager wrapper
  */
-
 (function ($) {
 	'use strict';
 	
@@ -62,7 +61,7 @@
 	};
 	
 	// ga facilitators
-	$.sendPageView = function (opts) {
+	var sendPageView = function (opts) {
 		var ga = getGa();
 		var defaults = {
 			page: window.location.pathname + window.location.search,
@@ -70,12 +69,12 @@
 			hostname: window.location.hostname
 		};
 		var args = !opts ? defaults : $.extend(defaults, opts);
-		if ($.isFunction($.formatPage)) {
-			args.page = $.formatPage(args.page);
-		}
-		if ($.isFunction($.formatLocation)) {
-			args.location = $.formatLocation(args.location);
-		}
+		App.mediator.notify('tracking.formatPage', args, function (key, res) {
+			args.page = res;
+		});
+		App.mediator.notify('tracking.formatLocation', args, function (key, res) {
+			args.location = res;
+		});
 		if (!html.filter('[data-no-ga]').length) {
 			ga('send', 'pageview', args);
 		} else {
@@ -84,7 +83,7 @@
 	};
 	
 	/* jshint maxparams:6 */
-	$.sendEvent = function (cat, action, label, value, options, category) {
+	var sendEvent = function (cat, action, label, value, options, category) {
 		var ga = getGa();
 		cat = cat || '';
 		options = cat.options || options || {nonInteraction: 1};
@@ -96,10 +95,33 @@
 	};
 	/* jshint maxparams:5 */
 	
+	/**
+	 * Exports fx
+	 */
+	App.fx.exports('tracking.sendPageView', function (key, options) {
+		return sendPageView(options);
+	});
+	App.fx.exports('tracking.sendEvent', function (key, options) {
+		options = options || false;
+		return sendEvent(
+			options.cat,
+			options.action,
+			options.label,
+			options.value,
+			options.options,
+			options.category
+		);
+	});
+
 	var getTextValue = function (t, key) {
 		return t.attr(key) || undefined;
 	};
 
+	/**
+	 * jQuery plugin: reads the values from the dom
+	 * Also make sure we do not trigger more than one tracking event for
+	 * a single DOM event
+	 */
 	$.fn.sendClickEvent = function (options) {
 		options = options || {};
 		var t = $(this).eq(0);
@@ -150,11 +172,13 @@
 		detectError();
 		
 		if (!!send) {
-			$.sendEvent(o.cat, o.action, o.label, o.value, undefined, o.category);
+			sendEvent(o.cat, o.action, o.label, o.value, undefined, o.category);
 		}
 	};
 	
-	// auto-hook
+	/**
+	 * Auto-hook
+	 */
 	$(function () {
 		var loc = window.location;
 		var origin = loc.origin || (loc.protocol + '//' + loc.hostname);
@@ -212,7 +236,7 @@
 			});
 		});
 		if ($('body').hasClass('page-404')) {
-			$.sendEvent('erreur 404', 'erreur 404', document.referrer);
+			sendEvent('erreur 404', 'erreur 404', document.referrer);
 		}
 	});
 	

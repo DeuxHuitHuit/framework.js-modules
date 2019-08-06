@@ -94,9 +94,14 @@
 			if (!o.gaCat) {
 				return;
 			}
-			$.sendEvent(o.gaCat, o.gaAction, val, nb);
+			App.fx.notify('tracking.sendEvent', {
+				cat: o.gaCat,
+				action: o.gaAction,
+				label: val,
+				value: nb
+			});
 			if (!!o.gaIncludePageView) {
-				$.sendPageView({
+				App.fx.notify('tracking.sendPageView', {
 					page: window.location.pathname + '?q=' + val
 				});
 			}

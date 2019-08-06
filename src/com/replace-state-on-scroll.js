@@ -73,7 +73,7 @@
 
 					App.callback(o.change, [cur, n, url]);
 					if (n > seen) {
-						$.sendPageView({page: url});
+						App.fx.notify('tracking.sendPageView', {page: url});
 					}
 				}
 				cur = n;

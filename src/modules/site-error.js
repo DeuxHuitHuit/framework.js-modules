@@ -23,7 +23,10 @@
 			errorMsg += ' col ' + errorObj.stack;
 		}
 		// Log via Google Analytics
-		$.sendEvent('error', errorMsg);
+		App.fx.notify('tracking.sendEvent', {
+			cat: 'error',
+			action: errorMsg
+		});
 		// Call default
 		return App.callback(oldOnError, errorMsg, url, lineNumber, column, errorObj);
 	};
@@ -33,7 +36,12 @@
 	
 	// Trap js errors
 	$(document).ajaxError(function (e, request, settings) {
-		$.sendEvent('error ajax', settings.url, e.result);
+		App.fx.notify('tracking.sendEvent', {
+			cat: 'error ajax',
+			action: settings.url,
+			label: e.result,
+			value: request.status
+		});
 	});
 
 })(jQuery, window);

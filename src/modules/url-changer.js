@@ -158,7 +158,7 @@
 		}
 		
 		if (!handled) {
-			$.sendPageView({page: data.route});
+			App.fx.notify('tracking.sendPageView', {page: data.route});
 		}
 	};
 	
@@ -179,7 +179,7 @@
 				extractQS();
 			}
 			updateUrlFragment();
-			$.sendPageView({page: data.route});
+			App.fx.notify('tracking.sendPageView', {page: data.route});
 		}
 	};
 	
@@ -281,7 +281,7 @@
 		//Set back old fragment to trigger fragment changed
 		if (currentPageFragment !== oldFragment) {
 			currentPageFragment = oldFragment;
-			$.sendPageView({page: data.route});
+			App.fx.notify('tracking.sendPageView', {page: data.route});
 		}
 		urlChanged();
 	};

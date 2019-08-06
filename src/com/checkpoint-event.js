@@ -30,7 +30,12 @@
 				var action = o.action + ' ' + o.checkPoints[gate] + '%';
 				var label = o.label || action;
 				if (o.category) {
-					$.sendEvent(o.category, action, label, o.checkPoints[gate]);
+					App.fx.notify('tracking.sendEvent', {
+						cat: o.category,
+						action: action,
+						label: label,
+						value: o.checkPoints[gate]
+					});
 				}
 				App.callback(o.checkPointReached, [gate, o.checkPoints[gate]]);
 				gate++;
