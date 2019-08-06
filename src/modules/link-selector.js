@@ -19,13 +19,13 @@
 		links.each(function () {
 			var t = $(this);
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: t,
 				state: 'current-link-partial',
 				action: 'off'
 			});
 	
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: t,
 				state: 'current-link',
 				action: 'off'
@@ -51,14 +51,14 @@
 			}
 
 			// Partial match
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: t,
 				state: 'current-link-partial',
 				action: (!!matches.length && pathname !== currentPath) ? 'on' : 'off'
 			});
 
 			// Exact match
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: t,
 				state: 'current-link',
 				action: pathname === currentPath ? 'on' : 'off'
