@@ -132,18 +132,18 @@
 					
 					if (!!isFinal) {
 						fx = function () {
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'initial',
 								action: 'off'
 							});
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'middle',
 								action: 'off'
 							});
 							
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'final',
 								action: 'on'
@@ -151,18 +151,18 @@
 						};
 					} else if (!!isMiddle) {
 						fx = function () {
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'initial',
 								action: 'off'
 							});
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'final',
 								action: 'off'
 							});
 							
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'middle',
 								action: 'on'
@@ -170,18 +170,18 @@
 						};
 					} else {
 						fx = function () {
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'final',
 								action: 'off'
 							});
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'middle',
 								action: 'off'
 							});
 							
-							App.modules.notify('changeState.update', {
+							App.fx.notify('changeState.update', {
 								item: t,
 								state: 'initial',
 								action: 'on'
