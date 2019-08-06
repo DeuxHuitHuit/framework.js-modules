@@ -44,7 +44,7 @@
 
 		if (action === 'toggle') {
 			// set flag class
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: item,
 				state: state,
 				action: 'toggle'
@@ -71,7 +71,7 @@
 		} else if (action === 'up') {
 			if (!!curBoolState) {
 				// set flag class
-				App.modules.notify('changeState.update', {
+				App.fx.notify('changeState.update', {
 					item: item,
 					state: state,
 					action: 'off'
@@ -91,7 +91,7 @@
 		} else if (action === 'down') {
 			if (!curBoolState) {
 				// set flag class
-				App.modules.notify('changeState.update', {
+				App.fx.notify('changeState.update', {
 					item: item,
 					state: state,
 					action: 'on'
