@@ -53,7 +53,7 @@
 			var slide = t.find(SLIDE_SELECTOR);
 			
 			//trigger
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: trigger,
 				state: STATE,
 				action: 'off'
@@ -85,7 +85,7 @@
 				action: data.slideAction
 			});
 			
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: data.trigger,
 				state: STATE,
 				action: data.triggerAction
