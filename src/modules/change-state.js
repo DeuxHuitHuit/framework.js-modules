@@ -268,6 +268,10 @@
 		}
 	};
 	
+	var fxChangeState = function (key, data) {
+		onUpdateState(key, data);
+	};
+
 	var actions = function () {
 		return {
 			changeState: {
@@ -279,5 +283,7 @@
 	App.modules.exports('change-state', {
 		actions: actions
 	});
+
+	App.fx.exports('changeState.update', fxChangeState);
 	
 })(jQuery);
