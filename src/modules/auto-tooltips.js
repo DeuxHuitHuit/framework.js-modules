@@ -272,7 +272,7 @@
 	};
 	
 	var loadTooltips = function () {
-		window.Loader.load({
+		App.loader.load({
 			url: ajaxTooltipsUrl,
 			success: function (data) {
 				tooltips = $($(data).find('result').html());

@@ -41,7 +41,7 @@
 			data['fields[' + i + '][tag]'] = c;
 		});
 		rateList[path] = true;
-		window.Loader.load({
+		App.loader.load({
 			url: url,
 			type: 'POST',
 			data: data,

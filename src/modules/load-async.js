@@ -18,7 +18,7 @@
 		if (!!$(data.item).length && !!data.url && !data.item.hasClass(CLASS_LOADING)) {
 			data.item.addClass(CLASS_LOADING);
 			
-			Loader.load({
+			App.loader.load({
 				url: data.url,
 				success: function () {
 					data.item.removeClass(CLASS_LOADING)
