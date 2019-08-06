@@ -87,7 +87,7 @@
 			}, item.selector);
 		}
 		
-		App.modules.notify('changeState.update', {
+		App.fx.notify('changeState.update', {
 			item: item,
 			state: 'visible',
 			action: isOn ? 'on' : 'off'
@@ -105,7 +105,7 @@
 			var item = $(data.item);
 			
 			item.addClass('noanim');
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: item,
 				state: 'visible',
 				action: 'off'
@@ -137,7 +137,7 @@
 				App.callback(callback);
 			}, bgTransitionModal.selector);
 		}
-		App.modules.notify('changeState.update', {
+		App.fx.notify('changeState.update', {
 			item: bgTransitionModal,
 			state: 'visible',
 			action: isVisible ? 'on' : 'off'
