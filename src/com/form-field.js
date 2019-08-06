@@ -176,31 +176,31 @@
 		};
 
 		var reset = function () {
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'valid',
 				action: 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'invalid',
 				action: 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'filled',
 				action: 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'focused',
 				action: 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'empty',
 				action: 'on'
@@ -280,13 +280,13 @@
 		var setValueState = function () {
 			var val = value();
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'filled',
 				action: !!val ? 'on' : 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'empty',
 				action: !val ? 'on' : 'off'
@@ -371,13 +371,13 @@
 		var validate = function () {
 			var result = tryValidate(value());
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'invalid',
 				action: !!result ? 'on' : 'off'
 			});
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'valid',
 				action: !result ? 'on' : 'off'
@@ -466,7 +466,7 @@
 			}
 
 			i.on('focus', function () {
-				App.modules.notify('changeState.update', {
+				App.fx.notify('changeState.update', {
 					item: ctn,
 					state: 'focused',
 					action: 'on'
@@ -480,7 +480,7 @@
 			});
 
 			i.on('blur', function () {
-				App.modules.notify('changeState.update', {
+				App.fx.notify('changeState.update', {
 					item: ctn,
 					state: 'focused',
 					action: 'off'
