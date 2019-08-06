@@ -49,7 +49,7 @@
 					pagerLink.remove();
 					App.mediator.notify('pageLoad.start');
 
-					window.Loader.load({
+					App.loader.load({
 						url: url,
 						success: function (dataLoaded, textStatus, jqXHR) {
 							appendNextPage(dataLoaded, textStatus, jqXHR);

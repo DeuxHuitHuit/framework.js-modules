@@ -128,7 +128,7 @@
 				// LoadPage
 				if (!nextPage || !nextPage.length) {
 					App.mediator.notify('pageLoad.start', {page: page});
-					Loader.load({
+					App.loader.load({
 						url: loadUrl,
 						priority: 0, // now
 						vip: true, // bypass others

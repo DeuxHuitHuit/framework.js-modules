@@ -108,8 +108,8 @@
 			isSubmitting = true;
 
 			App.callback(options.post.submitting);
-
-			window.Loader.load({
+			
+			App.loader.load({
 				url: ctn.attr('action'),
 				type: ctn.attr('method') || 'POST',
 				data: data,

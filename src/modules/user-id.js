@@ -9,7 +9,7 @@
 	
 	var LENGTH = 32;
 	var HIDDEN_FIELD_SEL = '.js-user-id';
-	var storage = window.Storage.local;
+	var storage = App.storage.local;
 	var KEY = 'auto-user-id';
 	var uId = '';
 	

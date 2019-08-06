@@ -149,7 +149,7 @@
 				App.mediator.notify('pageLoad.start', {page: page});
 				loadingUrl = loadUrl;
 
-				Loader.load({
+				App.loader.load({
 					url: loadUrl,
 					priority: 0, // now
 					vip: true, // bypass others
