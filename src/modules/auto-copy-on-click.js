@@ -28,7 +28,7 @@
 			textToCopy.select();
 			document.execCommand('copy');
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: message,
 				state: 'visible',
 				action: 'on'
@@ -36,7 +36,7 @@
 
 			clearTimeout(timer);
 			timer = setTimeout(function () {
-				App.modules.notify('changeState.update', {
+				App.fx.notify('changeState.update', {
 					item: message,
 					state: 'visible',
 					action: 'off'
