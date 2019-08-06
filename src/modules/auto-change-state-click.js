@@ -52,7 +52,7 @@
 			item = findTargetItemIfAvailable(item, target);
 
 			//Process item algo
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: item,
 				state: state,
 				action: action
