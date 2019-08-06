@@ -45,7 +45,7 @@
 			_.each(fields, function (f) {
 				f.reset();
 			});
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'submitting',
 				action: 'off'
@@ -121,7 +121,7 @@
 				complete: function () {
 					App.callback(options.post.complete);
 					isSubmitting = false;
-					App.modules.notify('changeState.update', {
+					App.fx.notify('changeState.update', {
 						item: ctn,
 						state: 'submitting',
 						action: 'off'
@@ -137,7 +137,7 @@
 			var results = validate();
 			App.callback(options.onSubmit);
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: ctn,
 				state: 'submitting',
 				action: 'on'
