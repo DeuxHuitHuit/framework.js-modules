@@ -24,7 +24,7 @@
 			var vPlayer = t.find(PLAYER_SEL);
 			var oembed = t.data(DATA_KEY);
 
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: t,
 				state: 'playing',
 				action: 'off'
@@ -58,7 +58,7 @@
 		components.push(oembed);
 		oembed.load({
 			finish: function () {
-				App.modules.notify('changeState.update', {
+				App.fx.notify('changeState.update', {
 					item: ctx,
 					state: 'playing',
 					action: 'off'
@@ -111,7 +111,7 @@
 		}
 
 		if (!!oembed) {
-			App.modules.notify('changeState.update', {
+			App.fx.notify('changeState.update', {
 				item: vCtn,
 				state: 'playing',
 				action: 'on'
