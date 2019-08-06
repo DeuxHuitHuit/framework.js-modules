@@ -189,6 +189,25 @@
 			}
 		};
 
+		var fullscreen = function (e) {
+			var elem = o.video[0];
+			if (!elem) {
+				return false;
+			}
+
+			if (elem.requestFullscreen) {
+				elem.requestFullscreen();
+			} else if (elem.mozRequestFullScreen) { /* Firefox */
+				elem.mozRequestFullScreen();
+			} else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+				elem.webkitRequestFullscreen();
+			} else if (elem.msRequestFullscreen) { /* IE/Edge */
+				elem.msRequestFullscreen();
+			} else {
+				App.log('full screen not available');
+			}
+		};
+
 		var destroy = function () {
 			o.video.off('timeUpdate', onTimeUpdate)
 				.off('canplay', onCanPlay)
@@ -224,7 +243,8 @@
 			togglePlay: togglePlayVideo,
 			pause: pauseVideo,
 			seek: seekVideo,
-			toggleMute: toggleMute
+			toggleMute: toggleMute,
+			fullscreen: fullscreen
 		};
 	});
 	
