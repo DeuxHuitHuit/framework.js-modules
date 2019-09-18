@@ -30,7 +30,8 @@
   },
   "scripts": {
     "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect"
+    "prepare": "npm run snyk-protect",
+    "ci": "grunt"
   },
   "snyk": true,
   "greenkeeper": {
