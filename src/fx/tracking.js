@@ -50,7 +50,7 @@
 					if ($.isPlainObject(cat)) {
 						args = $.extend(true, {}, args, cat);
 						args.eventCategory = args.eventCategory || args.event;
-						args.event = gaCat;
+						args.event = args.eventName || gaCat;
 					}
 					dataLayer.push(args);
 				}
