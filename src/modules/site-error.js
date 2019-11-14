@@ -39,7 +39,8 @@
 		App.fx.notify('tracking.sendEvent', {
 			cat: 'error ajax',
 			action: settings.url,
-			label: e.result,
+			label: request.statusText + ' - ' + request.status + ' - ' +
+				(request.responseText || request.responseXML),
 			value: request.status
 		});
 	});
