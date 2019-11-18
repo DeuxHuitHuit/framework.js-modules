@@ -78,10 +78,10 @@
 	var extractFragmentFromRoute = function (nextRoute, reelRoute) {
 		var	starIndex = !nextRoute ? -1 : nextRoute.indexOf('*');
 		var processStar = function () {
-			nextRoute = nextRoute.substring(0, starIndex);
+			nextRoute = !nextRoute ? '' : nextRoute.substring(0, starIndex);
 			
 			//We got some fragment also
-			if (reelRoute.length > nextRoute.length) {
+			if (!!nextRoute && reelRoute.length > nextRoute.length) {
 				currentPageFragment = reelRoute.substring(starIndex);
 				extractQS();
 			} else {
@@ -93,7 +93,7 @@
 
 		var processNoStar = function () {
 			//Keep Search and Hash has a fragment if we have a # or ? after the
-			if (reelRoute.length > nextRoute.length) {
+			if (!!nextRoute && reelRoute.length > nextRoute.length) {
 				var charAfter = reelRoute[nextRoute.length];
 				
 				if (charAfter === '#' || charAfter === '?') {
