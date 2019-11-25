@@ -196,8 +196,11 @@
 			if (!url) {
 				return undefined;
 			}
-			url = url.replace(/^mailto:/, '');
-			url = url.replace(/^tel:/, '');
+			if (/^(mailto|tel):/.test(url)) {
+				url = url.replace(/^mailto:/, '');
+				url = url.replace(/^tel:/, '');
+				url = url.split('?')[0];
+			}
 			url = url.replace(origin, '');
 			return url;
 		};
