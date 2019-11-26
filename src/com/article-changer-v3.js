@@ -13,8 +13,14 @@
 			ctn.css({
 				minHeight: current.height() + 'px'
 			});
+			App.mediator.notify('articleChanger.leaving', {
+				article: current
+			});
 			current.fadeTo(500, 0, function () {
 				current.hide();
+				App.mediator.notify('articleChanger.leave', {
+					article: current
+				});
 				callback(current, next, o);
 			});
 		} else {
@@ -30,7 +36,9 @@
 			});
 		}
 
-		App.mediator.notify('articleChanger.entering');
+		App.mediator.notify('articleChanger.entering', {
+			article: current
+		});
 		next.fadeTo(500, 1, function () {
 			o.articleEnter(current, next, o);
 			ctn.css({
@@ -68,7 +76,6 @@
 				oldItem.remove();
 			}
 			App.mediator.notify('articleChanger.enter', {
-				item: newItem,
 				article: newItem
 			});
 		}
@@ -142,7 +149,10 @@
 					);
 					
 					App.mediator.notify('pageLoad.end');
-					App.mediator.notify('articleChanger.loaded', {url: cleanUrl, data: dataLoaded});
+					App.mediator.notify('articleChanger.loaded', {
+						url: cleanUrl,
+						data: dataLoaded
+					});
 					
 					if (!nextPage.length) {
 						App.log({
