@@ -15,5 +15,5 @@ matrix:
 notifications:
   email: false
 script:
-  - grunt
+  - grunt ci
 
