@@ -11,6 +11,7 @@
 	
 	var ITEM_SELECTOR = '.js-auto-sync-state-from-qs';
 	var ATTR_STATES = 'data-sync-state-from-qs';
+	var ATTR_VALUE_LIST = 'data-sync-state-from-qs-value-list';
 
 	var setItemState = function (item, state, flag) {
 		App.fx.notify('changeState.update', {
@@ -20,7 +21,7 @@
 		});
 	};
 
-	var processItemState = function (item, state, conditions) {
+	var processItemState = function (item, state, conditions, useList) {
 		var isOn = false;
 		var qs = App.routing.querystring.parse(window.location.search);
 
@@ -29,14 +30,20 @@
 			var key = splitedCondition[0];
 			var value = splitedCondition[1];
 
-			if (value.length) {
-				if (qs[key] && qs[key] == value) {
-					isOn = true;
-				}
-			} else if (qs[key] && qs[key].length === 0 || !!!qs[key]) {
-				//Set state on when empty
-				isOn = true;
+			// Did not found a key, continue to next condition
+			if (!key) {
+				return true;
 			}
+
+			// Values are equal or both falsy ('' vs null vs undefined)
+			if (qs[key] === value || (!qs[key] && !value)) {
+				isOn = true;
+			// Use list, only if we have values
+			} else if (!!useList && !!qs[key] && !!value) {
+				var splittedQs = qs[key].split(',');
+				isOn = !!~splittedQs.indexOf(value);
+			}
+			return !isOn;
 		});
 
 		setItemState(item, state, isOn);
@@ -46,8 +53,9 @@
 		site.find(ITEM_SELECTOR).each(function () {
 			var t = $(this);
 			var states = t.attr(ATTR_STATES);
+			var useValueList = t.attr(ATTR_VALUE_LIST);
 
-			if (states.length) {
+			if (!!states.length) {
 				var statesList = states.split(';');
 
 				$.each(statesList, function (i, e) {
@@ -55,7 +63,7 @@
 					var state = splitedStateValue[0];
 					var conditions = splitedStateValue[1];
 
-					processItemState(t, state, conditions);
+					processItemState(t, state, conditions, useValueList);
 				});
 			}
 		});
@@ -65,6 +73,10 @@
 		syncState();
 	};
 	
+	var onArticleChangerEnter = function () {
+		syncState();
+	};
+
 	var init = function () {
 		syncState();
 	};
@@ -73,6 +85,9 @@
 		return {
 			page: {
 				fragmentChanged: onFragmentChanged
+			},
+			articleChanger: {
+				enter: onArticleChangerEnter
 			}
 		};
 	};
