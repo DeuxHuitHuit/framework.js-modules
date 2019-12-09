@@ -6,3 +6,6 @@ node_modules
 npm-debug.log
 
 report.xml
+
+tests/framework
+tests/jquery.js
