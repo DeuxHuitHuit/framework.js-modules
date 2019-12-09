@@ -93,10 +93,34 @@
 		};
 
 		var init = function (p, options) {
+			
 			page = p;
 			o = $.extend({}, defOptions, options);
 			articleCtn = $(o.containerSelector, page);
 			currentPageHandle = o.startPageHandle;
+
+			if (!page) {
+				App.log({
+					args: [
+						'Missing init first parameter. No scope.'
+					],
+					fx: 'error',
+					me: 'Article Changer'
+				});
+				return false;
+			}
+
+			if (!articleCtn.length) {
+				App.log({
+					args: [
+						'No articleCtn found with : ' + o.containerSelector + ' in ' + page.selector
+					],
+					fx: 'error',
+					me: 'Article Changer'
+				});
+				return false;
+			}
+			return true;
 		};
 
 		var loadUrl = '';

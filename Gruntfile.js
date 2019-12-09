@@ -23,6 +23,50 @@ module.exports = function fxGruntConfig (grunt) {
 	
 	var JSCS_FILE = '.jscsrc';
 	
+	// TESTS
+	var SERVER_PORT = 8081;
+	var SERVER_URI = 'http://localhost:' + SERVER_PORT;
+	var TEST_PATHS = [
+		'/tests/com/article-changer.js.test.html'
+	];
+	
+	var TEST_URIS = [];
+	var TEST_URIS_LT = [];
+	var TEST_URIS_CI = [];
+	var TEST_QS = '?noglobals=true&jquery=';
+	
+	// for qunit
+	var createTestUris = function () {
+		for (var c = 0; c < TEST_PATHS.length; c++) {
+			TEST_URIS.push(SERVER_URI + TEST_PATHS[c] + TEST_QS + '3.4.1');
+			TEST_URIS.push(SERVER_URI + TEST_PATHS[c] + TEST_QS + '3.3.1');
+			TEST_URIS.push(SERVER_URI + TEST_PATHS[c] + TEST_QS + '3.2.1');
+			TEST_URIS.push(SERVER_URI + TEST_PATHS[c] + TEST_QS + '3.1.1');
+			TEST_URIS.push(SERVER_URI + TEST_PATHS[c] + TEST_QS + '3.0.0');
+			TEST_URIS.push(SERVER_URI + TEST_PATHS[c] + TEST_QS + '2.2.4');
+			TEST_URIS.push(SERVER_URI + TEST_PATHS[c] + TEST_QS + '2.1.4');
+			TEST_URIS.push(SERVER_URI + TEST_PATHS[c] + TEST_QS + '2.0.3');
+			TEST_URIS.push(SERVER_URI + TEST_PATHS[c] + TEST_QS + '1.12.2');
+			TEST_URIS.push(SERVER_URI + TEST_PATHS[c] + TEST_QS + '1.11.1');
+			TEST_URIS.push(SERVER_URI + TEST_PATHS[c] + TEST_QS + '1.10.2');
+			TEST_URIS.push(SERVER_URI + TEST_PATHS[c] + TEST_QS + '1.9.1');
+		}
+	};
+
+	var createTestUrisLt = function () {
+		for (var c = 0; c < TEST_PATHS.length; c++) {
+			TEST_URIS_LT.push(SERVER_URI + TEST_PATHS[c] + TEST_QS);
+		}
+	};
+
+	var createTestUrisCi = function () {
+		for (var c = 0; c < TEST_PATHS.length; c++) {
+			TEST_URIS_CI.push(SERVER_URI + TEST_PATHS[c] + TEST_QS + 'local');
+		}
+	};
+
+	var VERBOSE = !!~grunt.option.flags().indexOf('--verbose');
+
 	var config = {
 		pkg: grunt.file.readJSON('package.json'),
 		buildnum: {
@@ -149,7 +193,47 @@ module.exports = function fxGruntConfig (grunt) {
 					allExcept: ['_currentPage', '_templateSettings']
 				}
 			}
-		}
+		},
+		curl: {
+			'tests/jquery.js': 'https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.js',
+			'tests/framework/framework.js': 'https://raw.githubusercontent.com/DeuxHuitHuit/framework.js/master/dist/framework.js',
+			'tests/framework/framework.min.js': 'https://raw.githubusercontent.com/DeuxHuitHuit/framework.js/master/dist/framework.min.js',
+			'tests/framework/framework.min.js.map': 'https://raw.githubusercontent.com/DeuxHuitHuit/framework.js/master/dist/framework.min.js.map'
+		},
+		qunit: {
+			options: {
+				noGlobals: true,
+				timeout: 6000,
+				console: !!VERBOSE,
+				puppeteer: {
+					headless: !VERBOSE,
+					args: ['--media-cache-size=1', '--disk-cache-size=1']
+				}
+			},
+			all: {
+				options: {
+					urls: TEST_URIS
+				}
+			},
+			ci: {
+				options: {
+					urls: TEST_URIS_CI
+				}
+			},
+			latest: {
+				options: {
+					urls: TEST_URIS_LT
+				}
+			}
+		},
+		connect: {
+			server: {
+				options: {
+					port: SERVER_PORT,
+					base: '.'
+				}
+			}
+		},
 	};
 	
 	var init = function (grunt) {
@@ -184,14 +268,23 @@ module.exports = function fxGruntConfig (grunt) {
 		});
 		
 		// Default task.
+		// Default task.
+		grunt.registerTask('test', ['connect', 'qunit:all']);
+		grunt.registerTask('test-latest', ['connect', 'qunit:latest']);
+		grunt.registerTask('test-ci', ['curl', 'connect', 'qunit:ci']);
 		grunt.registerTask('dev', ['jscs', 'jshint', 'complexity']);
 		grunt.registerTask('build', ['buildnum', 'concat', 'uglify']);
-		grunt.registerTask('default', ['dev', 'build']);
+		grunt.registerTask('ci', ['dev', 'test-ci', 'build']);
+		grunt.registerTask('default', ['dev', 'test', 'build']);
 	};
 	
 	var load = function (grunt) {
 		md.filterDev('grunt-*').forEach(grunt.loadNpmTasks);
 		
+		createTestUris();
+		createTestUrisCi();
+		createTestUrisLt();
+
 		init(grunt);
 		
 		console.log('Running grunt on ' + os.platform());

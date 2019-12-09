@@ -1,0 +1,416 @@
+<!DOCTYPE html public "✰">
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<title>app-actions.js test suite</title>
+
+	<link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.9.2.css" integrity="sha256-toepOe5D+ddXgUOGsijnhymZna5bakJ0gwRC/3bK1b0=" crossorigin="anonymous" />
+
+	<style type="text/css">
+	</style>
+
+	<script>
+		(function (w, doc, co) {
+			// https://stackoverflow.com/questions/901115/get-query-string-values-in-javascript
+			var u = {},
+				e, t,
+				a = /\+/g,  // Regex for replacing addition symbol with a space
+				r = /([^&=]+)=?([^&]*)/g,
+				d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
+				q = w.location.search.substring(1),
+				v = '2.2.4';
+
+			while (e = r.exec(q)) {
+				u[d(e[1])] = d(e[2]);
+			}
+
+			if (!!u.jquery) {
+				v = u.jquery;
+			}
+			if (v === 'local') {
+				t = '/tests/jquery.js';
+			} else {
+				t = 'https://ajax.googleapis.com/ajax/libs/jquery/' + v + '/jquery.js'
+			}
+			doc.write('<script src="' + t + '">' + '<' + '/' + 'script>');
+			co.log('\nLoading jQuery v' + v + '\n');
+		})(window, document, console);
+	</script>
+</head>
+
+<body>
+	<h1 id="qunit-header">ArticleChanger.js</h1>
+	<h2 id="qunit-banner"></h2>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests"></ol>
+
+	<script src="https://code.jquery.com/qunit/qunit-2.9.2.js" integrity="sha256-EQ5rv6kPFPKQUYY+P4H6fm/le+yFRLVAb//2PfBswfE=" crossorigin="anonymous"></script>
+	
+	<script src="../framework/framework.min.js"></script>
+	<script src="../../src/com/article-changer-v3.js" ></script>
+
+
+	<div class="page">
+		<div class="js-article-test-ctn">
+
+		</div>
+	</div>
+
+	<script>
+		(function ($, w) {
+			'use strict';
+
+			QUnit.module('ArticleChanger');
+			App.debug(true);
+
+			var mockLoader = function () {
+				var originalLoader = App.loader;
+				var delay = 0;
+
+				var load = function (options) {
+					App.log({args: [options], fx: 'dir'});
+
+					setTimeout(function () {
+						originalLoader.load(options);
+					}, delay);
+				};
+
+				var isLoading = function () {
+
+				};
+
+				var inQueue = function () {
+
+				};
+
+				var setDelay = function (value) {
+					if (value >= 0) {
+						delay = value;
+					}
+				};
+
+				return {
+					load: load,
+					isLoading: isLoading,
+					inQueue: inQueue,
+					working: $.noop,
+
+					//Mock Function
+					setDelay: setDelay
+				};
+			}();
+
+			App.loader = mockLoader;
+
+			QUnit.test('Test create UC-01', function ArticleChangerNavigateTo(assert) {
+				var comp = App.components.create('articleChanger');
+				assert.ok(comp != null, "ArticleChanger created.");
+				assert.ok(comp.clear, 'Clear method exist.');
+				assert.ok(comp.navigateTo, 'navigateTo method exist.');
+				assert.ok(comp.getHandle, 'getHandle method exist.');
+				assert.ok(comp.getHandle() == undefined, 'getHandle return undefined.')
+			});
+
+			//Invalid case. (missing scope)
+			QUnit.test('Test init UC-01', function ArticleChangerNavigateTo(assert) {
+				var comp = App.components.create('articleChanger');
+				var result = comp.init();
+				assert.ok(comp.getHandle() == undefined, 'getHandle return undefined.');
+				assert.ok(!result, 'Init return false. (Missing scope)');
+			});
+
+			//Minimal case (Scope only without ctn)
+			QUnit.test('Test init UC-02', function ArticleChangerNavigateTo(assert) {
+				var comp = App.components.create('articleChanger');
+
+				//Invalid case. (missing scope)
+				var result = comp.init();
+				assert.ok(comp.getHandle() == undefined, 'getHandle return undefined.');
+				assert.ok(!result, 'Init return false. (Missing scope)');
+			});
+
+			//Minimal case (Scope only without ctn)
+			QUnit.test('Test init UC-03', function ArticleChangerNavigateTo(assert) {
+				var comp = App.components.create('articleChanger');
+
+				//Invalid case. (Minimal info (Scope) but no container found)
+				var result = comp.init($('.page'));
+				assert.ok(comp.getHandle() == undefined, 'getHandle return undefined.');
+				assert.ok(!result, 'Init return false. (No articleCtn Found in scope)');
+			});
+
+			QUnit.test('Test init UC-04', function ArticleChangerNavigateTo(assert) {
+				var comp = App.components.create('articleChanger');
+
+				//Invalid case. (Minimal info (Scope) but no container found)
+				var result = comp.init($('.page'), {
+					containerSelector: '.js-article-test-ctn'
+				});
+				assert.ok(comp.getHandle() == undefined, 'getHandle return undefined.');
+				assert.ok(result, 'Init return true. articleCtn found with custom containerSelector options.');
+			});
+			
+			QUnit.test('Test navigateTo UC-01', function ArticleChangerNavigateTo(assert) {
+				var comp = App.components.create('articleChanger');
+				
+				var resultInit = comp.init($('.page'), {
+					containerSelector: '.js-article-test-ctn'
+				});
+
+				assert.ok(comp.getHandle() == undefined, 'getHandle return undefined.');
+				assert.ok(resultInit, 'Init return true. articleCtn found with custom containerSelector options.');
+
+				//Invalid case. Navigating from undefined to undefined with track handle on
+				var resultNavigate = comp.navigateTo();
+				assert.ok(!resultNavigate, 'navigateTo return false.');
+			});
+
+			QUnit.test('Test navigateTo UC-02', function ArticleChangerNavigateTo(assert) {
+				var comp = App.components.create('articleChanger');
+
+				
+				var resultInit = comp.init($('.page'), {
+					containerSelector: '.js-article-test-ctn'
+				});
+
+				assert.ok(comp.getHandle() == undefined, 'getHandle return undefined.');
+				assert.ok(resultInit, 'Init return true. articleCtn found with custom containerSelector options.');
+
+				
+				var resultNavigate = comp.navigateTo('notfound');
+				assert.ok(resultNavigate, 'navigateTo return true.');
+
+			});
+			/*
+			//UT-02
+			QUnit.test('Test execute', function AppActionsExecute(assert) {
+				
+				var counter = 0;
+
+				var validateCounterAndReset = function (expected, key) {
+					assert.ok(counter === expected, 'cb was called exactly ' + expected + ' time (' + key + ')');
+					counter = 0; //Reset Counter
+				};
+
+				var fx = function (key, data, validKey, returnValue) {
+					assert.ok(true, 'fx was called');
+					assert.ok(key === validKey, 'key is ' + key);
+					assert.ok(!data, 'data is false-y');
+					return returnValue;
+				};
+
+				var fx2 = function (validKey, returnValue) {
+					return function (key, data) {
+						return fx(key, data, validKey, returnValue);
+					};
+				};
+
+				var cb = function (key, data, validData) {
+					assert.ok(key === counter, 'key is ' + key + ' but must be ' + counter);
+
+					if (validData === true) {
+						assert.ok(data, 'ok is true-y (' + key + ')');
+					} else {
+						assert.ok(!data, 'ok is false-y (' + key + ')');
+					}
+					
+					counter++;
+				};
+
+				var cb2 = function (validData) {
+					return function (key, data) {
+						return cb(key, data, validData);
+					};
+				};
+
+				//UT-02a
+				//Test normal execute : fx return true
+				// : data     = undefined
+				// : callback = undefined
+				App.actions.execute(fx2('test-a', true), 'test-a');
+				validateCounterAndReset(0, 'a');
+
+				//UT-02b
+				//Test normal execute : fx return true
+				// : data     = null
+				// : callback = undefined
+				App.actions.execute(fx2('test-b', true), 'test-b', null);
+				validateCounterAndReset(0, 'b');
+
+				//UT-02c
+				//Test normal execute : fx return true
+				// : data     = null
+				// : callback = valid
+				App.actions.execute(fx2('test-c', true), 'test-c', null, cb2(true));
+				validateCounterAndReset(1, 'c');
+				
+				//UT-02c
+				//Test normal execute : fx return true
+				// : data     = null
+				// : callback = valid
+				App.actions.execute(fx2('test-d', false), 'test-d', null, cb2(false));
+				validateCounterAndReset(1, 'd');
+
+				//UT-02e
+				//Test normal execute : fx return undefined
+				// : data     = null
+				// : callback = valid
+				App.actions.execute(fx2('test-e', undefined), 'test-e', null, cb2(false));
+				validateCounterAndReset(0, 'e');
+
+				//UT-02f
+				//Test with array of function (two): fx return true
+				// : data     = undefined
+				// : callback = undefined
+				App.actions.execute([fx2('test-f', true), fx2('test-f', true)], 'test-f');
+				validateCounterAndReset(0, 'f');
+
+				//UT-02g
+				//Test normal execute (two): fx return true
+				// : data     = null
+				// : callback = valid
+				App.actions.execute([fx2('test-g', true), fx2('test-g', true)], 'test-g', null, cb2(true));
+				validateCounterAndReset(2, 'g');
+
+				//UT-02h
+				//Test normal execute : fx return true
+				// : data     = skipped
+				// : callback = valid
+				App.actions.execute(fx2('test-h', true), 'test-h', cb2(true));
+				validateCounterAndReset(1, 'h');
+			});
+
+			//UT-03
+			QUnit.test('Test execute with stack', function AppActionsExecute(assert) {
+				//UT-03a
+				//Test original implementation.
+				var counterWrite = 0;
+				var counterRead = 0;
+				var key = 'test3a';
+				var fx = function (key, data) {
+					//Validate Fx is called
+					assert.ok(true, 'fx was called');
+					assert.ok(key === key, 'key is ' + key);
+					assert.ok(!data, 'data is false-y');
+					counterWrite++;
+				};
+				App.actions.execute(fx, key);
+				assert.ok(counterWrite === 1, 'write was called exactly once');
+
+				//UT-03b
+				//Test with simple a simple write function returned
+				counterWrite = 0;
+				counterRead = 0;
+				key = 'test3b';
+				fx = function (key, data) {
+					//Validate Fx is called
+					assert.ok(true, 'fx read was called');
+
+					return function () {
+						assert.ok(true, 'fx write was called');
+						assert.ok(key === key, 'key is ' + key);
+						assert.ok(!data, 'data is false-y');
+						counterWrite++;
+					};
+				};
+				App.actions.execute(fx, key);
+				assert.ok(counterWrite === 1, 'write was called exactly once');
+
+				//UT-03c
+				//Test with simple a simple write function returned
+				counterWrite = 0;
+				counterRead = 0;
+				key = 'test3c';
+				var cbCount = 0;
+				fx = function (key, data) {
+					//Validate Fx is called
+					assert.ok(true, 'fx read was called');
+
+					return function () {
+						assert.ok(true, 'fx write was called');
+						assert.ok(key === key, 'key is ' + key);
+						assert.ok(!data, 'data is false-y');
+						counterWrite++;
+					};
+				};
+				var cb = function (key1, data2) {
+					assert.ok(key1 === cbCount, 'callback key is ' + cbCount);
+					assert.ok(data2, 'data is not false-y');
+					//Data is the write function returned by the fx
+					assert.ok($.isFunction(data2), 'data is function');
+					cbCount++;
+				};
+				App.actions.execute(fx, key, cb);
+				assert.ok(counterWrite === 1, 'write was called exactly once');
+				assert.ok(cbCount === 1, 'callback was called exactly once');
+
+				//UT-03d
+				//
+				counterRead = 0;
+				counterWrite = 0;
+				key = 'test3d';
+				cbCount = 0;
+				fx = function (key, data) {
+					return {
+						read: function () {
+							assert.ok(true, 'fx read was called');
+							assert.ok(key === key, 'key is ' + key);
+							counterRead++;
+						},
+						write: function () {
+							assert.ok(true, 'fx write was called');
+							assert.ok(key === key, 'key is ' + key);
+							counterWrite++;
+						}
+					}
+				};
+				cb = function (key1, data2) {
+					assert.ok(key1 === cbCount, 'callback key is ' + cbCount);
+					assert.ok(data2, 'data is not false-y');
+					//Data is the write function returned by the fx
+					assert.ok($.isPlainObject(data2), 'data is plain object');
+					cbCount++;
+				};
+				App.actions.execute(fx, key, cb);
+				assert.ok(counterRead === 1, 'read was called exactly once');
+				assert.ok(counterWrite === 1, 'write was called exactly once');
+				assert.ok(cbCount === 1, 'callback was called exactly once');
+			});
+			
+			//UT-04
+			QUnit.test('Test execute with dynamic stack', function AppActionsExecute(assert) {
+				
+
+				//UT-04b
+				var counter = 0;
+				var innerCounter = 0;
+				var inner = function (key, data) {
+					return {
+						read: function () {
+							assert.ok(App.actions.stack().length > 0, 'read: stack is not empty');
+							innerCounter++;
+						},
+						write: function () {
+							assert.ok(App.actions.stack().length > 0, 'write: stack is not empty');
+							innerCounter++;
+						}
+					}
+				};
+				var fx = function (key, data) {
+					counter++;
+					App.actions.execute(inner, 'inner');
+					return function () {
+						counter++;
+					};
+				};
+				App.actions.execute([fx, fx, fx], 'test');
+				assert.ok(App.actions.stack().length === 0, 'stack is empty');
+				assert.ok(counter === 6, 'read and write was called exactly three times each');
+				assert.ok(innerCounter === 6, 'inner read and write was called exactly three times each');
+			});*/
+		})(jQuery, window);
+	</script>
+</body>
+
+</html>
