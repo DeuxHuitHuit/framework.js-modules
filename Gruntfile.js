@@ -34,6 +34,7 @@ module.exports = function fxGruntConfig (grunt) {
 	var TEST_URIS_LT = [];
 	var TEST_URIS_CI = [];
 	var TEST_QS = '?noglobals=true&jquery=';
+	var TEST_CDN = 'https://raw.githubusercontent.com/DeuxHuitHuit/framework.js/master';
 	
 	// for qunit
 	var createTestUris = function () {
@@ -196,9 +197,9 @@ module.exports = function fxGruntConfig (grunt) {
 		},
 		curl: {
 			'tests/jquery.js': 'https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.js',
-			'tests/framework/framework.js': 'https://raw.githubusercontent.com/DeuxHuitHuit/framework.js/master/dist/framework.js',
-			'tests/framework/framework.min.js': 'https://raw.githubusercontent.com/DeuxHuitHuit/framework.js/master/dist/framework.min.js',
-			'tests/framework/framework.min.js.map': 'https://raw.githubusercontent.com/DeuxHuitHuit/framework.js/master/dist/framework.min.js.map'
+			'tests/framework/framework.js': TEST_CDN + '/dist/framework.js',
+			'tests/framework/framework.min.js': TEST_CDN + '/dist/framework.min.js',
+			'tests/framework/framework.min.js.map': TEST_CDN + '/dist/framework.min.js.map'
 		},
 		qunit: {
 			options: {
@@ -233,7 +234,7 @@ module.exports = function fxGruntConfig (grunt) {
 					base: '.'
 				}
 			}
-		},
+		}
 	};
 	
 	var init = function (grunt) {
