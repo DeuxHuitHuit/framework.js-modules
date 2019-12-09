@@ -157,6 +157,7 @@
 		// METHODS
 		var loadVideo = function () {
 			o.video.mediaLoad();
+			o.video.mediaPlay();
 		};
 
 		var playVideo = function () {
