@@ -1,4 +1,4 @@
-/*! framework.js-modules - v2.0.0 - build 366 - 2019-08-06
+/*! framework.js-modules - v2.1.0 - build 367 - 2019-12-10
  * https://github.com/DeuxHuitHuit/framework.js-modules
  * Copyright (c) 2019 Deux Huit Huit (https://deuxhuithuit.com/);
  * MIT *//**
@@ -712,8 +712,14 @@
 			ctn.css({
 				minHeight: current.height() + 'px'
 			});
+			App.mediator.notify('articleChanger.leaving', {
+				article: current
+			});
 			current.fadeTo(500, 0, function () {
 				current.hide();
+				App.mediator.notify('articleChanger.leave', {
+					article: current
+				});
 				callback(current, next, o);
 			});
 		} else {
@@ -729,7 +735,9 @@
 			});
 		}
 
-		App.mediator.notify('articleChanger.entering');
+		App.mediator.notify('articleChanger.entering', {
+			article: current
+		});
 		next.fadeTo(500, 1, function () {
 			o.articleEnter(current, next, o);
 			ctn.css({
@@ -767,7 +775,6 @@
 				oldItem.remove();
 			}
 			App.mediator.notify('articleChanger.enter', {
-				item: newItem,
 				article: newItem
 			});
 		}
@@ -792,10 +799,34 @@
 		};
 
 		var init = function (p, options) {
+			
 			page = p;
 			o = $.extend({}, defOptions, options);
 			articleCtn = $(o.containerSelector, page);
 			currentPageHandle = o.startPageHandle;
+
+			if (!page) {
+				App.log({
+					args: [
+						'Missing init first parameter. No scope.'
+					],
+					fx: 'error',
+					me: 'Article Changer'
+				});
+				return false;
+			}
+
+			if (!articleCtn.length) {
+				App.log({
+					args: [
+						'No articleCtn found with : ' + o.containerSelector + ' in ' + page.selector
+					],
+					fx: 'error',
+					me: 'Article Changer'
+				});
+				return false;
+			}
+			return true;
 		};
 
 		var loadUrl = '';
@@ -817,7 +848,10 @@
 					);
 					
 					App.mediator.notify('pageLoad.end');
-					App.mediator.notify('articleChanger.loaded', {url: cleanUrl, data: dataLoaded});
+					App.mediator.notify('articleChanger.loaded', {
+						url: cleanUrl,
+						data: dataLoaded
+					});
 					
 					if (!nextPage.length) {
 						App.log({
@@ -3191,17 +3225,14 @@
 		ctn: $(),
 		video: null,
 		videoSelector: '.js-video',
-		resizeContainerSelector: '',
 		onTimeUpdate: $.noop,
 		onCanPlay: $.noop,
 		onPlaying: $.noop,
-		resizable: true,
 		onLoaded: $.noop,
 		onEnded: $.noop
 	};
 
 	var RESET_ON_END_ATTR = 'data-video-reset-on-end';
-	var RATIO_ATTR = 'data-video-ratio';
 
 	// jQuery fun
 	(function ($) {
@@ -3242,37 +3273,6 @@
 	App.components.exports('video', function (options) {
 		var o = $.extend({}, defaultOptions, options);
 
-		var resizeVideo = function () {
-			if (!!o.resizable) {
-				var ref = !!o.video.closest(o.resizeContainerSelector).length ?
-					o.video.closest(o.resizeContainerSelector) : o.ctn;
-				var refW = ref.width();
-				var refH = ref.height();
-				var ratio = o.video.mediaWidth() / o.video.mediaHeight();
-
-				var newSize = $.sizing.aspectFill({
-					width: refW,
-					height: refH,
-					preferWidth: false
-				}, ratio);
-
-				//Round size to avoid part of pixel
-				newSize.height = Math.ceil(newSize.height);
-				newSize.width = Math.ceil(newSize.width);
-
-				var newPosition = $.positioning.autoPosition({
-					position: 'center',
-					left: 'left',
-					top: 'top'
-				}, $.size(refW, refH), newSize);
-
-				o.video.size(newSize).css(newPosition).data({
-					size: newSize,
-					position: newPosition
-				});
-			}
-		};
-
 		// EVENTS
 		var onTimeUpdate = function (e) {
 			if (!!status.currentTime) {
@@ -3302,8 +3302,6 @@
 		};
 
 		var onCanPlay = function (e) {
-			resizeVideo();
-
 			App.fx.notify('changeState.update', {
 				item: o.ctn,
 				state: 'paused',
@@ -3320,7 +3318,6 @@
 		};
 		
 		var onLoaded = function (e) {
-			resizeVideo();
 			App.callback(o.onLoaded, [o.ctn, o.video]);
 		};
 
@@ -3338,6 +3335,7 @@
 		// METHODS
 		var loadVideo = function () {
 			o.video.mediaLoad();
+			o.video.mediaPlay();
 		};
 
 		var playVideo = function () {
@@ -3417,7 +3415,6 @@
 		
 		return {
 			init: init,
-			resize: resizeVideo,
 			destroy: destroy,
 			load: loadVideo,
 			play: playVideo,
@@ -6164,6 +6161,7 @@
 	
 	var ITEM_SELECTOR = '.js-auto-sync-state-from-qs';
 	var ATTR_STATES = 'data-sync-state-from-qs';
+	var ATTR_VALUE_LIST = 'data-sync-state-from-qs-value-list';
 
 	var setItemState = function (item, state, flag) {
 		App.fx.notify('changeState.update', {
@@ -6173,7 +6171,7 @@
 		});
 	};
 
-	var processItemState = function (item, state, conditions) {
+	var processItemState = function (item, state, conditions, useList) {
 		var isOn = false;
 		var qs = App.routing.querystring.parse(window.location.search);
 
@@ -6182,14 +6180,20 @@
 			var key = splitedCondition[0];
 			var value = splitedCondition[1];
 
-			if (value.length) {
-				if (qs[key] && qs[key] == value) {
-					isOn = true;
-				}
-			} else if (qs[key] && qs[key].length === 0 || !!!qs[key]) {
-				//Set state on when empty
-				isOn = true;
+			// Did not found a key, continue to next condition
+			if (!key) {
+				return true;
 			}
+
+			// Values are equal or both falsy ('' vs null vs undefined)
+			if (qs[key] === value || (!qs[key] && !value)) {
+				isOn = true;
+			// Use list, only if we have values
+			} else if (!!useList && !!qs[key] && !!value) {
+				var splittedQs = qs[key].split(',');
+				isOn = !!~splittedQs.indexOf(value);
+			}
+			return !isOn;
 		});
 
 		setItemState(item, state, isOn);
@@ -6199,8 +6203,9 @@
 		site.find(ITEM_SELECTOR).each(function () {
 			var t = $(this);
 			var states = t.attr(ATTR_STATES);
+			var useValueList = t.attr(ATTR_VALUE_LIST);
 
-			if (states.length) {
+			if (!!states.length) {
 				var statesList = states.split(';');
 
 				$.each(statesList, function (i, e) {
@@ -6208,7 +6213,7 @@
 					var state = splitedStateValue[0];
 					var conditions = splitedStateValue[1];
 
-					processItemState(t, state, conditions);
+					processItemState(t, state, conditions, useValueList);
 				});
 			}
 		});
@@ -6218,6 +6223,10 @@
 		syncState();
 	};
 	
+	var onArticleChangerEnter = function () {
+		syncState();
+	};
+
 	var init = function () {
 		syncState();
 	};
@@ -6226,6 +6235,9 @@
 		return {
 			page: {
 				fragmentChanged: onFragmentChanged
+			},
+			articleChanger: {
+				enter: onArticleChangerEnter
 			}
 		};
 	};
@@ -9691,7 +9703,8 @@
 		App.fx.notify('tracking.sendEvent', {
 			cat: 'error ajax',
 			action: settings.url,
-			label: e.result,
+			label: request.statusText + ' - ' + request.status + ' - ' +
+				(request.responseText || request.responseXML),
 			value: request.status
 		});
 	});
@@ -10578,10 +10591,10 @@
 	var extractFragmentFromRoute = function (nextRoute, reelRoute) {
 		var	starIndex = !nextRoute ? -1 : nextRoute.indexOf('*');
 		var processStar = function () {
-			nextRoute = nextRoute.substring(0, starIndex);
+			nextRoute = !nextRoute ? '' : nextRoute.substring(0, starIndex);
 			
 			//We got some fragment also
-			if (reelRoute.length > nextRoute.length) {
+			if (!!nextRoute && reelRoute.length > nextRoute.length) {
 				currentPageFragment = reelRoute.substring(starIndex);
 				extractQS();
 			} else {
@@ -10593,7 +10606,7 @@
 
 		var processNoStar = function () {
 			//Keep Search and Hash has a fragment if we have a # or ? after the
-			if (reelRoute.length > nextRoute.length) {
+			if (!!nextRoute && reelRoute.length > nextRoute.length) {
 				var charAfter = reelRoute[nextRoute.length];
 				
 				if (charAfter === '#' || charAfter === '?') {
@@ -10699,7 +10712,10 @@
 	var onUpdateQsFragment = function (key, options, e) {
 		if ($.isPlainObject(options.qs)) {
 			var oldQsFragmentString = App.routing.querystring.stringify(currentQsFragment);
-
+			if (!oldQsFragmentString.length) {
+				oldQsFragmentString = '?';
+			}
+			
 			//Update currentQsFragment
 			$.extend(currentQsFragment, options.qs);
 			
