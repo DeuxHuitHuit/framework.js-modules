@@ -199,7 +199,10 @@
 	var onUpdateQsFragment = function (key, options, e) {
 		if ($.isPlainObject(options.qs)) {
 			var oldQsFragmentString = App.routing.querystring.stringify(currentQsFragment);
-
+			if (!oldQsFragmentString.length) {
+				oldQsFragmentString = '?';
+			}
+			
 			//Update currentQsFragment
 			$.extend(currentQsFragment, options.qs);
 			
