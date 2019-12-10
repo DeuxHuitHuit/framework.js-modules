@@ -10,17 +10,14 @@
 		ctn: $(),
 		video: null,
 		videoSelector: '.js-video',
-		resizeContainerSelector: '',
 		onTimeUpdate: $.noop,
 		onCanPlay: $.noop,
 		onPlaying: $.noop,
-		resizable: true,
 		onLoaded: $.noop,
 		onEnded: $.noop
 	};
 
 	var RESET_ON_END_ATTR = 'data-video-reset-on-end';
-	var RATIO_ATTR = 'data-video-ratio';
 
 	// jQuery fun
 	(function ($) {
@@ -61,37 +58,6 @@
 	App.components.exports('video', function (options) {
 		var o = $.extend({}, defaultOptions, options);
 
-		var resizeVideo = function () {
-			if (!!o.resizable) {
-				var ref = !!o.video.closest(o.resizeContainerSelector).length ?
-					o.video.closest(o.resizeContainerSelector) : o.ctn;
-				var refW = ref.width();
-				var refH = ref.height();
-				var ratio = o.video.mediaWidth() / o.video.mediaHeight();
-
-				var newSize = $.sizing.aspectFill({
-					width: refW,
-					height: refH,
-					preferWidth: false
-				}, ratio);
-
-				//Round size to avoid part of pixel
-				newSize.height = Math.ceil(newSize.height);
-				newSize.width = Math.ceil(newSize.width);
-
-				var newPosition = $.positioning.autoPosition({
-					position: 'center',
-					left: 'left',
-					top: 'top'
-				}, $.size(refW, refH), newSize);
-
-				o.video.size(newSize).css(newPosition).data({
-					size: newSize,
-					position: newPosition
-				});
-			}
-		};
-
 		// EVENTS
 		var onTimeUpdate = function (e) {
 			if (!!status.currentTime) {
@@ -121,8 +87,6 @@
 		};
 
 		var onCanPlay = function (e) {
-			resizeVideo();
-
 			App.fx.notify('changeState.update', {
 				item: o.ctn,
 				state: 'paused',
@@ -139,7 +103,6 @@
 		};
 		
 		var onLoaded = function (e) {
-			resizeVideo();
 			App.callback(o.onLoaded, [o.ctn, o.video]);
 		};
 
@@ -237,7 +200,6 @@
 		
 		return {
 			init: init,
-			resize: resizeVideo,
 			destroy: destroy,
 			load: loadVideo,
 			play: playVideo,
