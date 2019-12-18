@@ -29,7 +29,7 @@
     "grunt-jscs": "3.0.1",
     "grunt-complexity": "1.1.0",
     "matchdep": "2.0.0",
-    "snyk": "1.262.1"
+    "snyk": "1.*"
   },
   "scripts": {
     "snyk-protect": "snyk protect",
