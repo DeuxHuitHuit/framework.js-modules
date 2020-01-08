@@ -17,8 +17,6 @@
  *
  *      - data-sync-property-from :
  *          : JQuery Selector to identify the element used to read the value.
- *          : By default will use a scope from the #site element
- *          : (see common ancestor for alternative selection)
  *
  *      OPTIONAL :
  *
