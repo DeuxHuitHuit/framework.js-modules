@@ -3,6 +3,8 @@
  *
  * auto slide on click
  *
+ * - Must have 'slide.js' imported as well in the project for this feature to work
+ *
  * - Container: optionnal. If present, when opening an item, it will close the
  *	 other items present in the container, just like an accordeon.
  *	 <add class="js-auto-slide-click" />
