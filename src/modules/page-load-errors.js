@@ -20,20 +20,12 @@
 	var actions = function () {
 		return {
 			pages: {
-				failedtoparse: function (key, data) {
-					
-				},
-				loaderror: function (key, data) {
-					
-				},
-				loadfatalerror: function (key, data) {
-					defaultLoadFatalError(key, data);
-				}
+				failedtoparse: defaultLoadFatalError,
+				loaderror: defaultLoadFatalError,
+				loadfatalerror: defaultLoadFatalError
 			},
 			articleChanger: {
-				loaderror: function (key, data) {
-					defaultLoadFatalError(key, data);
-				}
+				loaderror: defaultLoadFatalError
 			}
 		};
 	};
