@@ -119,6 +119,7 @@
 		var dataAttrExclusions = ':not([data-action="full"])' +
 			':not([data-action="toggle"])' +
 			':not([data-action="none"])';
+		var downloadExclusion = ':not([download])';
 		var localLinks = 'a[href^="' + origin + '"]';
 		var localWorkspaceExclusion = ':not(a[href^="' + origin + '/workspace"])';
 		var toggleLinks = '[data-action="toggle"]';
@@ -126,11 +127,30 @@
 		var queryStringLinks = 'a[href^="?"]';
 		var click = App.device.events.click;
 
+		var absoluteSelector = [
+			absoluteLinks,
+			workspaceExclusion,
+			dataAttrExclusions,
+			downloadExclusion
+		].join('');
+		var queryStringSelector = [
+			queryStringLinks,
+			workspaceExclusion,
+			dataAttrExclusions,
+			downloadExclusion
+		].join('');
+		var localSelector = [
+			localLinks,
+			dataAttrExclusions,
+			localWorkspaceExclusion,
+			downloadExclusion
+		].join('');
+
 		// capture all click in #site
 		$('#site')
-			.on(click, absoluteLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
-			.on(click, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
-			.on(click, localLinks + dataAttrExclusions + localWorkspaceExclusion, onClickGoto)
+			.on(click, absoluteSelector, onClickGoto)
+			.on(click, queryStringSelector, onClickGoto)
+			.on(click, localSelector, onClickGoto)
 			.on(click, absoluteLinks + toggleLinks, onClickToggle)
 			.on(click, queryStringLinks + toggleLinks, onClickToggle);
 	};
