@@ -1,6 +1,7 @@
 /**
  * Form Field
  * @author Deux Huit Huit
+ * @requires https://cdnjs.cloudflare.com/ajax/libs/validate.js/0.10.0/validate.min.js
  * @requires https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.0/moment.min.js
  */
 (function ($, global, undefined) {
@@ -43,20 +44,14 @@
 			},
 			document: {
 				format: {
-					pattern: '^.+\\.(?:docx?|pdf)$',
+					pattern: '^(.+\\.(?:docx?|pdf)|)$',
 					flags: 'i'
-				},
-				presence: {
-					allowEmpty: true
 				}
 			},
 			image: {
 				format: {
-					pattern: '^.+\\.(?:jpe?g|png)$',
+					pattern: '^(.+\\.(?:jpe?g|png)|)$',
 					flags: 'i'
-				},
-				presence: {
-					allowEmpty: true
 				}
 			},
 			phoneUs: {
