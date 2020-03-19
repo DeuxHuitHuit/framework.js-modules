@@ -1,6 +1,6 @@
-/*! framework.js-modules - v2.1.0 - build 367 - 2019-12-10
+/*! framework.js-modules - v2.2.0 - build 369 - 2020-03-19
  * https://github.com/DeuxHuitHuit/framework.js-modules
- * Copyright (c) 2019 Deux Huit Huit (https://deuxhuithuit.com/);
+ * Copyright (c) 2020 Deux Huit Huit (https://deuxhuithuit.com/);
  * MIT *//**
  * @author Deux Huit Huit
  *
@@ -503,7 +503,7 @@
  * @uses jQuery
  * @uses underscore.js
  *
- * REQUIRE: https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.5.0/lottie.min.js
+ * REQUIRE: https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.5.7/lottie.min.js
  * DOCS: https://github.com/airbnb/lottie-web
  */
 (function ($) {
@@ -518,7 +518,8 @@
 
 		var defaults = {
 			renderer: 'svg',
-			loop: false
+			loop: false,
+			onLoaded: $.noop
 		};
 
 		/**
@@ -537,6 +538,7 @@
 		 */
 		var goToAndStop = function (value, isFrame) {
 			renderer.goToAndStop(value, isFrame);
+			isPlaying = false;
 		};
 
 		/**
@@ -547,6 +549,7 @@
 		 */
 		var goToAndPlay = function (value, isFrame) {
 			renderer.goToAndPlay(value, isFrame);
+			isPlaying = true;
 		};
 
 		/**
@@ -564,6 +567,7 @@
 		 */
 		var playSegments = function (segments, force) {
 			renderer.playSegments(segments, force);
+			isPlaying = force;
 		};
 
 		/**
@@ -571,20 +575,16 @@
 		 * Please refer to the documentation if this method is not clear enough :)
 		 */
 		var play = function () {
-			if (!isPlaying) {
-				renderer.play();
-				isPlaying = true;
-			}
+			renderer.play();
+			isPlaying = true;
 		};
 
 		/**
 		 * Pause the animation
 		 */
 		var pause = function () {
-			if (!!isPlaying) {
-				renderer.pause();
-				isPlaying = false;
-			}
+			renderer.pause();
+			isPlaying = false;
 		};
 
 		/**
@@ -599,7 +599,11 @@
 		 * Destroy the world, and yeah, the animation.
 		 */
 		var destroy = function () {
+			if (!animation || !renderer) {
+				return;
+			}
 			renderer.destroy();
+			animation.empty();
 			renderer = null;
 			isPlaying = false;
 		};
@@ -630,7 +634,7 @@
 			}, {});
 			return _.assign({
 				wrapper: animation.get(0)
-			}, defaults, opts);
+			}, defaults, options, opts);
 		};
 
 		/**
@@ -644,7 +648,7 @@
 		/**
 		 * Just to be sure the library is loaded before making any calls.
 		 */
-		var bm = function () {
+		var airbnblottie = function () {
 			return !!window.lottie;
 		};
 
@@ -670,12 +674,24 @@
 		};
 
 		/**
+		 * Get the renderer instence used for this specific animation
+		 * @returns renderer instence
+		 */
+		var getRenderer = function () {
+			return renderer;
+		};
+
+		/**
 		 * Set the ctn of the animation and call render if everything is ready
 		 * @param {jQuery Element} scope the container of the animation
 		 */
-		var init = function (scope) {
+		var init = function (scope, opts) {
+			options = _.assign({}, defaults, options, opts);
 			animation = scope;
-			App.loaded(bm, render);
+			App.loaded(airbnblottie, function () {
+				render();
+				App.callback(options.onLoaded);
+			});
 		};
 
 		return {
@@ -691,7 +707,8 @@
 			setDirection: setDirection,
 			playSegments: playSegments,
 			destroy: destroy,
-			get: get
+			get: get,
+			getRenderer: getRenderer
 		};
 	});
 
@@ -1443,6 +1460,7 @@
 /**
  * Form Field
  * @author Deux Huit Huit
+ * @requires https://cdnjs.cloudflare.com/ajax/libs/validate.js/0.10.0/validate.min.js
  * @requires https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.0/moment.min.js
  */
 (function ($, global, undefined) {
@@ -1485,20 +1503,14 @@
 			},
 			document: {
 				format: {
-					pattern: '^.+\\.(?:docx?|pdf)$',
+					pattern: '^(.+\\.(?:docx?|pdf)|)$',
 					flags: 'i'
-				},
-				presence: {
-					allowEmpty: true
 				}
 			},
 			image: {
 				format: {
-					pattern: '^.+\\.(?:jpe?g|png)$',
+					pattern: '^(.+\\.(?:jpe?g|png)|)$',
 					flags: 'i'
-				},
-				presence: {
-					allowEmpty: true
 				}
 			},
 			phoneUs: {
@@ -2929,15 +2941,17 @@
 			var extra = container.attr('data-extra');
 			var iframe = this.getIframe(id, iAutoPlayParsed, iLoopParsed, iRelatedVideo, extra);
 			
-			iframe.attr('width', '100%');
-			iframe.attr('height', '100%');
-			iframe.attr('frameborder', '0');
-			iframe.attr('class', container.attr('data-player-class'));
-			container.append(iframe);
+			if (iframe && iframe.length) {
+				iframe.attr('width', '100%');
+				iframe.attr('height', '100%');
+				iframe.attr('frameborder', '0');
+				iframe.attr('class', container.attr('data-player-class'));
+				container.append(iframe);
+			}
 			return iframe;
 		},
 		getIframe: function (id) {
-			return $('<iframe allowfullscreen="" />');
+			return $('<iframe allowfullscreen webkitallowfullscreen mozallowfullscreen />');
 		},
 		getTemplateContent: function (container) {
 			var content = container.find('script');
@@ -4371,6 +4385,186 @@
 })(jQuery);
 
 /**
+ * Auto Google Map module
+ * @author Deux Huit Huit
+ * @requires com/google-map.js
+ */
+(function ($, undefined) {
+
+	'use strict';
+
+	var scope = $('.page');
+
+	var sels = {
+		ctn: '.js-auto-google-map-ctn',
+		map: '.js-auto-google-map',
+		marker: '.js-auto-google-map-marker',
+		styles: '.js-auto-google-map-style'
+	};
+
+	var ready = false;
+
+	var DEFAULT_MARKER_WIDTH = 30;
+	var DEFAULT_MARKER_HEIGHT = 30;
+	var DEFAULT_ZOOM = 10;
+
+	var createMarker = function (element, mapComponent) {
+		var lat = element.attr('data-lat');
+		var lng = element.attr('data-lng');
+		var iconSrc = element.attr('data-icon');
+		var iconWidth = parseInt(element.attr('data-icon-width'), 10) || DEFAULT_MARKER_WIDTH;
+		var iconHeight = parseInt(element.attr('data-icon-height'), 10) || DEFAULT_MARKER_HEIGHT;
+
+		var config = {
+			id: element.attr('data-poi-id'),
+			LatLng: new window.google.maps.LatLng(lat, lng),
+			content: element.html(),
+			iconImage: {
+				src: iconSrc,
+				size: new google.maps.Size(iconWidth, iconHeight),
+				scaledSize: new google.maps.Size(iconWidth, iconHeight),
+				p1: {
+					x: 0,
+					y: 0
+				},
+				p2: {
+					x: iconWidth / 2,
+					y: iconHeight / 2
+				}
+			},
+			zIndex: 50
+		};
+
+		if (!iconSrc) {
+			config.iconImage = undefined;
+		}
+
+		var marker = mapComponent.addMarker(config);
+
+		element.data('markerRef', marker);
+	};
+
+	var initAllMap = function () {
+
+		if (!ready) {
+			return;
+		}
+
+		scope.find(sels.ctn).each(function () {
+			var t = $(this);
+
+			if (!!t.find(sels.map).data('googleMapComp')) {
+				App.log({
+					fx: 'warn',
+					me: 'AutoGoogleMaps',
+					args: 'Component already inited for this map; skipping.'
+				});
+				return;
+			}
+
+			var zoom = !!t.attr('data-zoom') ? parseInt(t.attr('data-zoom'), 10) : DEFAULT_ZOOM;
+			var lat = t.attr('data-lat');
+			var lng = t.attr('data-lng');
+			var markers = t.find(sels.marker);
+			var styles = t.find(sels.styles).html();
+
+			if ((!lat || !lng) && !!markers.length) {
+				lat = markers.first().attr('data-lat');
+				lng = markers.first().attr('data-lng');
+			}
+
+			if (!!styles) {
+				try {
+					styles = JSON.parse(styles);
+				} catch (error) {
+					App.log({
+						me: 'Auto Google Maps',
+						args: error,
+						fx: 'error'
+					});
+				}
+			}
+
+			if (!!lat && !!lng) {
+				var comp = App.components.create('googleMap', {
+					zoom: zoom,
+					center: {
+						latitude: lat,
+						longitude: lng
+					},
+					selectorCtn: sels.map,
+					styles: styles || undefined,
+					zoomControl: true,
+					panControl: true,
+					streetViewControl: false,
+					mapTypeControl: false,
+					scrollwheel: false,
+					mapTypeId: 'roadmap',
+					draggable: true,
+					markerCustomAction: function (event, marker) {
+						if (!!marker.attr('data-url')) {
+							var win = window.open(marker.attr('data-url'), '_blank');
+							win.focus();
+						}
+					},
+					afterCreate: function () {
+						//Add pins
+						markers.each(function () {
+							createMarker($(this), comp);
+						});
+					}
+				});
+
+				// Store comp
+				t.data('googleMapComp', comp);
+				comp.init(t);
+			} else {
+				App.log({
+					fx: 'error',
+					me: 'AutoGoogleMaps',
+					args: 'No latitude and/or longitude passed to the map'
+				});
+			}
+
+		});
+	};
+
+	var onPageEnter = function (key, data) {
+		scope = $(data.page.key());
+		initAllMap();
+		ready = true;
+	};
+
+	var onArticleEntering = function () {
+		initAllMap();
+	};
+
+	var onSiteLoaded = function () {
+		initAllMap();
+		ready = true;
+	};
+
+	var actions = function () {
+		return {
+			site: {
+				loaded: onSiteLoaded
+			},
+			page: {
+				enter: onPageEnter
+			},
+			articleChanger: {
+				entering: onArticleEntering
+			}
+		};
+	};
+
+	App.modules.exports('auto-google-map', {
+		actions: actions
+	});
+
+})(jQuery);
+
+/**
  *  @author Deux Huit Huit
  *
  *  Auto Invisible ReCaptcha
@@ -5667,6 +5861,8 @@
  *
  * auto slide on click
  *
+ * - Must have 'slide.js' imported as well in the project for this feature to work
+ *
  * - Container: optionnal. If present, when opening an item, it will close the
  *	 other items present in the container, just like an accordeon.
  *	 <add class="js-auto-slide-click" />
@@ -5991,8 +6187,6 @@
  *
  *      - data-sync-property-from :
  *          : JQuery Selector to identify the element used to read the value.
- *          : By default will use a scope from the #site element
- *          : (see common ancestor for alternative selection)
  *
  *      OPTIONAL :
  *
@@ -7164,9 +7358,9 @@
  *      - data-{state}-state-follower : List of selector separated by ','
  *      - data-{state}-state-follower-common-ancestor (if not present: this will be used)
  *
- *      - data-{state}-state-notify-on: custom list of notification separated by ','
+ *      - data-{state}-state-notify-on: custom list of notification separated by ' ' (space) or ','
  *             called when switching state to on. Data passed : {item:this}
- *      - data-{state}-state-notify-off: custom list of notification separated by ','
+ *      - data-{state}-state-notify-off: custom list of notification separated by ' ' (space) or ','
  *             called when switching state to off. Data passed : {item:this}
  *
  *  NOTIFY IN :
@@ -7200,11 +7394,11 @@
 
 	var notifyChanges = function (notifyOn, notifyOff, item, state, flag) {
 		if (flag && notifyOn.length) {
-			$.each(notifyOn.split(','), function (i, e) {
+			$.each(notifyOn.split(/\s|,/), function (i, e) {
 				App.mediator.notify(e, {item: item, state: state, flag: flag});
 			});
 		} else if (!flag && notifyOff.length) {
-			$.each(notifyOff.split(','), function (i, e) {
+			$.each(notifyOff.split(/\s|,/), function (i, e) {
 				App.mediator.notify(e, {item: item, state: state, flag: flag});
 			});
 		}
@@ -8552,6 +8746,7 @@
 		var dataAttrExclusions = ':not([data-action="full"])' +
 			':not([data-action="toggle"])' +
 			':not([data-action="none"])';
+		var downloadExclusion = ':not([download])';
 		var localLinks = 'a[href^="' + origin + '"]';
 		var localWorkspaceExclusion = ':not(a[href^="' + origin + '/workspace"])';
 		var toggleLinks = '[data-action="toggle"]';
@@ -8559,11 +8754,30 @@
 		var queryStringLinks = 'a[href^="?"]';
 		var click = App.device.events.click;
 
+		var absoluteSelector = [
+			absoluteLinks,
+			workspaceExclusion,
+			dataAttrExclusions,
+			downloadExclusion
+		].join('');
+		var queryStringSelector = [
+			queryStringLinks,
+			workspaceExclusion,
+			dataAttrExclusions,
+			downloadExclusion
+		].join('');
+		var localSelector = [
+			localLinks,
+			dataAttrExclusions,
+			localWorkspaceExclusion,
+			downloadExclusion
+		].join('');
+
 		// capture all click in #site
 		$('#site')
-			.on(click, absoluteLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
-			.on(click, queryStringLinks + workspaceExclusion + dataAttrExclusions, onClickGoto)
-			.on(click, localLinks + dataAttrExclusions + localWorkspaceExclusion, onClickGoto)
+			.on(click, absoluteSelector, onClickGoto)
+			.on(click, queryStringSelector, onClickGoto)
+			.on(click, localSelector, onClickGoto)
 			.on(click, absoluteLinks + toggleLinks, onClickToggle)
 			.on(click, queryStringLinks + toggleLinks, onClickToggle);
 	};
@@ -8873,15 +9087,15 @@
  *  oEmbed Vimeo provider
  *
  *  REQUIRES:
- *      https://f.vimeocdn.com/js/froogaloop2.min.js
+ *      https://player.vimeo.com/api/player.js
  */
 
 (function ($, global, undefined) {
 
 	'use strict';
 	
-	var $f = function () {
-		return global.$f;
+	var VM = function () {
+		return global.Vimeo && global.Vimeo.Player;
 	};
 	
 	var init = function () {
@@ -8890,62 +9104,77 @@
 			abstractProvider = p;
 		});
 		var vimeoProvider = $.extend({}, abstractProvider, {
+			options: {},
 			getIframe: function (id, autoplay, loop, rel, extra) {
-				autoplay = autoplay !== undefined ? autoplay : 1;
-				loop = loop !== undefined ? loop : 1;
-				
-				return abstractProvider.getIframe()
-					.attr('src', '//player.vimeo.com/video/' + id +
-							'?autoplay=' + autoplay + '&loop=' + loop +
-							'&muted=' + autoplay +
-							'&player_id=' + 'vimeoPlayer' + id +
-							'&api=1&html5=1&rel=' + rel + (extra || ''));
+				vimeoProvider.options[id].autoplay = autoplay ? (autoplay === 1) : true;
+				vimeoProvider.options[id].loop = !isNaN(loop) ? (loop === 1) : true;
+				vimeoProvider.options[id].rel = rel;
+				// No need to create the iframe: vimeo's SDK is going to do it
+				return null;
 			},
 			
 			ready: function (container, callback) {
-				App.loaded($f, function ($f) {
-					var player = $f($('iframe', container).get(0));
+				var id = container.attr('data-video-id');
+				var options = vimeoProvider.options[id];
+				App.loaded(VM, function (Player) {
+					var player = new Player(container.get(0), {
+						id: id,
+						background: false,
+						autopause: true,
+						autoplay: options.autoplay,
+						byline: false,
+						playsinline: true,
+						controls: true,
+						loop: options.loop,
+						muted: container.attr('data-muted') === '1',
+						width: container.width(),
+						height: container.height()
+					});
 					
-					player.element.id = 'vimeoPlayer' + container.attr('data-oembed-id');
-					
-					player.addEvent('ready', function () {
+					player.on('loaded', function () {
+						container.find('iframe').attr({
+							width: '100%',
+							height: '100%'
+						});
 						if (container.attr('data-volume')) {
-							player.api('setVolume', parseInt(container.attr('data-volume'), 10));
+							player.setVolume(parseInt(container.attr('data-volume'), 10));
 						}
+						// The options does not always work, so we force it here.
+						player.setLoop(options.loop);
 						App.callback(callback, [player]);
 					});
 				});
 			},
 			
 			play: function (container) {
-				App.loaded($f, function ($f) {
-					var player = $f($('iframe', container).get(0));
+				App.loaded(VM, function (Player) {
+					var player = new Player($('iframe', container).get(0));
 					
-					player.api('play');
+					player.play();
 				});
 			},
 			
 			pause: function (container) {
-				App.loaded($f, function ($f) {
-					var player = global.$f($('iframe', container).get(0));
+				App.loaded(VM, function (Player) {
+					var player = new Player($('iframe', container).get(0));
 					
-					player.api('pause');
+					player.pause();
 				});
 			},
 
 			progress: function (container, callback) {
-				App.loaded($f, function ($f) {
-					var player = global.$f($('iframe', container).get(0));
-					player.addEvent('playProgress', function (e) {
+				App.loaded(VM, function (Player) {
+					var player = new Player($('iframe', container).get(0));
+					player.on('progress', function (e) {
 						App.callback(callback, [e.percent * 100]);
 					});
 				});
 			},
 
 			finish: function (container, callback) {
-				App.loaded($f, function ($f) {
-					var player = global.$f($('iframe', container).get(0));
-					player.addEvent('finish', function () {
+				App.loaded(VM, function (Player) {
+					var player = new Player($('iframe', container).get(0));
+					player.on('ended', function () {
 						App.callback(callback, {
 							container: container
 						});
@@ -8954,9 +9183,9 @@
 			},
 			
 			volume: function (container, value) {
-				App.loaded($f, function ($f) {
-					var player = global.$f($('iframe', container).get(0));
-					player.api('setVolume', value);
+				App.loaded(VM, function (Player) {
+					var player = new Player($('iframe', container).get(0));
+					player.setVolume(value);
 				});
 			},
 
@@ -9131,20 +9360,12 @@
 	var actions = function () {
 		return {
 			pages: {
-				failedtoparse: function (key, data) {
-					
-				},
-				loaderror: function (key, data) {
-					
-				},
-				loadfatalerror: function (key, data) {
-					defaultLoadFatalError(key, data);
-				}
+				failedtoparse: defaultLoadFatalError,
+				loaderror: defaultLoadFatalError,
+				loadfatalerror: defaultLoadFatalError
 			},
 			articleChanger: {
-				loaderror: function (key, data) {
-					defaultLoadFatalError(key, data);
-				}
+				loaderror: defaultLoadFatalError
 			}
 		};
 	};
