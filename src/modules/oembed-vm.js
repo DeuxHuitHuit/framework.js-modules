@@ -4,15 +4,15 @@
  *  oEmbed Vimeo provider
  *
  *  REQUIRES:
- *      https://f.vimeocdn.com/js/froogaloop2.min.js
+ *      https://player.vimeo.com/api/player.js
  */
 
 (function ($, global, undefined) {
 
 	'use strict';
 	
-	var $f = function () {
-		return global.$f;
+	var VM = function () {
+		return global.Vimeo && global.Vimeo.Player;
 	};
 	
 	var init = function () {
@@ -21,62 +21,77 @@
 			abstractProvider = p;
 		});
 		var vimeoProvider = $.extend({}, abstractProvider, {
+			options: {},
 			getIframe: function (id, autoplay, loop, rel, extra) {
-				autoplay = autoplay !== undefined ? autoplay : 1;
-				loop = loop !== undefined ? loop : 1;
-				
-				return abstractProvider.getIframe()
-					.attr('src', '//player.vimeo.com/video/' + id +
-							'?autoplay=' + autoplay + '&loop=' + loop +
-							'&muted=' + autoplay +
-							'&player_id=' + 'vimeoPlayer' + id +
-							'&api=1&html5=1&rel=' + rel + (extra || ''));
+				vimeoProvider.options[id].autoplay = autoplay ? (autoplay === 1) : true;
+				vimeoProvider.options[id].loop = !isNaN(loop) ? (loop === 1) : true;
+				vimeoProvider.options[id].rel = rel;
+				// No need to create the iframe: vimeo's SDK is going to do it
+				return null;
 			},
 			
 			ready: function (container, callback) {
-				App.loaded($f, function ($f) {
-					var player = $f($('iframe', container).get(0));
+				var id = container.attr('data-video-id');
+				var options = vimeoProvider.options[id];
+				App.loaded(VM, function (Player) {
+					var player = new Player(container.get(0), {
+						id: id,
+						background: false,
+						autopause: true,
+						autoplay: options.autoplay,
+						byline: false,
+						playsinline: true,
+						controls: true,
+						loop: options.loop,
+						muted: container.attr('data-muted') === '1',
+						width: container.width(),
+						height: container.height()
+					});
 					
-					player.element.id = 'vimeoPlayer' + container.attr('data-oembed-id');
-					
-					player.addEvent('ready', function () {
+					player.on('loaded', function () {
+						container.find('iframe').attr({
+							width: '100%',
+							height: '100%'
+						});
 						if (container.attr('data-volume')) {
-							player.api('setVolume', parseInt(container.attr('data-volume'), 10));
+							player.setVolume(parseInt(container.attr('data-volume'), 10));
 						}
+						// The options does not always work, so we force it here.
+						player.setLoop(options.loop);
 						App.callback(callback, [player]);
 					});
 				});
 			},
 			
 			play: function (container) {
-				App.loaded($f, function ($f) {
-					var player = $f($('iframe', container).get(0));
+				App.loaded(VM, function (Player) {
+					var player = new Player($('iframe', container).get(0));
 					
-					player.api('play');
+					player.play();
 				});
 			},
 			
 			pause: function (container) {
-				App.loaded($f, function ($f) {
-					var player = global.$f($('iframe', container).get(0));
+				App.loaded(VM, function (Player) {
+					var player = new Player($('iframe', container).get(0));
 					
-					player.api('pause');
+					player.pause();
 				});
 			},
 
 			progress: function (container, callback) {
-				App.loaded($f, function ($f) {
-					var player = global.$f($('iframe', container).get(0));
-					player.addEvent('playProgress', function (e) {
+				App.loaded(VM, function (Player) {
+					var player = new Player($('iframe', container).get(0));
+					player.on('progress', function (e) {
 						App.callback(callback, [e.percent * 100]);
 					});
 				});
 			},
 
 			finish: function (container, callback) {
-				App.loaded($f, function ($f) {
-					var player = global.$f($('iframe', container).get(0));
-					player.addEvent('finish', function () {
+				App.loaded(VM, function (Player) {
+					var player = new Player($('iframe', container).get(0));
+					player.on('ended', function () {
 						App.callback(callback, {
 							container: container
 						});
@@ -85,9 +100,9 @@
 			},
 			
 			volume: function (container, value) {
-				App.loaded($f, function ($f) {
-					var player = global.$f($('iframe', container).get(0));
-					player.api('setVolume', value);
+				App.loaded(VM, function (Player) {
+					var player = new Player($('iframe', container).get(0));
+					player.setVolume(value);
 				});
 			},
 

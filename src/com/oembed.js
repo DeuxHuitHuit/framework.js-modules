@@ -23,15 +23,17 @@
 			var extra = container.attr('data-extra');
 			var iframe = this.getIframe(id, iAutoPlayParsed, iLoopParsed, iRelatedVideo, extra);
 			
-			iframe.attr('width', '100%');
-			iframe.attr('height', '100%');
-			iframe.attr('frameborder', '0');
-			iframe.attr('class', container.attr('data-player-class'));
-			container.append(iframe);
+			if (iframe && iframe.length) {
+				iframe.attr('width', '100%');
+				iframe.attr('height', '100%');
+				iframe.attr('frameborder', '0');
+				iframe.attr('class', container.attr('data-player-class'));
+				container.append(iframe);
+			}
 			return iframe;
 		},
 		getIframe: function (id) {
-			return $('<iframe allowfullscreen="" />');
+			return $('<iframe allowfullscreen webkitallowfullscreen mozallowfullscreen />');
 		},
 		getTemplateContent: function (container) {
 			var content = container.find('script');
