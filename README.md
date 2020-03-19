@@ -3,7 +3,6 @@
 [![Build Status](https://travis-ci.org/DeuxHuitHuit/framework.js-modules.svg)](https://travis-ci.org/DeuxHuitHuit/framework.js-modules)
 ![Build Status](https://ci.appveyor.com/api/projects/status/v5g1p4wg66l15m9e?svg=true)
 ![Build Status](https://github.com/DeuxHuitHuit/framework.js-modules/workflows/CI/badge.svg)    
-
 [![David DM](https://david-dm.org/DeuxHuitHuit/framework.js-modules/dev-status.svg?style=flat)](https://david-dm.org/DeuxHuitHuit/framework.js-modules?type=dev)
 [![Maintainability](https://api.codeclimate.com/v1/badges/34fe964de3b2cbfb1d83/maintainability)](https://codeclimate.com/github/DeuxHuitHuit/framework.js-modules/maintainability)
 [![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/DeuxHuitHuit/framework.js-modules.svg)](https://isitmaintained.com/project/DeuxHuitHuit/framework.js-modules "Average time to resolve an issue")
