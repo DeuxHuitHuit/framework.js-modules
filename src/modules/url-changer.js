@@ -229,7 +229,7 @@
 				}
 
 				//Append back hash value
-				if (currentHash && currentHash.length) {
+				if (!options.removeHash && currentHash && currentHash.length) {
 					currentPageFragment += '#' + currentHash;
 				}
 
