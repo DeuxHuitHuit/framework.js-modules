@@ -39,7 +39,7 @@
 
 			fakeAnchor.prop('href', t.attr('href'));
 
-			if (fakeAnchor.prop('hostname') != window.location.hostname) {
+			if (fakeAnchor.prop('hostname') !== window.location.hostname) {
 				return;
 			}
 
