@@ -1,5 +1,5 @@
 # Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
-version: v1.12.0
+version: v1.14.1
 ignore: {}
 # patches apply the minimum changes required to fix a vulnerability
 patch:
@@ -10,3 +10,58 @@ patch:
         patched: '2018-07-03T04:49:46.430Z'
     - grunt-jscs > jscs > xmlbuilder > lodash:
         patched: '2018-07-03T04:49:46.430Z'
+  SNYK-JS-LODASH-567746:
+    - grunt-complexity > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - grunt-curl > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - grunt > grunt-legacy-log > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - grunt > grunt-legacy-util > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - grunt-contrib-jshint > jshint > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > @snyk/dep-graph > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - grunt > grunt-legacy-log > grunt-legacy-log-utils > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - grunt-complexity > grunt > grunt-legacy-log > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - grunt-complexity > grunt > grunt-legacy-util > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > @snyk/snyk-cocoapods-plugin > @snyk/dep-graph > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > snyk-nuget-plugin > dotnet-deps-parser > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - grunt-complexity > grunt > grunt-legacy-log > grunt-legacy-log-utils > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > @snyk/snyk-cocoapods-plugin > @snyk/cocoapods-lockfile-parser > @snyk/ruby-semver > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - grunt-contrib-connect > async > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > inquirer > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > snyk-config > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > snyk-mvn-plugin > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > snyk-nodejs-lockfile-parser > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > snyk-nuget-plugin > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - grunt-contrib-connect > portscanner > async > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > snyk-go-plugin > graphlib > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > snyk-nodejs-lockfile-parser > graphlib > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > snyk-php-plugin > @snyk/composer-lockfile-parser > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > @snyk/snyk-cocoapods-plugin > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
+    - snyk > @snyk/snyk-cocoapods-plugin > @snyk/cocoapods-lockfile-parser > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-05-01T07:02:07.739Z'
