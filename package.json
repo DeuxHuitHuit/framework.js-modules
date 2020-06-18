@@ -24,7 +24,7 @@
     "grunt-contrib-jshint": "2.1.0",
     "grunt-contrib-concat": "1.0.1",
     "grunt-contrib-connect": "~2.1.0",
-    "grunt-contrib-qunit": "^3.1.0",
+    "grunt-contrib-qunit": "^4.0.0",
     "grunt-curl": "^2.5.1",
     "grunt-jscs": "3.0.1",
     "grunt-complexity": "1.1.0",
