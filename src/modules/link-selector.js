@@ -40,6 +40,11 @@
 			fakeAnchor.prop('href', t.attr('href'));
 			pathname = fakeAnchor.prop('pathname');
 
+			// IE respects the spec, for once...
+			if (pathname.charAt(0) !== '/') {
+				pathname = '/' + pathname;
+			}
+
 			$.each(pathname.split('/'), function (index, element) {
 				if (!!element && element === currentPath.split('/')[index]) {
 					matches.push(element);
