@@ -107,9 +107,11 @@
 						paddingBottom: ''
 					});
 					
-					App.mediator.notify(onCallback, {
-						item: item
-					});
+					if (!!onCallback) {
+						App.mediator.notify(onCallback, {
+							item: item
+						});
+					}
 				});
 			}
 		} else {
