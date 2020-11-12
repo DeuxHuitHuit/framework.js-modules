@@ -38,6 +38,11 @@
 			var matches = [];
 
 			fakeAnchor.prop('href', t.attr('href'));
+
+			if (fakeAnchor.prop('hostname') !== window.location.hostname) {
+				return;
+			}
+
 			pathname = fakeAnchor.prop('pathname');
 
 			// IE respects the spec, for once...
